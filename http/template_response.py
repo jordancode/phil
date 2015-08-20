@@ -36,12 +36,12 @@ class TemplateResponse(BaseResponse,ETagResponseMixin,
         return self._template_data
     
     def _render_template(self, template_name, template_data = None, partials = None):
-        r = Renderer(search_dirs=["../static/template/"],partials=partials)
+        r = Renderer(search_dirs=["static/template/"],partials=partials)
 
         return r.render_name(template_name, template_data)
 
     def _fetch_template(self, template_name):
-        loader = Loader(search_dirs=["../static/template/"])
+        loader = Loader(search_dirs=["static/template/"])
         
         return loader.load_name(template_name)
     
