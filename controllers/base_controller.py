@@ -1,4 +1,4 @@
-from framework.models.service.session_service import SessionService
+from framework.models.services.session_service import SessionService
 from framework.models.domain.session import Session, SessionException
 
 class BaseController:
