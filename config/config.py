@@ -10,7 +10,7 @@ class Config:
 
     @classmethod
     def get(cls, file_name, key_path = None):
-        config_dict = cls._get_dict_by_file_name(file_name, Environment.get())
+        config_dict = cls._get_dict_for_environment(file_name, Environment.get())
         
         return cls._get_config_by_key(config_dict,key_path,file_name)
     
