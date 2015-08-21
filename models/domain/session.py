@@ -2,12 +2,16 @@ from passlib.hash import bcrypt
 from framework.models.domain.entity import Entity
 from framework.config.config import Config, ConfigKeyNotFound
 import datetime
+import random
+import string
 
 class Session(Entity):
     
     FLAG_IS_ADMIN = 0b1
     
-    def __init__(self, id, user, user_agent, auth, created_ts = None, modified_ts = None, log_out_ts = None, flags = None):
+    _TOKEN_LENGTH = 20
+    
+    def __init__(self, id, user, user_agent, auth, created_ts = None, modified_ts = None, log_out_ts = None, flags = None, token = None):
         super().__init__(id)
         
         self._set_attr("user",user)
@@ -19,22 +23,22 @@ class Session(Entity):
         self._set_attr("log_out_ts", log_out_ts)
         
         self._set_attr("flags",flags)
+        
+        if not token:
+            token = self.generate_token()
+        
+        self._set_attr("token",token)
+        
+    
+    def generate_token(self):
+        return ''.join(random.SystemRandom().choice(string.ascii_uppercase + string.digits) for _ in range(Session.TOKEN_LENGTH))
+    
+    def verify_token(self, token_to_check):
+        return self.token == token_to_check
     
     @property
     def token(self):
-        """
-            passed to the client as extra 
-        """
-        salt = None
-        try:
-            salt = Config.get("auth","session_salt")
-        except ConfigKeyNotFound:
-            pass
-        
-        return bcrypt.encrypt(str(self.id) + str(self.user.id), rounds=4, salt=salt)
-    
-    def verify_token(self, token_to_check):
-        return bcrypt.verify(token_to_check, self.token)
+        return self._get_attr("token")
     
     @property
     def user(self):
