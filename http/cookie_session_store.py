@@ -1,5 +1,6 @@
 from framework.http.base_session_store import BaseSessionStore
 from framework.models.services.session_service import NoActiveSessionException
+from framework.models.session import SessionException
 from framework.config.config import Config
 
 class CookieSessionStore(BaseSessionStore):
@@ -7,23 +8,33 @@ class CookieSessionStore(BaseSessionStore):
     def _get_cookie_name(self):
         app_name = Config.get("app","name")
         
-        return app_name + "_sess"
+        return app_name + "_s_id"
+    
+    def _get_token_cookie_name(self):
+        app_name = Config.get("app","name")
+        
+        return app_name + "_s_t"   
     
     def set_session(self, response, session):
         
         response.set_cookie(self._get_cookie_name(), session.id, None, session.log_out_ts)
+        response.set_cookie(self._get_token_cookie_name(), session.token, None, session.log_out_ts)
     
     
     def get_session(self, request):  
         try:
-            cookie = request.cookies[self._get_cookie_name()]
+            session_id = request.cookies[self._get_cookie_name()]
+            token = request.cookies[self._get_token_cookie_name()]
         except KeyError:
             raise NoActiveSessionException()
         
-        return SessionService().get_active_session(cookie)
+        return  SessionService().get_active_session(session_id, token)
+        
     
     
     def log_out_session(self, response, session):
         
         response.delete_cookie(self._get_cookie_name())
-        SessionService().log_out(session.id)
+        response.delete_cookie(self._get_token_cookie_name())
+        SessionService().log_out(session)
+        

@@ -1,4 +1,6 @@
+from passlib.hash import bcrypt
 from framework.models.domain.entity import Entity
+from framework.config.config import Config, ConfigKeyNotFound
 import datetime
 
 class Session(Entity):
@@ -17,7 +19,22 @@ class Session(Entity):
         self._set_attr("log_out_ts", log_out_ts)
         
         self._set_attr("flags",flags)
+    
+    @property
+    def token(self):
+        """
+            passed to the client as extra 
+        """
+        salt = None
+        try:
+            salt = Config.get("auth","session_salt")
+        except ConfigKeyNotFound:
+            pass
         
+        return bcrypt.encrypt(str(self.id) + str(self.user.id), rounds=4, salt=salt)
+    
+    def verify_token(self, token_to_check):
+        return bcrypt.verify(token_to_check, self.token)
     
     @property
     def user(self):
