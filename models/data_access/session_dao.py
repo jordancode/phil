@@ -41,10 +41,10 @@ class SessionDAO(DataAccessObject):
             session_query = (
                     "INSERT INTO sessions VALUES("
                     "%(id)s, %(user_id)s, %(user_agent_id)s, %(auth_id)s, %(created_ts)s,"
-                    " %(modified_ts)s, %(log_out_ts)s, NULL, %(flags)s"
+                    " %(modified_ts)s, %(log_out_ts)s, NULL, %(flags)s, %(token)s"
                     ") ON DUPLICATE KEY UPDATE"
                     " user_agent_id=VALUES(user_agent_id), modified_ts=VALUES(modified_ts),"
-                    " log_out_ts=VALUES(log_out_ts), auth_flags=VALUES(auth_flags)"
+                    " log_out_ts=VALUES(log_out_ts), flags=VALUES(flags)"
                 )
             MySQL.get(session.id).query(session_query,session_dict)
             session.update_stored_state()
@@ -171,6 +171,7 @@ class SessionDAO(DataAccessObject):
                 "modified_ts" : dict['modified_ts'],
                 "log_out_ts" : dict['log_out_ts'],
                 "flags" : dict['flags'],
+                "token" : dict['token']
                 }
     
 
