@@ -27,13 +27,13 @@ class PageResponse(TemplateResponse):
         
         #add in the default file lists
         for file_type in ["css","js"]:
-            list = Config.get(file_type,"urls")
+            l = Config.get(file_type,"urls")
             if hasattr(ret, file_type):
                 ret[file_type].append(list)
                 #convert to set (to eliminate dupes) then back to list
                 ret[file_type] = list(set(ret[file_type]))
             else:
-                ret[file_type] = list
+                ret[file_type] = l
         
         #add in other things like title, meta        
         

@@ -10,7 +10,7 @@ class UserAgent(Entity):
     def generate_hash(ua_string):
         return hashlib.md5(ua_string.encode("utf-8")).digest()     
     
-    def __init__(self,id, string):
+    def __init__(self, id, string):
         super().__init__(id)
         self._set_attr("string", string)
         self._set_attr("hash", UserAgent.generate_hash(string))    

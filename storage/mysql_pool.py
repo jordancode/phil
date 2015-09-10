@@ -1,6 +1,5 @@
 from framework.config.config import Config
 from framework.storage.mysql_shard import MySQLShard
-from multiprocessing import Pool
 
 class MySQLPool:
     

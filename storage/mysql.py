@@ -1,5 +1,4 @@
 from framework.storage.mysql_pool import MySQLPool
-from framework.storage.mysql_shard import MySQLShard
 from framework.utils.id import Id
 import random
 import hashlib

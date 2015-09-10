@@ -1,6 +1,6 @@
 class BaseSessionStore:
     """
-      interface for storing and retreiving session ids to and from the client
+      interface for storing and retrieving session ids to and from the client
     """
     
     def set_session(self, response, session):
@@ -9,5 +9,5 @@ class BaseSessionStore:
     def get_session(self, request):
         pass
     
-    def log_out_session(self, response, session):
+    def delete_session(self, response):
         pass;

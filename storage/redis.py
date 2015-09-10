@@ -45,4 +45,4 @@ class NotARedisDBError(Exception):
         self._dbs = dbs
     
     def __str__(self):
-        return self._db_name + " is not a redis db, use one of: " + ",".join(list(h.keys()))
+        return self._db_name + " is not a redis db, use one of: " + ",".join(list(self._dbs.keys()))

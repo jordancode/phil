@@ -1,5 +1,6 @@
 from framework.models.services.session_service import SessionService
 from framework.models.domain.session import Session, SessionException
+from werkzeug.exceptions import Unauthorized, Forbidden
 
 class BaseController:
     
@@ -16,7 +17,7 @@ class BaseController:
     
     def _get_session_store(self):
         if self.__session_store is None:
-            raise NoSessionStoreException()
+            raise NoSessionStoreError()
         
         return self.__session_store
     
@@ -36,6 +37,9 @@ class BaseController:
         except SessionException:
             return False
     
+    def _get_user(self):
+        return self._get_session().user
+    
     def _get_session(self):
         #throws NoActiveSessionException, SessionNotFoundException, NoSessionStoreException
         return self._get_session_store().get_session(self._get_request())
@@ -49,7 +53,7 @@ def require_login(f):
     
     def wrapper(self, *args, **kwargs):
         if not self._is_logged_in():
-            raise NotLoggedInException()
+            raise Unauthorized()
         
         return f(self, *args, **kwargs)
         
@@ -62,7 +66,7 @@ def require_admin(f):
     
     def wrapper(self, *args, **kwargs):
         if not self._is_admin():
-            raise NotAdminException()
+            raise Forbidden()
         
         return f(self, *args, **kwargs)     
     
@@ -70,15 +74,8 @@ def require_admin(f):
 
 
 
-class NotLoggedInException(Exception):
-    def __str__(self):
-        return "This method requires login"
 
-class NotAdminException(Exception):
-    def __str__(self):
-        return "This method requires admin permissions"
-
-class NoSessionStoreException(SessionException):
+class NoSessionStoreError(SessionException):
     def __str__(self):
         return "SessionStore required to retreive or store session id"
     

@@ -3,17 +3,18 @@ from framework.models.domain.authentication import Authentication, AuthException
 from framework.models.data_access.data_access_object import DataAccessObject, RowDeletedException
 from framework.config.config import Config
 from app.models.data_access.user_dao import UserDAO
+import importlib
 
 class AuthDAO(DataAccessObject):
     
     def __init__(self):
-         super().__init__(Authentication)
+        super().__init__(Authentication)
     
          
     def new_auth(self, auth_class, provider_id, secret, user):
-        id = self._generate_id_from_provider_id(provider_id)
+        pid = self._generate_id_from_provider_id(provider_id)
         
-        return auth_class(id, provider_id, secret, user, False)        
+        return auth_class(pid, provider_id, secret, user, False)        
         
     
     def get_auth_by_id(self, auth_id, user = None):
@@ -34,6 +35,7 @@ class AuthDAO(DataAccessObject):
         elif user.id != row['user_id']:
             raise UserAuthMismatchError()
         
+        auth_class = self._type_id_to_class(row['provider_type'])
             
         auth = auth_class(row['id'], row['provider_id'].decode("utf-8") , row['secret'].decode("utf-8") , user, True)
         auth.update_stored_state()

@@ -7,6 +7,8 @@ class JSONResponse(BaseResponse,ETagResponseMixin,
                CommonResponseDescriptorsMixin,
                WWWAuthenticateMixin):
     
+    _success = True
+    
     def __init__(self, data_dict=None, headers=None):
         
         self.set_data_dict(data_dict)
@@ -26,12 +28,20 @@ class JSONResponse(BaseResponse,ETagResponseMixin,
     
     def _update_response(self):
         response = None
+        
+        self._data_dict["success"] = self._success
+        
         if self._data_dict is not None:
             response = json.dumps(self._data_dict, sort_keys=True)
         
         self.set_data(response)
     
-
+    
+    def set_error(self, error_message = None):
+        self._success = False
+        if error_message:
+            self.set_key("error", error_message)
+        
 
     def set_key(self,key,value):
         """
