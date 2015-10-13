@@ -2,6 +2,7 @@ import json
 from werkzeug.wrappers import (BaseResponse,ETagResponseMixin,
                CommonResponseDescriptorsMixin,
                WWWAuthenticateMixin)
+from framework.utils.query_tracker import QueryTracker
 
 class JSONResponse(BaseResponse,ETagResponseMixin,
                CommonResponseDescriptorsMixin,
@@ -18,8 +19,8 @@ class JSONResponse(BaseResponse,ETagResponseMixin,
     
     _data_dict = None
     
-    def set_data_dict(self,dict):
-        self._data_dict = dict
+    def set_data_dict(self,dict_):
+        self._data_dict = dict_
         
         
     def get_data_dict(self):
@@ -30,17 +31,33 @@ class JSONResponse(BaseResponse,ETagResponseMixin,
         response = None
         
         self._data_dict["success"] = self._success
+        self._data_dict["debug"] = self._get_debug_data()
         
         if self._data_dict is not None:
-            response = json.dumps(self._data_dict, sort_keys=True)
+            response = json.dumps(self._data_dict, sort_keys=True, default=self._json_helper)
         
         self.set_data(response)
     
     
-    def set_error(self, error_message = None):
+    def _get_debug_data(self):
+        return {
+                    "queries" : QueryTracker.get_query_history()
+                }
+    
+    def _json_helper(self, value):
+        #stringifies otherwise non-json nodes
+        if hasattr(value, "__str__"):
+            return str(value)
+        
+        raise TypeError()
+        
+        
+    def set_error(self, error = None):
         self._success = False
-        if error_message:
-            self.set_key("error", error_message)
+        if error:
+            self.set_key("error", str(error))
+            
+        return self
         
 
     def set_key(self,key,value):
@@ -69,7 +86,8 @@ class JSONResponse(BaseResponse,ETagResponseMixin,
                         dict[subkey] = {}
                         
                         
-    
+        return self
+        
     def get_wsgi_response(self, environ):
         self._update_response()
         

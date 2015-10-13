@@ -4,6 +4,8 @@ from werkzeug.wrappers import (BaseResponse,ETagResponseMixin,
 
 from pystache import Renderer
 from pystache.loader import Loader
+from framework.config.config import Config
+import copy
 
 class TemplateResponse(BaseResponse,ETagResponseMixin,
                CommonResponseDescriptorsMixin,
@@ -35,8 +37,26 @@ class TemplateResponse(BaseResponse,ETagResponseMixin,
     def get_template_data(self):
         return self._template_data
     
+    def _add_in_default_data(self, data):
+        #need to return clone so we don't append more than once
+        if self._template_data is not None:
+            ret = copy.copy(data)
+        else:
+            ret = {}
+        
+        if not "config_" in ret:
+            ret['config_'] = {
+                "app" : Config.get("app")
+             }
+            
+        return ret
+    
     def _render_template(self, template_name, template_data = None, partials = None):
+            
         r = Renderer(search_dirs=["static/template/"],partials=partials)
+        
+        template_data = self._add_in_default_data(template_data)
+        
 
         return r.render_name(template_name, template_data)
 

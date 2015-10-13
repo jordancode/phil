@@ -2,6 +2,8 @@ from framework.utils.id import Id
 from framework.config.config import Config
 import random
 import mysql.connector
+from pprint import pprint
+from framework.utils.query_tracker import QueryTracker
 
 class MySQLShard:
     
@@ -26,6 +28,7 @@ class MySQLShard:
         return self._connection
         
     def _connect(self, side_num = None):
+        
         if self._connection is None:
             server_config = self.get_server(side_num)
             self._connection = mysql.connector.connect(
@@ -53,6 +56,8 @@ class MySQLShard:
             
         if not self._in_transaction:
             self._close_cursor()
+        
+        QueryTracker.push(self.get_name(), query, params, ret)
         
         return ret
     
@@ -147,6 +152,4 @@ class MySQLShard:
         if self._cursor is not None:
             self._cursor.close()
             self._cursor = None
-        
-        
         

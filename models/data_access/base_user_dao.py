@@ -15,6 +15,6 @@ class BaseUserDAO(DataAccessObject):
         
         return Entity(MySQL.next_id())
     
-    def get_user_by_id(self, user_id):
+    def get(self, user_id):
         
         return Entity(user_id)

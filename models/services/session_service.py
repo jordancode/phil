@@ -21,13 +21,13 @@ class SessionService:
             raise NoActiveSessionException()
         
         if not session.verify_token(token):
-            raise InvalidSessionTokenError()
+            raise InvalidSessionTokenError(token, session.token)
         
         return session
     
 class InvalidSessionTokenError(SessionException):
-    def __str__(self):
-        return "Session token does not match session id"
+    def __init__(self,):
+        super().__init__("Session token does not match")
 
 
 class NoActiveSessionException(SessionException):

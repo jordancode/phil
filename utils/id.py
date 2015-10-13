@@ -37,6 +37,14 @@ class Id:
     
     
     @classmethod
+    def dummy(cls, shard_id, pool_id):
+        ins = cls()
+        ins.set_pool_id(pool_id)
+        ins.set_shard_id(shard_id)
+        
+        return ins
+    
+    @classmethod
     def next(cls, shard_id, pool_id, number_of_ids=1):
         """"
             Returns one or more ids for the given shard, pool combo

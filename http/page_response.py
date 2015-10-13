@@ -19,27 +19,30 @@ class PageResponse(TemplateResponse):
         
     def get_page_template(self):
         return self._page_template or self.DEFAULT_PAGE_TEMPLATE
-    
-    
-    def get_template_data(self):
-        #need to return clone so we don't append more than once
-        ret = copy.copy(self._template_data)
+        
+    def _add_in_default_data(self, data):
+        ret = super()._add_in_default_data(data)
         
         #add in the default file lists
         for file_type in ["css","js"]:
             l = Config.get(file_type,"urls")
-            if hasattr(ret, file_type):
-                ret[file_type].append(list)
+            if file_type + "_" in ret:
+                custom_list = ret[file_type + "_"]
+                
+                if type(custom_list) is str:
+                    custom_list =  [ custom_list ]
+                
+                new_list = custom_list + l
                 #convert to set (to eliminate dupes) then back to list
-                ret[file_type] = list(set(ret[file_type]))
+                ret[file_type + "_"] = list(set(new_list))
             else:
-                ret[file_type] = l
-        
-        #add in other things like title, meta        
+                ret[file_type + "_"] = l
+                
+        #add in other things like title, meta
+        if not "title_" in ret:
+            ret['title_'] = Config.get("app","name")
         
         return ret
-        
-        
     
     def _get_partials(self):
         
@@ -48,7 +51,7 @@ class PageResponse(TemplateResponse):
         class PartialFetcher:
             
             def get(self, partial_name):
-                if partial_name == "content" or partial_name == u"content":
+                if partial_name == "content_" or partial_name == u"content_":
                     return self_._fetch_template(self_._template_name)
                 else:
                     return self_._fetch_template(partial_name)

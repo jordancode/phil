@@ -6,19 +6,23 @@ from framework.config.config import Config
 class CookieSessionStore(BaseSessionStore):
     
     def _get_cookie_name(self):
-        app_name = Config.get("app","name")
+        app_name = Config.get("app","app_key")
         
         return app_name + "_s_id"
     
     def _get_token_cookie_name(self):
-        app_name = Config.get("app","name")
+        app_name = Config.get("app","app_key")
         
         return app_name + "_s_t"   
     
+    def _get_cookie_domain(self):
+        server_name = Config.get("app","server_name")
+        return "." + server_name
+    
     def set_session(self, response, session):
         
-        response.set_cookie(self._get_cookie_name(), session.id, None, session.log_out_ts)
-        response.set_cookie(self._get_token_cookie_name(), session.token, None, session.log_out_ts)
+        response.set_cookie(self._get_cookie_name(), str(session.id), None, session.log_out_ts, '/', self._get_cookie_domain())
+        response.set_cookie(self._get_token_cookie_name(), session.token, None, session.log_out_ts, '/', self._get_cookie_domain())
     
     
     def get_session(self, request):  
@@ -28,7 +32,7 @@ class CookieSessionStore(BaseSessionStore):
         except KeyError:
             raise NoActiveSessionException()
         
-        return  SessionService().get_active_session(session_id, token)
+        return  SessionService().get_active_session(int(session_id), token)
         
     
     

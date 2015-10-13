@@ -18,7 +18,7 @@ class AuthDAO(DataAccessObject):
         
     
     def get_auth_by_id(self, auth_id, user = None):
-        rows = MySQL.get_by_shard_id(auth_id).query("SELECT * FROM auth WHERE id=%s", (auth_id))
+        rows = MySQL.get(auth_id).query("SELECT * FROM auth WHERE id=%s", (auth_id,))
         
         if not len(rows):
             raise NoAuthFoundException("id_" + auth_id)
@@ -31,7 +31,7 @@ class AuthDAO(DataAccessObject):
         
         if user is None:
             user_dao = UserDAO()
-            user = user_dao.get_user_by_id(row['user_id'])
+            user = user_dao.get(row['user_id'])
         elif user.id != row['user_id']:
             raise UserAuthMismatchError()
         
@@ -59,7 +59,7 @@ class AuthDAO(DataAccessObject):
             raise RowDeletedException()
         
         user_dao = UserDAO()
-        user = user_dao.get_user_by_id(row['user_id'])
+        user = user_dao.get(row['user_id'])
         
         auth = auth_class(row['id'], provider_id , row['secret'].decode("utf-8") , user, True)
         auth.update_stored_state()
@@ -99,8 +99,8 @@ class AuthDAO(DataAccessObject):
 
     def _type_id_to_class(self, type_id):
         type_to_class = Config.get("auth", "type_to_class")
-        if type_id not in type_to_class:
-            raise InvalidAuthTypeError()
+        if str(type_id) not in type_to_class:
+            raise InvalidAuthTypeError(type_id)
         
         dict = type_to_class[str(type_id)]
         
@@ -120,12 +120,18 @@ class AuthDAO(DataAccessObject):
                 
                 return int(type_id)
            
-        raise InvalidAuthTypeError()
+        raise InvalidAuthTypeError(type_id)
         
                 
 class InvalidAuthTypeError(AuthException):
+    _type_id = None
+    
+    def __init__(self,type_id):
+        self._type_id = type_id
+    
+    
     def __str__(self):
-        return ("Invalid auth type provided."
+        return ("Invalid auth type provided: " + str(self._type_id) + "."
                 " Type id and classes must be configured in auth.json")
         
 class UserAuthMismatchError(AuthException):

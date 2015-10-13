@@ -4,6 +4,8 @@ from werkzeug.exceptions import HTTPException, NotFound
 from framework.http.cookie_session_store import CookieSessionStore
 import string
 import importlib
+from framework.http.method_override_request import MethodOverrideRequest
+from framework.http.json_response import JSONResponse
 
 class BaseApplication():
     
@@ -12,18 +14,18 @@ class BaseApplication():
         self._routes = routes
     
     def dispatch_request(self, request):
-        
         adapter = self._routes.bind_to_environ(request.environ,server_name=self.get_server_name())
         try:
-            rule, args = adapter.match(return_rule=True)            
+            rule, args = adapter.match(return_rule=True)  
+            
+            self.pre_hook(request)
+            
+            response = self.call_controller(request, rule, args)
+            
+            self.post_hook(request, response)
+                          
         except HTTPException as e:
             return e
-        
-        self.pre_hook(request)
-        
-        response = self.call_controller(request, rule, args)
-        
-        self.post_hook(request, response)
         
         return response
     
@@ -55,7 +57,7 @@ class BaseApplication():
         return response
 
     def wsgi_app(self, environ, start_response):
-        request = Request(environ)
+        request = MethodOverrideRequest(environ)
         response = self.dispatch_request(request)
         
         return response(environ, start_response)

@@ -41,7 +41,7 @@ class SessionDAO(DataAccessObject):
             session_query = (
                     "INSERT INTO sessions VALUES("
                     "%(id)s, %(user_id)s, %(user_agent_id)s, %(auth_id)s, %(created_ts)s,"
-                    " %(modified_ts)s, %(log_out_ts)s, NULL, %(flags)s, %(token)s"
+                    " %(modified_ts)s, %(log_out_ts)s, NULL, NULL, %(flags)s, %(token)s"
                     ") ON DUPLICATE KEY UPDATE"
                     " user_agent_id=VALUES(user_agent_id), modified_ts=VALUES(modified_ts),"
                     " log_out_ts=VALUES(log_out_ts), flags=VALUES(flags)"
@@ -100,7 +100,7 @@ class SessionDAO(DataAccessObject):
         
         shard = MySQL.get(session_id)
         
-        rows = shard.query("SELECT * FROM sessions WHERE id=%s",(session_id))
+        rows = shard.query("SELECT * FROM sessions WHERE id=%s",(session_id,))
         
         if not len(rows):
             raise SessionNotFoundException()
@@ -110,10 +110,10 @@ class SessionDAO(DataAccessObject):
     
     def _get_user_agent_by_string(self, user_agent_string):
         shard_id = MySQL.get_shard_id_for_string(user_agent_string)
-        hash = UserAgent.generate_hash(user_agent_string)
+        hash_ = UserAgent.generate_hash(user_agent_string)
         
         
-        rows = MySQL.get_by_shard_id(shard_id).query("SELECT * FROM user_agents WHERE user_agent_hash = %s", (hash,))
+        rows = MySQL.get_by_shard_id(shard_id).query("SELECT * FROM user_agents WHERE user_agent_hash = %s", (hash_,))
         
         if not len(rows):
             raise UserAgentNotFoundException()
@@ -128,7 +128,7 @@ class SessionDAO(DataAccessObject):
     
     def _get_user_agent_by_id(self, user_agent_id):
         if user_agent_id not in self._user_agents:
-            rows = MySQL.get(user_agent_id).query("SELECT * FROM user_agents WHERE id = %s", (user_agent_id))
+            rows = MySQL.get(user_agent_id).query("SELECT * FROM user_agents WHERE id = %s", (user_agent_id,))
             if not len(rows):
                 raise UserAgentNotFoundException()
             
@@ -150,18 +150,19 @@ class SessionDAO(DataAccessObject):
         
         if user is None:
             user_dao = UserDAO()
-            user = user_dao.get_user_by_id(row['user_id'])
+            user = user_dao.get(row['user_id'])
             
-        auth_dao = AuthenticationDAO()
+        auth_dao = AuthDAO()
         auth = auth_dao.get_auth_by_id(row['auth_id'])
         
-        sesh = Session(row['id'],user,ua,auth,row['created_ts'],row['modified_ts'],row['log_out_ts'],row['flags'])
+        sesh = Session(row['id'],user,ua,auth,row['created_ts'],row['modified_ts'],row['log_out_ts'],row['flags'], row['token'].decode("UTF-8"))
         sesh.update_stored_state()
         
         return sesh
     
     def _session_to_row(self, session):
         dict = session.to_dict()
+        
         return {
                 "id" : session.id,
                 "user_id" : session.user.id,
@@ -172,7 +173,7 @@ class SessionDAO(DataAccessObject):
                 "log_out_ts" : dict['log_out_ts'],
                 "flags" : dict['flags'],
                 "token" : dict['token']
-                }
+            }
     
 
 class UserAgentNotFoundException(RowNotFoundException, SessionException):

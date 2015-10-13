@@ -1,4 +1,7 @@
 
+SORT_HI_TO_LO = True
+SORT_LO_TO_HI = False
+
 class AssociativeArray:
     
     class Node:
@@ -31,8 +34,6 @@ class AssociativeArray:
     
     
         
-    SORT_HI_TO_LO = True
-    SORT_LO_TO_HI = False
     _sort_order = None
     
     _linked_list = None
@@ -42,7 +43,7 @@ class AssociativeArray:
     def sort_order(self):
         return self._sort_order
     
-    def __init__(self, sort_order = AssociativeArray.SORT_LO_TO_HI):
+    def __init__(self, sort_order = SORT_LO_TO_HI):
         self._sort_order = sort_order
         self._key_to_node = {}
 
@@ -77,7 +78,7 @@ class AssociativeArray:
     
     
     def _is_before(self,node_a,node_b):
-        if self._sort_order == AssociativeArray.SORT_LO_TO_HI:
+        if self._sort_order == SORT_LO_TO_HI:
             return node_a.key < node_b.key
         else:
             return node_b.key < node_a.key

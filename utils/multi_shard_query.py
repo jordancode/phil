@@ -5,7 +5,6 @@ from multiprocessing.pool import Pool
 
 class MultiShardQuery:
     
-    
     @classmethod
     def all_shard_query(cls, query, params = None, pool = None, num_threads = None):
         """
@@ -46,24 +45,30 @@ class MultiShardQuery:
         
             
         
-        run_one_query = cls._get_query_runner(pool, query, params ) 
+        run_one = cls._get_query_runner(pool, query, params ) 
         
-        with Pool(num_threads) as p:
-            res = p.map(run_one_query, shard_id_list)
+        #with Pool(num_threads) as p:
+        res = map(run_one, shard_id_list)
+        
+        #flatten list
+        res = sum(res, [])
         
         return res
     
     @classmethod
-    def multi_shard_in_list_query(cls, in_list, query, other_params, pool = None,num_threads = None):
+    def multi_shard_in_list_query(cls, in_list, query, other_params = None, pool = None,num_threads = None):
         """
-            Looks for a %l in the query string and replaces it with LIST(%s, %s ...)
+            Looks for a %l in the query string and replaces it with (%s, %s ...)
             It will parse the in_list parameter and run the correct list on each shard
             This is an optimized way to do a multi-shard lookup on a list of primary keys
             
             Limitations:
             - only 1 %l param can be in the query
             - %l must be the last param in the query
+        
         """
+        if other_params is None:
+            other_params = ()
         
         if pool is None:
             pool = MySQLPool(MySQLPool.MAIN)
@@ -76,11 +81,14 @@ class MultiShardQuery:
             else:
                 shard_id_to_in_list[shard_id].append(id)
         
-        run_one_query = cls._get_in_list_query_runner(pool, query, other_params, shard_id_to_in_list) 
+        run_one = cls._get_in_list_query_runner(pool, query, other_params, shard_id_to_in_list) 
         
-        with Pool(num_threads) as p:
-            res = p.map(run_one_query, shard_id_to_in_list.keys())
-            
+        #with Pool(num_threads) as p:
+        res = map(run_one, shard_id_to_in_list.keys())
+        
+        #flatten list
+        res = sum(res, [])
+        
         return res
             
             
@@ -93,10 +101,10 @@ class MultiShardQuery:
                 return None;
             
             in_list = shard_id_to_in_list[shard_id]
-            qry = query_str.replace("%l", "LIST(" + ", ".join(map(lambda x :"%s", in_list)) + ")",1)
+            qry = query_str.replace("%l", "( " + ", ".join(map(lambda x :"%s", in_list)) + " )",1)
             
             shard = pool.get_shard(shard_id)
-            query_res = shard.query(qry, other_params + in_list)
+            query_res = shard.query(qry, other_params + tuple(in_list))
             shard.close() 
             return query_res
         

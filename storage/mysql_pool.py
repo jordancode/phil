@@ -47,4 +47,4 @@ class MySQLPool:
 class ShardIdOutOfRangeError(Exception):
     
     def __str__(self):
-        return "shard id is out of range"
+        return "Shard id is out of range"

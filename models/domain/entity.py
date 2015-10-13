@@ -7,6 +7,8 @@ class Entity:
     #this is the state after domain modifications
     _current_state = None
     
+    _deleted = False
+    
     def __init__(self,id):
         #should override with required arguments
         #to satisfy all invariants
@@ -28,6 +30,13 @@ class Entity:
         dirty_keys = self.get_dirty_keys()
         
         return not not dirty_keys
+    
+    @property
+    def deleted(self):
+        return self._deleted
+    
+    def set_deleted(self):
+        self._deleted = True
     
     def is_key_dirty(self, key):
         dirty_keys = self.get_dirty_keys()

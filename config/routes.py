@@ -1,5 +1,7 @@
 from werkzeug.routing import Map, Rule
 from framework.config.config import Config
+from werkzeug.utils import redirect
+import copy
 
 class Routes():
     
@@ -8,14 +10,18 @@ class Routes():
             needs to return a dictionary in the format:
             
             {
-                "subdomain" : {
-                    "path" : {
-                                //route info
-                            },
-                    "path" : {
-                                //route info
-                            }
+                "subdomain" : [
+                    {
+                        "route" : "path", 
+                        "endpoint" : "controller method"
+                        //route info
+                    },
+                    {
+                        "route" : "path", 
+                        "endpoint" : "controller method"
+                        //route info
                     }
+                ]
             }
             
             this can be saved as a config or written inline  
@@ -28,14 +34,26 @@ class Routes():
         """
             Translates the routes dictionary configuration to a Map object
         """
-        routes_dict = self._get_routes_dict()
+        routes_dict = copy.deepcopy(self._get_routes_dict())
+        
         
         ret = []
         
         for subdomain in routes_dict:
-            subdomain_routes = routes_dict[subdomain];
-            for path in subdomain_routes:
-                route = subdomain_routes[path]
+            subdomain_routes = routes_dict[subdomain]
+            for route in subdomain_routes:
+                path = route['route']
+                
+                #cleanup route data that won't go to Rule
+                del route['route']
+                try:
+                    del route['comment']
+                except KeyError:
+                    pass
+                try:
+                    del route['parameters']
+                except KeyError:
+                    pass
                 
                 rule = Rule(
                             path,
@@ -45,4 +63,4 @@ class Routes():
                             
                 ret.append(rule)
         
-        return Map(ret);
+        return Map(ret, strict_slashes=False);
