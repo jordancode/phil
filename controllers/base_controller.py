@@ -1,6 +1,8 @@
 from framework.models.services.session_service import SessionService
 from framework.models.domain.session import Session, SessionException
 from werkzeug.exceptions import Unauthorized, Forbidden
+from framework.http.json_response import JSONResponse
+from framework.http.json_http_exception import JSONHTTPException
 
 class BaseController:
     
@@ -45,34 +47,49 @@ class BaseController:
         return self._get_session_store().get_session(self._get_request())
 
 
-
-def require_login(f):
-    """
-     decorator to require logged in user for methods of BaseController child classes
-    """
-    
-    def wrapper(self, *args, **kwargs):
-        if not self._is_logged_in():
-            raise Unauthorized()
+def require_login(f = None, return_json=True):
+    def decorator(f):
+        """
+         decorator to require logged in user for methods of BaseController child classes
+        """
         
-        return f(self, *args, **kwargs)
-        
-    return wrapper
-
-def require_admin(f):
-    """
-     decorator to require logged in *admin* user for methods of BaseController child classes
-    """
+        def wrapper(self, *args, **kwargs):
+            if not self._is_logged_in():
+                if return_json:
+                    raise JSONHTTPException(Unauthorized)
+                else:
+                    raise Unauthorized()
+            
+            return f(self, *args, **kwargs)
+            
+        return wrapper
     
-    def wrapper(self, *args, **kwargs):
-        if not self._is_admin():
-            raise Forbidden()
+    if f is None:
+        return decorator
+    else:
+        return decorator(f)
+
+def require_admin(f = None, return_json = True):
+    def decorator(f):
+        """
+         decorator to require logged in *admin* user for methods of BaseController child classes
+        """
         
-        return f(self, *args, **kwargs)     
+        def wrapper(self, *args, **kwargs):
+            if not self._is_admin():
+                if return_json:
+                    raise JSONHTTPException(Forbidden)
+                else:
+                    raise Forbidden()
+            
+            return f(self, *args, **kwargs)     
+        
+        return wrapper
     
-    return wrapper
-
-
+    if f is None:
+        return decorator
+    else:
+        return decorator(f)
 
 
 class NoSessionStoreError(SessionException):

@@ -21,3 +21,6 @@ class QueryTracker():
     def get_query_history(cls):
         return cls._stack
     
+    @classmethod
+    def clear(cls):
+        cls._stack = []

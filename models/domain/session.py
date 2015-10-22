@@ -81,7 +81,7 @@ class Session(Entity):
                 self._get_attr("log_out_ts") <= datetime.datetime.now())
     
     def log_out(self):
-        if not self.has_explicitly_logged_out():
+        if not self.is_logged_out():
             self._set_attr("log_out_ts", datetime.datetime.now())
  
     

@@ -8,7 +8,7 @@ class SessionService:
     def log_out(self, session):
         dao = SessionDAO()
         session.log_out()
-        dao.save_session(session)
+        dao.save(session)
         
     
     def get_active_session(self, session_id, token):

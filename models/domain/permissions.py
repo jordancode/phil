@@ -1,3 +1,4 @@
+from werkzeug.exceptions import Forbidden
 class Permissions:
 
 	PERMISSION_MASK_OWNER = 0b1
@@ -43,17 +44,17 @@ class Permissions:
 
 	def verify_is_owner(self):
 		if not self.is_owner():
-			raise PermissionError()
+			raise PermissionsError()
 		
 	def verify_can_read(self):
 		if not self.can_read():
-			raise PermissionError()
+			raise PermissionsError()
 
 	def verify_can_write(self):
 		if not self.can_write():
-			raise PermissionError()
+			raise PermissionsError()
 
 
-class PermissionsError(Exception):
+class PermissionsError(Forbidden):
 	def __init(self):
 		super().__init__("You don't have permissions to do this")

@@ -29,7 +29,10 @@ class DataAccessObject(metaclass=Singleton):
         self._model_cache[model.id] = model
     
     
-    def next_id(self, *args, **kargs):
+    def next_id(self, id_like = None):
+        if id_like:
+            return MySQL.next_id_like(id_like)
+        
         return MySQL.next_id()
         
     
@@ -101,10 +104,29 @@ class DataAccessObject(metaclass=Singleton):
 
 
     def _model_to_row(self, model):
-        return model.to_dict()
+        d = model.to_dict()
+        if "object" in d:
+            del(d["object"])
+            
+        return d
     
     def _row_to_model(self, row):
+        if "deleted" in row:
+            if row["deleted"]:
+                raise RowDeletedException()
+            else:
+                del(row["deleted"])
+            
+        
         return self._model_class(**row)
+    
+    def _filter_deleted(self, rows):
+        ret = []
+        for row in rows:
+            if not "deleted" in row or not row["deleted"]:
+                ret.append(row)
+                
+        return ret
 
 
 class RowNotFoundException(Exception):

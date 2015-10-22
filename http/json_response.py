@@ -2,7 +2,8 @@ import json
 from werkzeug.wrappers import (BaseResponse,ETagResponseMixin,
                CommonResponseDescriptorsMixin,
                WWWAuthenticateMixin)
-from framework.utils.query_tracker import QueryTracker
+from builtins import Exception
+import pprint
 
 class JSONResponse(BaseResponse,ETagResponseMixin,
                CommonResponseDescriptorsMixin,
@@ -12,6 +13,12 @@ class JSONResponse(BaseResponse,ETagResponseMixin,
     
     def __init__(self, data_dict=None, headers=None):
         
+        if data_dict is None:
+            data_dict = {}
+            
+        if type(data_dict) is not dict:
+            raise BadResponseData()
+            
         self.set_data_dict(data_dict)
         
         super().__init__(None, status=200, headers=headers, content_type="text/json")
@@ -31,21 +38,19 @@ class JSONResponse(BaseResponse,ETagResponseMixin,
         response = None
         
         self._data_dict["success"] = self._success
-        self._data_dict["debug"] = self._get_debug_data()
         
         if self._data_dict is not None:
             response = json.dumps(self._data_dict, sort_keys=True, default=self._json_helper)
         
         self.set_data(response)
     
-    
-    def _get_debug_data(self):
-        return {
-                    "queries" : QueryTracker.get_query_history()
-                }
-    
     def _json_helper(self, value):
         #stringifies otherwise non-json nodes
+        try:
+            return value.to_dict()
+        except AttributeError:
+            pass
+        
         if hasattr(value, "__str__"):
             return str(value)
         
@@ -96,6 +101,8 @@ class JSONResponse(BaseResponse,ETagResponseMixin,
     
         
         
-        
+class BadResponseData(Exception):
+    def __init__(self, data_thing):
+        super().__init__("Bad response data: " + pprint.pformat(data_thing))    
     
     

@@ -2,6 +2,7 @@ from werkzeug.wrappers import Request
 from werkzeug.exceptions import BadRequest, HTTPException
 import logging
 import pprint
+from framework.http.json_http_exception import JSONHTTPException
 
 class MethodOverrideRequest(Request):
     
@@ -31,9 +32,9 @@ class MethodOverrideRequest(Request):
             ret.capitalize()
      
             if ret in self.UNSUPPORTED_METHODS:
-                raise UnsuportedHTTPMethodError()
+                raise JSONHTTPException(UnsuportedHTTPMethodError)
             if ret not in self.VALID_METHODS:
-                raise InvalidHTTPMethodError()
+                raise JSONHTTPException(InvalidHTTPMethodError)
         
         return ret
     
@@ -63,7 +64,7 @@ class MethodOverrideRequest(Request):
             if not required:
                 return default_value
             else:
-                raise MissingParameterException(key)
+                raise JSONHTTPException(MissingParameterException(key))
       
 
 class MissingParameterException(BadRequest):

@@ -50,10 +50,9 @@ class MultiShardQuery:
         #with Pool(num_threads) as p:
         res = map(run_one, shard_id_list)
         
-        #flatten list
-        res = sum(res, [])
         
-        return res
+        return cls._prepare_result(res)
+        
     
     @classmethod
     def multi_shard_in_list_query(cls, in_list, query, other_params = None, pool = None,num_threads = None):
@@ -86,10 +85,8 @@ class MultiShardQuery:
         #with Pool(num_threads) as p:
         res = map(run_one, shard_id_to_in_list.keys())
         
-        #flatten list
-        res = sum(res, [])
         
-        return res
+        return cls._prepare_result(res)
             
             
     @staticmethod
@@ -126,6 +123,10 @@ class MultiShardQuery:
         
             
             
-    
-    
+    @staticmethod
+    def _prepare_result(res):
+        try:
+            return sum(res, [])
+        except TypeError:
+            return sum(res, 0)
 

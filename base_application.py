@@ -21,11 +21,11 @@ class BaseApplication():
             self.pre_hook(request)
             
             response = self.call_controller(request, rule, args)
-            
-            self.post_hook(request, response)
                           
         except HTTPException as e:
-            return e
+            response = e
+            
+        self.post_hook(request, response)
         
         return response
     

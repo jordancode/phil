@@ -53,7 +53,10 @@ class Entity:
         return dirty_keys                
     
     def to_dict(self):
-        return self._recursive_to_dict([])
+        d = self._recursive_to_dict([])
+        d["object"] = self.__class__.__name__
+        
+        return d
         
     
     def _recursive_to_dict(self, seen_refs):

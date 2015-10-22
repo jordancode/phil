@@ -1,6 +1,7 @@
 from passlib.hash import bcrypt
 from framework.models.domain.entity import Entity
 import string
+import logging
 
 
 class Authentication(Entity):
@@ -43,11 +44,11 @@ class Authentication(Entity):
         return self._get_attr("user")
     
     def verify_secret(self, new_secret):
-        
         #override if you want to do a different validation
         return bcrypt.verify(new_secret, self._get_attr("secret"))
     
     def _hash_secret(self, secret):
+        
         #override if we don't need to encrypt
         return bcrypt.encrypt(secret)
 
