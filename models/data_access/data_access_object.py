@@ -123,7 +123,7 @@ class DataAccessObject(metaclass=Singleton):
     def _filter_deleted(self, rows):
         ret = []
         for row in rows:
-            if not "deleted" in row or not row["deleted"]:
+            if "deleted" not in row or not row["deleted"]:
                 ret.append(row)
                 
         return ret

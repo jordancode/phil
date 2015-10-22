@@ -17,7 +17,7 @@ class JSONResponse(BaseResponse,ETagResponseMixin,
             data_dict = {}
             
         if type(data_dict) is not dict:
-            raise BadResponseData()
+            raise BadResponseData(data_dict)
             
         self.set_data_dict(data_dict)
         
@@ -103,6 +103,6 @@ class JSONResponse(BaseResponse,ETagResponseMixin,
         
 class BadResponseData(Exception):
     def __init__(self, data_thing):
-        super().__init__("Bad response data: " + pprint.pformat(data_thing))    
+        super().__init__("Bad response data: " + str(type(data_thing)))    
     
     
