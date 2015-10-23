@@ -44,18 +44,11 @@ class Routes():
             for route in subdomain_routes:
                 path = route['route']
                 
-                #cleanup route data that won't go to Rule
-                del route['route']
-                try:
-                    del route['comment']
-                except KeyError:
-                    pass
-                try:
-                    del route['parameters']
-                except KeyError:
-                    pass
+                #cleanup route data that won't go to Rul
                 
-                rule = Rule(
+                del route['route']
+                
+                rule = DocRule(
                             path,
                             subdomain=subdomain,
                             **route
@@ -64,3 +57,39 @@ class Routes():
                 ret.append(rule)
         
         return Map(ret, strict_slashes=False);
+
+class DocRule(Rule):
+    
+    parameters = {}
+    comment = None
+    
+    def __init__(self, *args, comment = None, parameters = None, **kargs):
+        super().__init__(*args, **kargs)
+        self.parameters = parameters or {}
+        self.comment = comment
+    
+    def set_parameters(self, params_dict ):
+        self.parameters = params_dict
+    
+    def set_comment(self, comment ):
+        self.comment = comment 
+        
+    def get_param(self, param_name ):
+        for param_data in self.parameters:
+            if param_data["name"] == param_name:
+                return param_data
+        
+        return None
+    
+    def param_listed(self, param_name ):
+        return self.get_param(param_name) is not None
+         
+    def get_param_type(self, param_name ):
+        return self.get_param(param_name)['type']
+    
+    def get_param_required(self, param_name ):
+        return self.get_param(param_name)['required']
+    
+    def get_param_comment(self, param_name ):
+        return self.get_param(param_name)['comment']
+    

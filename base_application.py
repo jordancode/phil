@@ -6,6 +6,8 @@ import string
 import importlib
 from framework.http.method_override_request import MethodOverrideRequest
 from framework.http.json_response import JSONResponse
+import logging
+import pprint
 
 class BaseApplication():
     
@@ -17,6 +19,11 @@ class BaseApplication():
         adapter = self._routes.bind_to_environ(request.environ,server_name=self.get_server_name())
         try:
             rule, args = adapter.match(return_rule=True)  
+            
+            if rule is None:
+                raise NotFound()
+            
+            request.rule = rule
             
             self.pre_hook(request)
             
