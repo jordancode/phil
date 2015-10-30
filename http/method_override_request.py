@@ -17,10 +17,10 @@ VALID_METHODS = [
                  ]
 
 UNSUPPORTED_METHODS = [
-                       "TRACE",
-                       "CONNECT",
-                       "OPTIONS"
-                       ]
+               "TRACE",
+               "CONNECT",
+               "OPTIONS"
+               ]
 
 
 class MethodOverrideRequest(Request):
