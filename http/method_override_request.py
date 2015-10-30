@@ -70,6 +70,8 @@ class MethodOverrideRequest(Request):
                 return default_value
             else:
                 raise JSONHTTPException(MissingParameterException(key))
+        except (TypeError, ValueError):
+            raise JSONHTTPException(BadParameterException(key))
     
     def _coerce_type(self, value, type):
         if value is not None:
@@ -88,6 +90,8 @@ class MethodOverrideRequest(Request):
             elif type == "JSON dict":
                 return dict(json.loads(value))
         
+        
+        
         #unknown type
         return value
     
@@ -105,6 +109,10 @@ class MethodOverrideRequest(Request):
             raise JSONHTTPException(InvalidHTTPMethodError)
         
         environ['REQUEST_METHOD'] = method 
+
+class BadParameterException(BadRequest):
+    def __init__(self, param_name):
+        super().__init__("Parameter " + param_name + " is in an unexpected format")
 
 class MissingParameterException(BadRequest):
     def __init__(self, param_name):
