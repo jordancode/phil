@@ -39,8 +39,10 @@ class Routes():
         
         ret = []
         
-        for subdomain in routes_dict:
-            subdomain_routes = routes_dict[subdomain]
+        for subdomain_type in routes_dict:
+            subdomain_routes = routes_dict[subdomain_type]
+            subdomain = Config.get("app", ["subdomains", subdomain_type])
+            
             for route in subdomain_routes:
                 path = route['route']
                 
