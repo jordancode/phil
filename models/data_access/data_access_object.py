@@ -1,5 +1,8 @@
 from framework.utils.singleton import Singleton
 from framework.storage.mysql import MySQL
+import logging
+from pprint import pformat
+import pprint
 
 
 class DataAccessObject(metaclass=Singleton):
@@ -95,6 +98,10 @@ class DataAccessObject(metaclass=Singleton):
                 column_name+"=%s" for column_name in column_list
             ))
         
+        logging.getLogger().debug(sql)
+        logging.getLogger().debug(pprint.pformat(value_list))
+        
+        
         if not shard_by:
             shard_by = value_list[0]
             
@@ -130,10 +137,11 @@ class DataAccessObject(metaclass=Singleton):
 
 
 class RowNotFoundException(Exception):
-    def __str__(self):
-        return "Row could not be found"   
+    def __init__(self):
+        super().__init__("Row could not be found")   
         
 class RowDeletedException(Exception):
     
-    def __str__(self):
-        return "Cannot access deleted row"  
+    def __init__(self):
+        super().__init__("Cannot access deleted row");
+      

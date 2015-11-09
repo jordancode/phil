@@ -88,3 +88,5 @@ class EntityRelationDAO(DataAccessObject):
         model.is_deleted = True
         
         return True
+    
+    
