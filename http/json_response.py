@@ -60,6 +60,12 @@ class JSONResponse(BaseResponse,ETagResponseMixin,
     def set_error(self, error = None):
         self._success = False
         if error:
+            if hasattr(error, "description"):
+                self.set_key("description",error.description)
+            
+            if hasattr(error, "code"):
+                self.set_key("code", error.code)
+                
             self.set_key("error", str(error))
             
         return self

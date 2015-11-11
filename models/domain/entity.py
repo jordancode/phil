@@ -1,4 +1,5 @@
 import copy
+import pprint
 
 class Entity:
     
@@ -99,8 +100,20 @@ class Entity:
             return self._stored_state[key]
         
         raise AttributeError("No attribute: " + key)
+
+class InvalidParameterError(Exception):
+    def __init__(self, parameter_name, value_provided, expecting_description = None):
+        super().__init__(self._create_message(parameter_name, value_provided, expecting_description))
+    
+    def _create_message(self, param, value, exp = None):
+        ret = "Invalid parameter '" + param + "',"
+        if exp is not None:
+            ret = ret + " expecting " + exp
         
+        ret = ret + " but got '" + pprint.pformat(value) + "'"
         
+        return ret
+     
 class CircularRefException(Exception):       
     pass
         

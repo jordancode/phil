@@ -80,7 +80,7 @@ class DataAccessObject(metaclass=Singleton):
         if len(cols_to_update):
             sql = sql + (
                      " ON DUPLICATE KEY UPDATE "
-                     + (" AND ".join(
+                     + (", ".join(
                             col +"=VALUES("+ col +")" for col in cols_to_update
                     ))
                 ) 
@@ -88,8 +88,15 @@ class DataAccessObject(metaclass=Singleton):
         
         if shard_by is None:
             shard_by = col_to_value['id']
+            
+        logging.getLogger().debug(sql)
+        logging.getLogger().debug(pprint.pformat(col_to_value))
         
-        return MySQL.get(shard_by).query(sql, col_to_value)    
+        ret = MySQL.get(shard_by).query(sql, col_to_value)
+         
+        logging.getLogger().debug("Rows modified: " + str(ret))
+        
+        return ret;
         
     def _delete(self, table_name, column_list, value_list, shard_by = None):
         
@@ -97,9 +104,6 @@ class DataAccessObject(metaclass=Singleton):
                + " AND ".join( 
                 column_name+"=%s" for column_name in column_list
             ))
-        
-        logging.getLogger().debug(sql)
-        logging.getLogger().debug(pprint.pformat(value_list))
         
         
         if not shard_by:

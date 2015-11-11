@@ -12,8 +12,7 @@ class JSONHTTPException(HTTPException):
         
     def get_response(self, environ=None):
         resp = JSONResponse();
-        resp.set_error(self.description)
-        resp.set_key("code", self.code)
+        resp.set_error(self)
         
         return resp
         

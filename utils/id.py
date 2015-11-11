@@ -1,5 +1,6 @@
 import time
 from framework.storage.redis import Redis
+import pprint
 
 class Id:
     """
@@ -86,7 +87,8 @@ class Id:
         
     
     def __init__(self, id=None):
-        self.set_id(id)
+        if id is not None:
+            self.set_id(id)
     
     def set_id(self, id):
         self._id = id
@@ -183,11 +185,13 @@ class Id:
         return (2 ** num_bits) - 1
     
     def _deconstruct_id(self):
-        if(self._id is not None):
+        try:
             self._pool_id = self._id & self._get_bit_mask(4)
             self._shard_id = (self._id & (self._get_bit_mask(10) << 4)) >> 4
             self._increment = (self._id & (self._get_bit_mask(26) << 14)) >> 14
-            self._interval = (self._id & (self._get_bit_mask(24) << 40)) >> 40 
+            self._interval = (self._id & (self._get_bit_mask(24) << 40)) >> 40
+        except TypeError:
+            raise BadIdError(self._id);
     
     def _construct_id(self):
         for prop in [self._shard_id, self._pool_id,
@@ -202,12 +206,20 @@ class Id:
             | (self._pool_id & self._get_bit_mask(4)))
         
         self._id = id
-      
 
-class MissingInfoError(Exception):
+
+class IdException(Exception):
+    pass
     
-    def __string__(self):
-        return "generating a new id requires shard_id and pool_id to be set"
+class BadIdError(IdException):
+    
+    def __init__(self, provided_id):
+        super().__init__("Bad Id provided: " + pprint.pformat(provided_id))
+
+class MissingInfoError(IdException):
+    
+    def __init__(self):
+        super().__init__("generating a new id requires shard_id and pool_id to be set")
             
         
         
