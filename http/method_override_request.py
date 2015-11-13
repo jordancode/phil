@@ -82,7 +82,7 @@ class MethodOverrideRequest(Request):
             elif type == "string":
                 return str(value)
             elif type == "bool":
-                return bool(value)
+                return value in ["true", "True", "1", 1, True]
             elif type == "unix timestamp":
                 return DateUtils.unix_to_datetime(value)
             elif type == "JSON array":

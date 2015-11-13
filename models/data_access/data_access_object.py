@@ -52,12 +52,12 @@ class DataAccessObject(metaclass=Singleton):
         
         if order_by:
             if offset:
-                sql += " AND " + order_by + " > " + offset
+                sql += " AND " + order_by + " > " + str(offset)
             
             sql += " ORDER BY " + order_by
         
         if count:
-            sql += " LIMIT " + count
+            sql += " LIMIT " + str(count)
         
         if shard_by is None:
             shard_by = value_list[0]
