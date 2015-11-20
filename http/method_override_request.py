@@ -5,6 +5,7 @@ import pprint
 from framework.http.json_http_exception import JSONHTTPException
 import json
 from framework.utils.date_utils import DateUtils
+from logging import getLogger
 
 KEY = "_method"
 
@@ -53,6 +54,9 @@ class MethodOverrideRequest(Request):
 
     def _get_http_parameter(self, dictionary, key, default_value):
         required = False
+        type = None
+        
+        getLogger().debug("ALL PARAMS: " + pprint.pformat(dictionary));
         
         if self.rule:
             if self.rule.param_listed(key):
@@ -64,16 +68,53 @@ class MethodOverrideRequest(Request):
         
         
         try:
-            return self._coerce_type(dictionary[key], type)
+            if self._is_array_type(type):
+                base = self._get_base_type(type)
+                return self._get_list_param(dictionary,key,base) 
+                        
+            if self._is_dict_type(type):
+                base = self._get_base_type(type)
+                return self._get_dict_param(dictionary,key,base)
+            else:
+                return self._coerce_type(dictionary[key], type)
         except KeyError:
             if not required:
                 return default_value
             else:
                 raise JSONHTTPException(MissingParameterException(key))
-        except (TypeError, ValueError):
-            raise JSONHTTPException(BadParameterException(key))
+        except (TypeError, ValueError) as e:
+            raise e
+            #raise JSONHTTPException(BadParameterException(key))
+    
+    
+    def _get_list_param(self, dictionary, key, base_type):
+        if key in dictionary:
+            return list(json.loads(dictionary[key]))
+        
+        dict = self._construct_dict(dictionary, key, base_type)
+        return [a[1] for a in sorted(dict.items())]
+    
+    def _get_dict_param(self, dictionary, key, base_type):
+        if key in dictionary:
+            return dict(json.loads(dictionary[key]))
+        
+        return self._construct_dict(key)
+    
+    def _construct_dict(self, dictionary, key, base_type):
+        ret = {};
+        
+        prefix = key + "[";
+        for d_key, d_value in dictionary.items():
+            if d_key.startswith(prefix):
+                index = d_key[len(prefix):-1]
+                ret[index] = self._coerce_type(d_value,base_type)
+        
+        return ret
+    
     
     def _coerce_type(self, value, type):
+        truthy_values = ["true", "True", "1", 1, True]
+        
         if value is not None:
             if type == "int":
                 return int(value)
@@ -82,18 +123,35 @@ class MethodOverrideRequest(Request):
             elif type == "string":
                 return str(value)
             elif type == "bool":
-                return value in ["true", "True", "1", 1, True]
+                return value in truthy_values
             elif type == "unix timestamp":
                 return DateUtils.unix_to_datetime(value)
-            elif type == "JSON array":
-                return list(json.loads(value))
-            elif type == "JSON dict":
-                return dict(json.loads(value))
-        
-        
+            elif type == "int[]":
+                return  [int(a) for a in value]
+            elif type == "string[]":
+                return [str(a) for a in value]
+            elif type == "float[]":
+                return [float(a) for a in value]
+            elif type == "bool[]":
+                return [(a in truthy_values) for a in value]
         
         #unknown type
         return value
+    
+    def _get_base_type(self, type):
+        return type[0:-2]
+    
+    def _is_array_type(self, type):
+        if type is None:
+            return False
+        
+        return type[-2:] == "[]"
+    
+    def _is_dict_type(self, type):
+        if type is None:
+            return False
+        
+        return type[-2:] == "{}"
     
     def _override_method(self, environ):
         

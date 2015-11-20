@@ -88,13 +88,8 @@ class DataAccessObject(metaclass=Singleton):
         
         if shard_by is None:
             shard_by = col_to_value['id']
-            
-        logging.getLogger().debug(sql)
-        logging.getLogger().debug(pprint.pformat(col_to_value))
         
         ret = MySQL.get(shard_by).query(sql, col_to_value)
-         
-        logging.getLogger().debug("Rows modified: " + str(ret))
         
         return ret;
         
