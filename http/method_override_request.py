@@ -56,7 +56,7 @@ class MethodOverrideRequest(Request):
         required = False
         type = None
         
-        getLogger().debug("ALL PARAMS: " + pprint.pformat(dictionary));
+        logging.getLogger().debug("KEY" + key)
         
         if self.rule:
             if self.rule.param_listed(key):
@@ -66,16 +66,18 @@ class MethodOverrideRequest(Request):
                 #can throw error in future
                 pass
         
-        
         try:
             if self._is_array_type(type):
                 base = self._get_base_type(type)
+                logging.getLogger().debug("Array Type")
                 return self._get_list_param(dictionary,key,base) 
                         
             if self._is_dict_type(type):
                 base = self._get_base_type(type)
+                logging.getLogger().debug("Dict Type")
                 return self._get_dict_param(dictionary,key,base)
             else:
+                logging.getLogger().debug("Plain Type")
                 return self._coerce_type(dictionary[key], type)
         except KeyError:
             if not required:
@@ -91,8 +93,9 @@ class MethodOverrideRequest(Request):
         if key in dictionary:
             return list(json.loads(dictionary[key]))
         
-        dict = self._construct_dict(dictionary, key, base_type)
-        return [a[1] for a in sorted(dict.items())]
+        ret = dictionary.getlist(key + "[]")
+        
+        return [self._coerce_type(a, base_type) for a in ret]
     
     def _get_dict_param(self, dictionary, key, base_type):
         if key in dictionary:
@@ -104,9 +107,15 @@ class MethodOverrideRequest(Request):
         ret = {};
         
         prefix = key + "[";
+        default_index = 0;
         for d_key, d_value in dictionary.items():
             if d_key.startswith(prefix):
                 index = d_key[len(prefix):-1]
+                
+                if index == "":
+                    index = default_index
+                    default_index+=1
+                
                 ret[index] = self._coerce_type(d_value,base_type)
         
         return ret
@@ -124,16 +133,8 @@ class MethodOverrideRequest(Request):
                 return str(value)
             elif type == "bool":
                 return value in truthy_values
-            elif type == "unix timestamp":
+            elif type == "unixtime":
                 return DateUtils.unix_to_datetime(value)
-            elif type == "int[]":
-                return  [int(a) for a in value]
-            elif type == "string[]":
-                return [str(a) for a in value]
-            elif type == "float[]":
-                return [float(a) for a in value]
-            elif type == "bool[]":
-                return [(a in truthy_values) for a in value]
         
         #unknown type
         return value
