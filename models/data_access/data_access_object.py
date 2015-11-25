@@ -26,7 +26,7 @@ class DataAccessObject(metaclass=Singleton):
     def _model_cache_get(self,id):
         return self._model_cache[id]
     
-    def _model_cache_set(self,id,model):
+    def _model_cache_set(self,model):
         assert isinstance(model, self._model_class)
         
         self._model_cache[model.id] = model
@@ -39,9 +39,11 @@ class DataAccessObject(metaclass=Singleton):
         return MySQL.next_id()
         
     
-    
-    def remove_from_cache(self, model):
-        del self._model_cache[model.id]
+    def remove_from_cache(self, id):
+        del self._model_cache[id]
+
+        
+       
     
     def _get(self, table_name, column_list, value_list, shard_by = None, order_by = None, count = None, offset = None):
         sql = (
@@ -61,8 +63,14 @@ class DataAccessObject(metaclass=Singleton):
         
         if shard_by is None:
             shard_by = value_list[0]
+            
+        logging.getLogger().debug(sql)
         
-        return MySQL.get(shard_by).query(sql, value_list)    
+        ret = MySQL.get(shard_by).query(sql, value_list)
+        
+        logging.getLogger().debug("RESULTS: " + str(len(ret)))
+        
+        return ret
         
     
     def _save(self, table_name, col_to_value, cols_to_update,  shard_by = None):
@@ -85,11 +93,13 @@ class DataAccessObject(metaclass=Singleton):
                     ))
                 ) 
 
-        
+        logging.getLogger().debug("SAVE: " + sql)
         if shard_by is None:
             shard_by = col_to_value['id']
         
         ret = MySQL.get(shard_by).query(sql, col_to_value)
+        
+        logging.getLogger().debug("DAO._save RESULT " + str(ret))
         
         return ret;
         
@@ -124,7 +134,9 @@ class DataAccessObject(metaclass=Singleton):
                 del(row["deleted"])
             
         
-        return self._model_class(**row)
+        ret = self._model_class(**row)
+        
+        return ret
     
     def _filter_deleted(self, rows):
         ret = []
@@ -133,7 +145,14 @@ class DataAccessObject(metaclass=Singleton):
                 ret.append(row)
                 
         return ret
-
+    
+    def _filter_clean(self, models):
+        ret = []
+        for model in models:
+            if model.is_dirty:
+                ret.append(model)
+        
+        return ret
 
 class RowNotFoundException(Exception):
     def __init__(self):

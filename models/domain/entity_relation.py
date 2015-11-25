@@ -5,7 +5,6 @@ class EntityRelation(Entity):
         represents a relationship between two entities
     """
     
-    
     def __init__(self, id1, id2, id1_name, id2_name):
         super().__init__(str(id1) + "_" + str(id2))
         

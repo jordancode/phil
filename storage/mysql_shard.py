@@ -4,6 +4,7 @@ import random
 import mysql.connector
 from pprint import pprint
 from framework.utils.query_tracker import QueryTracker
+from framework.storage.mysql_transaction import MySQLTransaction
 
 class MySQLShard:
     
@@ -15,7 +16,6 @@ class MySQLShard:
     
     _in_transaction = False
             
-            
     def __init__(self, shard_id, config, pool):
         self._shard_id = shard_id
         self._config = config
@@ -26,7 +26,10 @@ class MySQLShard:
             self._connect()
         
         return self._connection
-        
+    
+    def _has_connection(self):
+        return self._connection is not None
+    
     def _connect(self, side_num = None):
         
         if self._connection is None:
@@ -39,7 +42,10 @@ class MySQLShard:
                                     port = server_config["port"]
                                     )
             
-            self._connection.autocommit = True    
+            if self._pool.start_transaction_on_connect:
+                self.start_transaction()
+            else:
+                self._connection.autocommit = True    
     
     
     def query(self, query, params = None, use_multi = False):
@@ -111,24 +117,24 @@ class MySQLShard:
         return self._pool.get_name() + "_" + str(self._shard_id)
     
     def start_transaction(self):
-        if not self._in_transaction:
+        if not self._in_transaction and self._has_connection():
             self._get_connection().start_transaction()
             self._open_transaction()
             
     def commit(self):
-        if self._in_transaction:
+        if self._in_transaction and self._has_connection():
             self._get_connection().commit()
             self._close_transaction()
         
     
     def rollback(self):
-        if self._in_transaction:
+        if self._in_transaction and self._has_connection():
             self._get_connection().rollback()
             self._close_transaction()
     
     def close(self):
         self._close_transaction()
-        if self._connection is not None:
+        if self._has_connection():
             self._connection.close()
             self._connection = None
     
@@ -152,4 +158,8 @@ class MySQLShard:
         if self._cursor is not None:
             self._cursor.close()
             self._cursor = None
-        
+    
+    @property     
+    def transaction(self):
+        return MySQLTransaction(self)
+    
