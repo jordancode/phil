@@ -24,6 +24,9 @@ class DataAccessObject(metaclass=Singleton):
         return id in self._model_cache
 
     def _model_cache_get(self,id):
+        if id in self._model_cache:
+            logging.getLogger().debug("----- CACHE HIT! --- ")
+        
         return self._model_cache[id]
     
     def _model_cache_set(self,model):

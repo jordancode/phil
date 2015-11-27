@@ -54,26 +54,26 @@ class EntityRelationDAO(DataAccessObject):
     
           
     
-    def _get_list_primary(self, id1, count = None, offset = None):
+    def _get_list_primary(self, id1, count = None, offset = None, sort_by = "sort_index"):
         rows = self._get(
                   self._table_name, 
                   [self._id1_name], 
                   [id1],
                   id1,
-                  "sort_index",
+                  sort_by,
                   count,
                   offset
                 )
         
         return self._parse_rows(rows)
     
-    def _get_list_inv(self, id2, count = None, offset = None):
+    def _get_list_inv(self, id2, count = None, offset = None, sort_by = "sort_index"):
         rows = self._get(
                   self._table_name + "_inv", 
                   [self._id2_name], 
                   [id2], 
                   id2,
-                  "sort_index",
+                  sort_by,
                   count,
                   offset
                 )
@@ -194,14 +194,14 @@ class EntityRelationDAO(DataAccessObject):
         
         model.is_deleted = True
         
-        self.model_cache_delete(self._get_cache_id(model.id1, model.id2))
+        self.remove_from_cache(self._get_cache_id(model.id1, model.id2))
         
         
         return True
     
     
     def _delete_list_by_primary_id(self, id1):
-        models = self._get_list_primary(id1);
+        models = self._get_list_primary(id1, None, None, None);
         for model in models:
             self.delete(model)
         
@@ -209,7 +209,7 @@ class EntityRelationDAO(DataAccessObject):
     
     def _delete_list_by_inv_id(self, id2):
         
-        models = self._get_list_inv(id2);
+        models = self._get_list_inv(id2, None, None, None);
         for model in models:
             self.delete(model)
         
