@@ -85,8 +85,8 @@ class MethodOverrideRequest(Request):
             else:
                 raise JSONHTTPException(MissingParameterException(key))
         except (TypeError, ValueError) as e:
-            raise e
-            #raise JSONHTTPException(BadParameterException(key))
+            #raise e
+            raise JSONHTTPException(BadParameterException(key))
     
     
     def _get_list_param(self, dictionary, key, base_type):
