@@ -3,6 +3,7 @@ from framework.storage.mysql import MySQL
 import logging
 from pprint import pformat
 import pprint
+from framework.utils.id import BadIdError
 
 
 class DataAccessObject(metaclass=Singleton):
@@ -69,7 +70,10 @@ class DataAccessObject(metaclass=Singleton):
             
         logging.getLogger().debug(sql)
         
-        ret = MySQL.get(shard_by).query(sql, value_list)
+        try:
+            ret = MySQL.get(shard_by).query(sql, value_list)
+        except BadIdError:
+            raise RowNotFoundException();
         
         logging.getLogger().debug("RESULTS: " + str(len(ret)))
         

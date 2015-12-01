@@ -1,5 +1,7 @@
 import copy
 import pprint
+import logging
+from framework.utils.id import Id
 
 class Entity:
     
@@ -53,14 +55,14 @@ class Entity:
         
         return dirty_keys                
     
-    def to_dict(self):
-        d = self._recursive_to_dict([])
+    def to_dict(self, stringify_ids = False):
+        d = self._recursive_to_dict([], stringify_ids)
         d["object"] = self.__class__.__name__
         
         return d
         
     
-    def _recursive_to_dict(self, seen_refs):
+    def _recursive_to_dict(self, seen_refs, stringify_ids):
         #if we have a circular reference, then simply exit
         if self in seen_refs:
             raise CircularRefException() 
@@ -71,10 +73,18 @@ class Entity:
         for key in set().union(self._stored_state.keys(), self._current_state.keys()):
             value = self._get_attr(key)
             try:
-                dict = value._recursive_to_dict(seen_refs)
+                dict = value._recursive_to_dict(seen_refs, stringify_ids)
                 state[key] = dict
             except AttributeError:
-                state[key] = value
+                new_value = value
+                if stringify_ids:
+                    try:
+                        if value > Id.MAX_32_BIT_INT:
+                            new_value = str(value)
+                    except (TypeError, AttributeError) as e:
+                        pass
+                
+                state[key] = new_value
             except CircularRefException:
                 pass #skip circular references
             

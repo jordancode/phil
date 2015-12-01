@@ -4,10 +4,14 @@ from werkzeug.wrappers import (BaseResponse,ETagResponseMixin,
                WWWAuthenticateMixin)
 from builtins import Exception
 import pprint
+import sys
+import logging
+from json.encoder import JSONEncoder
 
 class JSONResponse(BaseResponse,ETagResponseMixin,
                CommonResponseDescriptorsMixin,
                WWWAuthenticateMixin):
+    
     
     _success = True
     
@@ -44,18 +48,21 @@ class JSONResponse(BaseResponse,ETagResponseMixin,
         
         self.set_data(response)
     
+    
     def _json_helper(self, value):
+        
         #stringifies otherwise non-json nodes
         try:
-            return value.to_dict()
+            return value.to_dict(True)
         except AttributeError:
             pass
         
-        if hasattr(value, "__str__"):
+        try:
             return str(value)
+        except AttributeError:
+            pass
         
-        raise TypeError()
-        
+        raise TypeError()  
         
     def set_error(self, error = None):
         self._success = False
@@ -104,7 +111,24 @@ class JSONResponse(BaseResponse,ETagResponseMixin,
         
         return super().get_wsgi_response(environ)
             
+
+class CustomEncoder(JSONEncoder):
     
+    def encode(self,o):
+        
+        logging.getLogger().debug(repr(o))
+        
+        try:
+            if o > self._MAX_32_BIT_INT:
+                logging.getLogger().debug("found long!")
+                return repr(str(o))
+        except TypeError as e:
+            pass
+        
+        return super().encode(o)
+    
+    
+        
         
         
 class BadResponseData(Exception):

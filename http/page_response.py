@@ -32,9 +32,18 @@ class PageResponse(TemplateResponse):
                 if type(custom_list) is str:
                     custom_list =  [ custom_list ]
                 
-                new_list = custom_list + l
-                #convert to set (to eliminate dupes) then back to list
-                ret[file_type + "_"] = list(set(new_list))
+                combined_list = l + custom_list
+                new_list = []
+                
+                #dedupe and preserve order
+                seen_urls = {}
+                for url in combined_list:
+                    if url not in seen_urls:
+                        new_list.append(url)
+                    seen_urls[url] = True
+                    
+                    
+                ret[file_type + "_"] = new_list
             else:
                 ret[file_type + "_"] = l
                 

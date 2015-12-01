@@ -6,6 +6,7 @@ from pystache import Renderer
 from pystache.loader import Loader
 from framework.config.config import Config
 import copy
+import json
 
 class TemplateResponse(BaseResponse,ETagResponseMixin,
                CommonResponseDescriptorsMixin,
@@ -45,8 +46,11 @@ class TemplateResponse(BaseResponse,ETagResponseMixin,
             ret = {}
         
         if not "config_" in ret:
+            app_config = Config.get("app")
             ret['config_'] = {
-                "app" : Config.get("app")
+                "app" : app_config,
+                "app_json" : json.dumps(app_config)
+                
              }
             
         return ret

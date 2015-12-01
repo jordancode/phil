@@ -2,6 +2,7 @@ from framework.config.config import Config
 from framework.storage.mysql_shard import MySQLShard
 from framework.storage.mysql_transaction import MySQLTransaction
 import logging
+from framework.utils.id import BadIdError
 
 class MySQLPool:
     
@@ -17,7 +18,13 @@ class MySQLPool:
     def __init__(self, pool_id = 0):
         self._id = pool_id
         self._shards = {}
-        self._config = Config.get("mysql",["pools", str(pool_id)])    
+        
+        
+        pool_config = Config.get("mysql","pools")
+        if pool_id < 0 or pool_id >=  len(pool_config):
+            raise PoolIdOutOfRangeError(pool_id)
+        
+        self._config = pool_config[str(pool_id)]  
         
         
     def get_shard(self, shard_id):
@@ -53,7 +60,7 @@ class MySQLPool:
                 
                 return box_config
         
-        raise ShardIdOutOfRangeError()
+        raise ShardIdOutOfRangeError(shard_id)
     
     def start_transaction(self):
         self.start_transaction_on_connect = True
@@ -76,7 +83,13 @@ class MySQLPool:
     def transaction(self):
         return MySQLTransaction(self)
     
-class ShardIdOutOfRangeError(Exception):
+
+class ShardIdOutOfRangeError(BadIdError):    
+    def __init__(self, id):
+        super().__init__("Shard id " + str(id) + " is out of range")
     
-    def __str__(self):
-        return "Shard id is out of range"
+class PoolIdOutOfRangeError(BadIdError):
+    def __init__(self, id ):
+        super().__init__("Pool id " + str(id) + " is out of range") 
+    
+    

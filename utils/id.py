@@ -27,6 +27,9 @@ class Id:
     # 1 minute intervals
     INTERVAL_SECS = 60
     
+    #used to decide if id can be sent to js
+    MAX_32_BIT_INT = 2147483647
+    
     # this is the original 64bit id
     _id = None
     
