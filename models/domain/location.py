@@ -35,10 +35,10 @@ class Location:
         if lat < -180 or lat > 180:
             raise InvalidLongitudeError()
         
-    def to_dict(self):
-        return self._recursive_to_dict([]);
+    def to_dict(self, for_client = False):
+        return self._recursive_to_dict([],for_client);
     
-    def _recursive_to_dict(self, refs):
+    def _recursive_to_dict(self, refs, for_client = False):
         return {
                     "latitude" : self._lat,
                     "longitude" : self._long

@@ -33,7 +33,7 @@ class Permissions:
 	def can_write(self):
 		return self._write
 	
-	def _recursive_to_dict(self, seen_refs):
+	def _recursive_to_dict(self, seen_refs, for_client = False):
 		return self.to_bitmap()
 	
 	def to_bitmap(self):

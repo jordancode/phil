@@ -135,6 +135,8 @@ class MethodOverrideRequest(Request):
                 return value in truthy_values
             elif type == "unixtime":
                 return DateUtils.unix_to_datetime(value)
+            elif type == "json":
+                return json.loads(value)
         
         #unknown type
         return value

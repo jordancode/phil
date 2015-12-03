@@ -55,8 +55,8 @@ class Entity:
         
         return dirty_keys                
     
-    def to_dict(self, stringify_ids = False):
-        d = self._recursive_to_dict([], stringify_ids)
+    def to_dict(self, for_client = False):
+        d = self._recursive_to_dict([], for_client)
         d["object"] = self.__class__.__name__
         
         return d

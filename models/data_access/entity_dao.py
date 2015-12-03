@@ -79,11 +79,7 @@ class EntityDAO(DataAccessObject):
         
         model.update_stored_state()
         
-        logging.getLogger().debug("ABOUT TO SAY RESULT IS: " + pprint.pformat(ret))
-        logging.getLogger().debug("ABOUT TO SAY RESULT IS: " + str(ret))
-        
         if ret:
-            logging.getLogger().debug("HURRAY!")
             return True
         
         return False
@@ -93,7 +89,7 @@ class EntityDAO(DataAccessObject):
        
         ret =  self._save(self._table, dict, cols_to_update, dict['id'])
         
-        logging.getLogger().debug("EntityDAO.primar_save RESULT: " + str(ret))
+        logging.getLogger().debug("EntityDAO.primary_save RESULT: " + str(ret))
         
         return ret
     

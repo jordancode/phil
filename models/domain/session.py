@@ -77,8 +77,10 @@ class Session(Entity):
         return self._get_attr("log_out_ts")
     
     def is_logged_out(self):
-        return (self._get_attr("log_out_ts") is not None and
-                self._get_attr("log_out_ts") <= datetime.datetime.now())
+        return (
+                self._get_attr("log_out_ts") is not None and
+                self._get_attr("log_out_ts") <= datetime.datetime.now()
+            )
     
     def log_out(self):
         if not self.is_logged_out():

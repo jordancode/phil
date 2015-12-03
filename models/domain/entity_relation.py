@@ -23,8 +23,8 @@ class EntityRelation(Entity):
     def id2(self):
         return self._get_attr(self._id2_name)
     
-    def to_dict(self):
-        d = super().to_dict()
+    def to_dict(self, for_client = False):
+        d = super().to_dict(for_client)
         del(d["id"])
         
         return d
