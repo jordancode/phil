@@ -72,6 +72,7 @@ class JSONResponse(BaseResponse,ETagResponseMixin,
             
             if hasattr(error, "code"):
                 self.set_key("code", error.code)
+                self.status_code = error.code
                 
             self.set_key("error", str(error))
             
