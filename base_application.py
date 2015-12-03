@@ -31,8 +31,6 @@ class BaseApplication():
                           
         except HTTPException as e:
             response = e
-            
-        self.post_hook(request, response)
         
         return response
     
@@ -66,6 +64,8 @@ class BaseApplication():
     def wsgi_app(self, environ, start_response):
         request = MethodOverrideRequest(environ)
         response = self.dispatch_request(request)
+                    
+        self.post_hook(request, response)
         
         return response(environ, start_response)
 
