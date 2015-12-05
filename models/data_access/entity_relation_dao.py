@@ -57,8 +57,8 @@ class EntityRelationDAO(DataAccessObject):
     def _get_list_primary(self, id1, count = None, offset = None, sort_by = "sort_index"):
         rows = self._get(
                   self._table_name, 
-                  [self._id1_name], 
-                  [id1],
+                  [self._id1_name, "deleted"], 
+                  [id1, 0],
                   id1,
                   sort_by,
                   count,
@@ -70,8 +70,8 @@ class EntityRelationDAO(DataAccessObject):
     def _get_list_inv(self, id2, count = None, offset = None, sort_by = "sort_index"):
         rows = self._get(
                   self._table_name + "_inv", 
-                  [self._id2_name], 
-                  [id2], 
+                  [self._id2_name, "deleted"], 
+                  [id2, 0], 
                   id2,
                   sort_by,
                   count,
