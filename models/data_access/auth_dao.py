@@ -14,7 +14,7 @@ class AuthDAO(DataAccessObject):
     def new_auth(self, auth_class, provider_id, secret, user):
         pid = self._generate_id_from_provider_id(provider_id)
         
-        return auth_class(pid, provider_id, secret, user, False)        
+        return auth_class(pid, provider_id, secret, user.id, secret_hashed=False)        
         
     
     def get_auth_by_id(self, auth_id, user = None):
@@ -25,19 +25,14 @@ class AuthDAO(DataAccessObject):
         
         row = rows[0]
         
-        if row['deleted']:
-            raise RowDeletedException()
-        
-        
         if user is None:
             user_dao = UserDAO()
             user = user_dao.get(row['user_id'])
         elif user.id != row['user_id']:
             raise UserAuthMismatchError()
-        
-        auth_class = self._type_id_to_class(row['provider_type'])
             
-        auth = auth_class(row['id'], row['provider_id'].decode("utf-8") , row['secret'].decode("utf-8") , user, True)
+        
+        auth = self._row_to_model(row)
         auth.update_stored_state()
         
         return auth
@@ -55,47 +50,61 @@ class AuthDAO(DataAccessObject):
         
         row = rows[0]
         
-        if row['deleted']:
-            raise RowDeletedException()
-        
-        user_dao = UserDAO()
-        user = user_dao.get(row['user_id'])
-        
-        auth = auth_class(row['id'], provider_id , row['secret'].decode("utf-8") , user, True)
+        auth = self._row_to_model(row)
         auth.update_stored_state()
         
         return auth
     
     
-    def save(self, auth):
+    def get_auth_for_user(self, user_id, auth_class = None):
         
+        cols = ["user_id"]
+        vals = [user_id]
+        if auth_class is not None:
+            auth_type = self._class_to_type_id(auth_class)
+            cols.append("provider_type")
+            vals.append(auth_type)
+        
+        rows = self._get("auth_lookup", cols, vals, user_id)
+        rows = self._filter_deleted(rows)
+        
+        return [self._row_to_model(row) for row in rows]
+        
+        
+    
+    def save(self, auth):
         if not auth.is_dirty:
             return False
         
-        
-        # in this case, if we conflict it will be based on provider_id, provider_type with a deleted row
-        # we want to update the id of this row along with create ts
-        query = ( "INSERT INTO auth VALUES("
-                 "%(id)s,%(user_id)s,%(provider_id)s,%(secret)s,%(provider_type)s,NOW(),%(deleted)s"
-                 ") ON DUPLICATE KEY UPDATE "
-                 "id=VALUES(id), user_id=VALUES(user_id), secret=VALUES(secret)," 
-                 "created_ts=VALUES(created_ts), deleted=VALUES(deleted)" )
-        
-        
-        params = auth.to_dict()
-        params["provider_type"] = self._class_to_type_id(auth.__class__)
+        params = self._model_to_row(auth)
         params["deleted"] = 0
-        del params["user"]
-        params["user_id"] = auth.user.id
         
-        result = MySQL.get(auth.id).query(query, params)
+        result = self._save("auth", params, ["id", "user_id", "secret", "created_ts", "deleted"], auth.id )
+        self._save("auth_lookup", params, ["id", "user_id", "secret", "created_ts", "deleted"], auth.user_id)
+        
         auth.update_stored_state()
         
         return result
-     
+    
+    
+    def _model_to_row(self, model):
+        dict = super()._model_to_row(model)
+        dict["provider_type"] = self._class_to_type_id(model.__class__)
+        return dict
+    
+    def _row_to_model(self, row):        
+        if row['deleted']:
+            raise RowDeletedException()
+        
+        auth_class = self._type_id_to_class(row['provider_type'])
+        auth = auth_class(row['id'], row['provider_id'].decode("utf-8") , row['secret'].decode("utf-8") , row["user_id"], secret_hashed=True)
+        
+        return auth
+    
     def _generate_id_from_provider_id(self,provider_id):
         shard_id = MySQL.get_shard_id_for_string(provider_id)
         return MySQL.next_id(shard_id)
+
 
     def _type_id_to_class(self, type_id):
         type_to_class = Config.get("auth", "type_to_class")
@@ -147,8 +156,4 @@ class NoAuthFoundException(AuthException):
     
     def __str__(self):
         return "auth row for " + self._provider_id + " does not exist"    
-    
 
-class InvalidCredentialsException(AuthException):
-    def __str__(self):
-        return "Credentials are invalid"  

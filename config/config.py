@@ -1,6 +1,7 @@
 import json
 from framework.config.environment import Environment
 import copy
+import logging
 
 class Config:
     """
@@ -29,9 +30,11 @@ class Config:
         
         #check subdirectories for configs until correct one is found
         for env in envs_to_check:
+            logging.getLogger().debug("TRY FILE: " + env_to_dir[env] + file_name)
             try:
                 return cls._get_dict_by_file_name(env_to_dir[env] + file_name)
             except ConfigFileNotFound:
+                logging.getLogger().debug("NOT FOUND")
                 pass
         
         raise ConfigFileNotFound(file_name)

@@ -112,7 +112,12 @@ class JSONResponse(BaseResponse,ETagResponseMixin,
         
         return super().get_wsgi_response(environ)
             
-
+    @property
+    def success(self):
+        
+        return self._success
+    
+    
 class CustomEncoder(JSONEncoder):
     
     def encode(self,o):

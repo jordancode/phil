@@ -39,6 +39,9 @@ class Session(Entity):
     def token(self):
         return self._get_attr("token")
     
+    
+    
+    #########
     @property
     def user(self):
         return self._get_attr("user")
@@ -50,6 +53,11 @@ class Session(Entity):
     @property
     def auth(self):
         return self._get_attr("auth") 
+    #########
+    
+    
+    
+    
     
     def has_flag(self, bit_mask):
         flags = self._get_attr("flags")

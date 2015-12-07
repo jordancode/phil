@@ -2,6 +2,7 @@ from passlib.hash import bcrypt
 from framework.models.domain.entity import Entity
 import string
 import logging
+from app.models.data_access.user_dao import UserDAO
 
 
 class Authentication(Entity):
@@ -10,7 +11,7 @@ class Authentication(Entity):
     """
     
 
-    def __init__(self, id, provider_id, secret, user, secret_hashed = False):
+    def __init__(self, id, provider_id, secret, user_id, secret_hashed = False):
         super().__init__(id)
         
         self._validate_provider_id(provider_id)
@@ -21,7 +22,7 @@ class Authentication(Entity):
             secret = self._hash_secret(secret)
             
         self._set_attr("secret", secret)
-        self._set_attr("user", user)
+        self._set_attr("user_id", user_id)
     
     
     def _validate_secret(self,secret):
@@ -37,11 +38,34 @@ class Authentication(Entity):
         allowed = set(string.ascii_lowercase + string.digits + '._')
         if len(provider_id) > 255 or not (set(provider_id) <= allowed):
             raise InvalidProviderIdException()
+    
         
+    @property
+    def user_id(self):
+        return self._get_attr("user_id")
+    
+        
+    @property
+    def provider_id(self):
+        return self._get_attr("provider_id")
+    
+    @property
+    def secret(self):
+        return self._get_attr("secret")
+    
     
     @property
     def user(self):
-        return self._get_attr("user")
+        return UserDAO().get(self.user_id)
+    
+    
+    def to_dict(self, for_client = False):
+        ret = super().to_dict(for_client)
+        if for_client:
+            del(ret["secret"])
+            
+        return ret
+            
     
     def verify_secret(self, new_secret):
         #override if you want to do a different validation

@@ -25,6 +25,9 @@ class AuthService:
         session = session_dao.new_session(auth, user_agent)
         session_dao.save(session)
         
+        #update access token
+        dao.save(auth)
+        
         return session
         
         
@@ -40,7 +43,7 @@ class AuthService:
         try:
             auth = dao.get_auth_by_provider_id(auth_class, provider_id)
             
-            raise ProviderIdTakenException(provider_id)
+            raise ProviderIdTakenException(auth)
             
         except (NoAuthFoundException, RowDeletedException):
             pass
@@ -64,13 +67,15 @@ class InvalidCredentialsException(AuthException):
 
 class ProviderIdTakenException(AuthException):
     
-    _provider_id = None
+    _found_auth = None
     
-    def __init__(self,provider_id):
-        self._provider_id = provider_id
+    def __init__(self,found_auth):
+        self._found_auth = found_auth
     
     def __str__(self):
-        return self._provider_id + " is already taken"  
-
-       
+        return self._found_auth.provider_id + " is already taken"  
+    
+    @property
+    def auth(self):
+        return self._found_auth
     
