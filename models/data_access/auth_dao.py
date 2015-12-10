@@ -11,10 +11,10 @@ class AuthDAO(DataAccessObject):
         super().__init__(Authentication)
     
          
-    def new_auth(self, auth_class, provider_id, secret, user):
+    def new_auth(self, auth_class, provider_id, secret, user, expires_ts = None):
         pid = self._generate_id_from_provider_id(provider_id)
         
-        return auth_class(pid, provider_id, secret, user.id, secret_hashed=False)        
+        return auth_class(pid, provider_id, secret, user.id, secret_hashed=False, expires_ts=expires_ts)        
         
     
     def get_auth_by_id(self, auth_id, user = None):
@@ -39,7 +39,6 @@ class AuthDAO(DataAccessObject):
             
     
     def get_auth_by_provider_id(self, auth_class, provider_id):
-        
         type_id = self._class_to_type_id(auth_class)
         shard_id =  MySQL.get_shard_id_for_string(provider_id)
         
@@ -79,8 +78,8 @@ class AuthDAO(DataAccessObject):
         params = self._model_to_row(auth)
         params["deleted"] = 0
         
-        result = self._save("auth", params, ["id", "user_id", "secret", "created_ts", "deleted"], auth.id )
-        self._save("auth_lookup", params, ["id", "user_id", "secret", "created_ts", "deleted"], auth.user_id)
+        result = self._save("auth", params, ["id", "user_id", "secret", "created_ts", "expires_ts", "deleted"], auth.id )
+        self._save("auth_lookup", params, ["id", "user_id", "secret", "created_ts", "expires_ts", "deleted"], auth.user_id)
         
         auth.update_stored_state()
         
@@ -97,7 +96,7 @@ class AuthDAO(DataAccessObject):
             raise RowDeletedException()
         
         auth_class = self._type_id_to_class(row['provider_type'])
-        auth = auth_class(row['id'], row['provider_id'].decode("utf-8") , row['secret'].decode("utf-8") , row["user_id"], secret_hashed=True)
+        auth = auth_class(row['id'], row['provider_id'].decode("utf-8") , row['secret'].decode("utf-8") , row["user_id"], secret_hashed=True,expires_ts=row["expires_ts"])
         
         return auth
     

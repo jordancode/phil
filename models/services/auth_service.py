@@ -32,7 +32,7 @@ class AuthService:
         
         
     
-    def add_auth_to_user(self, user, auth_class, provider_id, secret, user_agent ):
+    def add_auth_to_user(self, user, auth_class, provider_id, secret, user_agent , expires_ts = None):
         """
            returns a session
            else throws an authentication exception
@@ -49,7 +49,7 @@ class AuthService:
             pass
         
         # can throw exceptions if these credentials don't work
-        auth = dao.new_auth(auth_class, provider_id, secret, user)
+        auth = dao.new_auth(auth_class, provider_id, secret, user, expires_ts)
         dao.save(auth)
         
         session_dao = SessionDAO()

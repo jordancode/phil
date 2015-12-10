@@ -3,6 +3,7 @@ from framework.models.domain.entity import Entity
 import string
 import logging
 from app.models.data_access.user_dao import UserDAO
+from _datetime import datetime
 
 
 class Authentication(Entity):
@@ -11,7 +12,7 @@ class Authentication(Entity):
     """
     
 
-    def __init__(self, id, provider_id, secret, user_id, secret_hashed = False):
+    def __init__(self, id, provider_id, secret, user_id, secret_hashed = False, expires_ts = None):
         super().__init__(id)
         
         self._validate_provider_id(provider_id)
@@ -23,6 +24,7 @@ class Authentication(Entity):
             
         self._set_attr("secret", secret)
         self._set_attr("user_id", user_id)
+        self._set_attr("expires_ts",expires_ts)
     
     
     def _validate_secret(self,secret):
@@ -59,17 +61,24 @@ class Authentication(Entity):
         return UserDAO().get(self.user_id)
     
     
+    def is_expired(self):
+        return (self._get_attr("expires_ts") is not None and
+                datetime.now() > self._get_attr("expires_ts"))
+    @property
+    def expires_ts(self):
+        return self._get_attr("expires_ts")
+        
+        
     def to_dict(self, for_client = False):
         ret = super().to_dict(for_client)
         if for_client:
             del(ret["secret"])
             
         return ret
-            
     
     def verify_secret(self, new_secret):
         #override if you want to do a different validation
-        return bcrypt.verify(new_secret, self._get_attr("secret"))
+        return not self.is_expired() and bcrypt.verify(new_secret, self._get_attr("secret"))
     
     def _hash_secret(self, secret):
         
