@@ -41,3 +41,16 @@ class DateUtils:
             dt = datetime.now()
         
         return int(time.mktime(dt.timetuple()))
+
+    @staticmethod
+    def sort_index_from_date(dt = None):
+        if dt is None:
+            dt = datetime.now()
+            
+        #mysql dates don't keep millis so we'll need to add in 
+        #more detail in case two photos were added in the same second
+        
+        microseconds = time.time() % 1;
+        unixtime = DateUtils.datetime_to_unix(dt)
+        
+        return int( ( unixtime + microseconds ) * 100000)  

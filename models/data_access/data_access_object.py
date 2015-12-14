@@ -5,6 +5,7 @@ from pprint import pformat
 import pprint
 from framework.utils.id import BadIdError
 from framework.utils.model_cache import ModelCache
+from framework.utils.sql_utils import SQLUtils
 
 
 class DataAccessObject(metaclass=Singleton):
@@ -63,8 +64,10 @@ class DataAccessObject(metaclass=Singleton):
             
             sql += " ORDER BY " + order_by
         
-        if count:
-            sql += " LIMIT " + str(count)
+            if count:
+                sql += " LIMIT " + str(count)
+        else:
+            sql += SQLUtils.get_limit_string(count, offset)
         
         if shard_by is None:
             shard_by = value_list[0]
