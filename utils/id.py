@@ -42,6 +42,12 @@ class Id:
     
     @classmethod
     def dummy(cls, shard_id, pool_id):
+        """
+            Sometimes you need an id as a key to a pool/shard combo 
+            that won't actaully be used in a row.
+            That's what this is for.
+        """
+        
         ins = cls()
         ins.set_pool_id(pool_id)
         ins.set_shard_id(shard_id)
@@ -77,7 +83,7 @@ class Id:
         
         for i in range(number_of_ids):
             ins.set_increment(start_incr + i)
-            ret.append(ins.next_id())
+            ret.append(ins.get_id())
         
         
         # if just one id, return as int for convenience        
@@ -98,6 +104,9 @@ class Id:
         self._deconstruct_id()
     
     def get_id(self):
+        if self._id is None:
+            self._construct_id()
+        
         return self._id
     
     def set_shard_id(self, id):
@@ -163,7 +172,9 @@ class Id:
             pipe.incrby(redis_key, incr_count)
         else:    
             pipe.incr(redis_key)
-        pipe.expire(redis_key, self.INTERVAL_SECS)
+            
+        #expire two intervals past the last call so we can handle up to 60 secs of time drift between servers
+        pipe.expire(redis_key, 2 * self.INTERVAL_SECS)
         res = pipe.execute()
         
         return res[0]
@@ -180,9 +191,7 @@ class Id:
         if self._increment is None:
             self.set_increment()
         
-        self._construct_id()
-            
-        return self._id
+        self.get_id()
     
     def _get_bit_mask(self, num_bits):
         return (2 ** num_bits) - 1
