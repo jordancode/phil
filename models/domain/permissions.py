@@ -1,4 +1,5 @@
 from werkzeug.exceptions import Forbidden
+from asyncore import read
 class Permissions:
 
 	PERMISSION_MASK_OWNER = 0b1
@@ -33,6 +34,21 @@ class Permissions:
 	def can_write(self):
 		return self._write
 	
+	def has_mask(self, permissions_mask):
+		if permissions_mask.read is not None:
+			if self.can_read() != permissions_mask.read:
+				return False
+	
+		if permissions_mask.write is not None:
+			if self.can_write() != permissions_mask.write:
+				return False
+		
+		if permissions_mask.owner is not None:
+			if self.is_owner() != permissions_mask.owner:
+				return False
+		
+		return True
+	
 	def _recursive_to_dict(self, seen_refs, for_client = False):
 		return self.to_bitmap()
 	
@@ -54,6 +70,54 @@ class Permissions:
 		if not self.can_write():
 			raise PermissionsError()
 
+class PermissionsMask:
+	
+	_owner = None
+	_read = None
+	_write = None
+	
+	def __init__(self, read = None, write = None, owner = None):
+		self._read = read
+		self._write = write
+		self._owner = owner
+	
+	@property
+	def read(self):
+		return self._read
+	
+	@property
+	def write(self):
+		return self._write
+	
+	@property
+	def owner(self):
+		return self._owner
+	
+	#returns the bitmap of permissions that must be set to True
+	def to_required_bitmap(self):
+		bm = 0b0
+		if self.owner:
+			bm = bm | Permissions.PERMISSION_MASK_OWNER
+		if self.read:
+			bm = bm | Permissions.PERMISSION_MASK_READ
+		if self.write:
+			bm = bm | Permissions.PERMISSION_MASK_WRITE
+		
+		return bm
+		
+		
+	#returns the bitmap of permissions that must be set to False
+	def to_missing_bitmap(self): 
+		bm = 0b0
+		if self.owner == False:
+			bm = bm | Permissions.PERMISSION_MASK_OWNER
+		if self.read == False:
+			bm = bm | Permissions.PERMISSION_MASK_READ
+		if self.write == False:
+			bm = bm | Permissions.PERMISSION_MASK_WRITE
+		
+		return bm
+	
 
 class PermissionsError(Forbidden):
 	def __init(self):

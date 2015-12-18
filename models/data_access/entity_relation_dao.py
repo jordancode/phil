@@ -2,6 +2,9 @@ from framework.models.data_access.data_access_object import DataAccessObject,\
     RowNotFoundException
 from framework.utils.multi_shard_query import MultiShardQuery
 import logging
+from framework.utils.sql_utils import SQLUtils
+from framework.storage.mysql import MySQL
+from framework.utils.id import BadIdError
 
 class EntityRelationDAO(DataAccessObject):
 
@@ -54,32 +57,80 @@ class EntityRelationDAO(DataAccessObject):
     
           
     
-    def _get_list_primary(self, id1, count = None, offset = None, sort_by = "sort_index"):
-        rows = self._get(
-                  self._table_name, 
-                  [self._id1_name, "deleted"], 
-                  [id1, 0],
+    def _get_list_primary(self, id1, count = None, offset = None, sort_by = "sort_index", has_permissions = None, missing_permissions = None):
+        rows = self._get_list(
+                  self._table_name,
                   id1,
+                  self._id1_name,
                   sort_by,
                   count,
-                  offset
+                  offset,
+                  has_permissions,
+                  missing_permissions
                 )
         
         return self._parse_rows(rows)
     
-    def _get_list_inv(self, id2, count = None, offset = None, sort_by = "sort_index"):
-        rows = self._get(
-                  self._table_name + "_inv", 
-                  [self._id2_name, "deleted"], 
-                  [id2, 0], 
+    
+    
+    def _get_list_inv(self, id2, count = None, offset = None, sort_by = "sort_index", has_permissions = None, missing_permissions = None):
+        rows = self._get_list( 
+                  self._table_name + "_inv",
                   id2,
+                  self._id2_name,
                   sort_by,
                   count,
-                  offset
+                  offset,
+                  has_permissions,
+                  missing_permissions
                 )
         
         return self._parse_rows(rows)
     
+    
+    
+    def _get_list(self, table_name, id, id_name, sort_by = "sort_index",count = None, offset = None, has_permissions = None, missing_permissions = None):
+         
+        value_list = [id]
+        params = [
+                  (id_name, "%s"),
+                  ("deleted","0")
+                  ]
+        
+        if has_permissions:
+            params.append(
+                          ("permission|"+str(has_permissions), "permission" )
+                        )
+        
+        if missing_permissions:
+            params.append(
+                          ("permission&"+str(missing_permissions), "permission" )
+                        )
+         
+        sql = (
+               "SELECT * FROM " + table_name + " WHERE " 
+               + " AND ".join(
+                    column_name+"="+value for (column_name,value) in  params
+                ))
+        
+        if sort_by:
+            if offset:
+                sql += " AND " + sort_by + " > " + str(offset)
+            
+            sql += " ORDER BY " + sort_by
+        
+            if count:
+                sql += " LIMIT " + str(count)
+        else:
+            sql += SQLUtils.get_limit_string(count, offset)
+        
+        try:
+            ret = MySQL.get(id).query(sql, value_list)
+        except BadIdError:
+            raise RowNotFoundException()
+        
+        
+        return ret
     
     def _parse_rows(self, rows):
         ret = []
