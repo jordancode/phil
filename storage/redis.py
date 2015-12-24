@@ -14,7 +14,7 @@ class Redis(StrictRedis):
     _connection_pools = None
     
     @classmethod
-    def get_instance(cls, db_name = "main"):
+    def get_instance(cls, db_name):
         if cls._connection_pools is None:
             cls._connection_pools = {}
         

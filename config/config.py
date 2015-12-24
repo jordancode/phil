@@ -18,7 +18,13 @@ class Config:
     
     @classmethod
     def _get_dict_for_environment(cls, file_name, env_str):
+        
+        #populate cache
+        if file_name in cls._config_cache:
+            return cls._config_cache[file_name]
+        
         envs_to_check = Environment.list()
+        
         index = envs_to_check.index(env_str)
         envs_to_check = envs_to_check[index:]
         
@@ -32,29 +38,29 @@ class Config:
         for env in envs_to_check:
             logging.getLogger().debug("TRY FILE: " + env_to_dir[env] + file_name)
             try:
-                return cls._get_dict_by_file_name(env_to_dir[env] + file_name)
+                config_dict =  cls._get_dict_by_file_name(env_to_dir[env] + file_name)
+                cls._config_cache[file_name] = config_dict
+                return config_dict
             except ConfigFileNotFound:
                 logging.getLogger().debug("NOT FOUND")
                 pass
+            
         
         raise ConfigFileNotFound(file_name)
         
         
     @classmethod
     def _get_dict_by_file_name(cls, file_name):
-        if file_name not in cls._config_cache:
-            try:
-                with open('./config/' + file_name + '.json') as data_file:
-                    config_dict = json.load(data_file)
-            except IOError:
-                raise ConfigFileNotFound(file_name)
-            except ValueError:
-                raise BadConfigFormatError(file_name)
-            
-            cls._config_cache[file_name] = config_dict
-            
         
-        return cls._config_cache[file_name];
+        try:
+            with open('./config/' + file_name + '.json') as data_file:
+                config_dict = json.load(data_file)
+        except IOError:
+            raise ConfigFileNotFound(file_name)
+        except ValueError:
+            raise BadConfigFormatError(file_name)
+        
+        return config_dict
     
     @classmethod
     def _get_config_by_key(cls, config_dict, key, file_name):

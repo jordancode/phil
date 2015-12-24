@@ -1,7 +1,6 @@
 from framework.utils.id import MissingInfoError
 from framework.storage.redis import Redis
 import datetime
-from framework.utils.date_utils import DateUtils
 
     
 SORT_INDEX_TYPE_DEFAULT = 0
@@ -44,7 +43,6 @@ class SortIndex:
             
         if type is None:
             type = sort_index_start.get_type()
-            
         
         
         new_ts = sort_index_start.get_time() + int((sort_index_end.get_time() - sort_index_start.get_time())/2)
@@ -54,9 +52,9 @@ class SortIndex:
         new_sort_index.set_type(type)
         new_incr = None
         if new_ts == sort_index_start.get_time() or new_ts == sort_index_end.get_time():
-            new_incr = 
-        
-        
+            new_incr = int((sort_index_start.get_increment() + sort_index_end.get_increment()) / 2)
+            if new_incr ==  sort_index_start.get_increment() or new_incr == sort_index_end.get_increment():
+                raise NoGapError()
         
         
         
@@ -69,6 +67,8 @@ class SortIndex:
         sort_index.set_date(datetime)
         sort_index.set_type(type)
         sort_index.set_incr()
+        
+        return sort_index
     
     
     
@@ -117,7 +117,7 @@ class SortIndex:
         if incr is None:
             incr = self._get_next_increment()
             
-        self._inc = incr
+        self._incr = incr
     
     def get_incr(self):
         return self._incr
@@ -132,10 +132,12 @@ class SortIndex:
         
         redis = Redis.get_instance("id_gen")
         pipe = redis.pipeline()
+        
         if incr_count != 1:
             pipe.incrby(redis_key, incr_count)
         else:    
             pipe.incr(redis_key)
+
         pipe.expire(redis_key, self.INTERVAL_SECS)
         res = pipe.execute()
         
@@ -166,6 +168,7 @@ class SortIndex:
             raise BadSortIndexError(self._value);
     
     def _construct_value(self):
+        
         for prop in [self._ts, self._incr, self._type]:
             if prop is None:
                 return
@@ -191,3 +194,6 @@ class NoGapError(Exception):
 class BadSortIndexError(Exception):
     def __init__(self, value):
         super().__init__("Bad sort index: " + str(value))
+        
+    
+from framework.utils.date_utils import DateUtils

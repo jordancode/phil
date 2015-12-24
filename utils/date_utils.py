@@ -27,7 +27,7 @@ class DateUtils:
         if ts_seconds is None:
             return datetime.now()
         
-        return datetime.utcfromtimestamp(ts_seconds)
+        return datetime.fromtimestamp(ts_seconds)
     
     @staticmethod
     def unix_to_mysql(ts_seconds = None):
@@ -46,11 +46,8 @@ class DateUtils:
     def sort_index_from_date(dt = None):
         if dt is None:
             dt = datetime.now()
-            
-        #mysql dates don't keep millis so we'll need to add in 
-        #more detail in case two photos were added in the same second
         
-        microseconds = time.time() % 1;
-        unixtime = DateUtils.datetime_to_unix(dt)
-        
-        return int( ( unixtime + microseconds ) * 100000)  
+        return SortIndex.get_for_date(dt).get_value()
+
+
+from framework.models.domain.sort_index import SortIndex

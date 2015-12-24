@@ -5,6 +5,7 @@ import logging
 from framework.utils.sql_utils import SQLUtils
 from framework.storage.mysql import MySQL
 from framework.utils.id import BadIdError
+from framework.utils.associative_array import SORT_HI_TO_LO
 
 class EntityRelationDAO(DataAccessObject):
 
@@ -57,7 +58,7 @@ class EntityRelationDAO(DataAccessObject):
     
           
     
-    def _get_list_primary(self, id1, count = None, offset = None, sort_by = "sort_index", has_permissions = None, missing_permissions = None):
+    def _get_list_primary(self, id1, count = None, offset = None, sort_by = "sort_index", has_permissions = None, missing_permissions = None, sort = SORT_HI_TO_LO):
         rows = self._get_list(
                   self._table_name,
                   id1,
@@ -66,14 +67,15 @@ class EntityRelationDAO(DataAccessObject):
                   count,
                   offset,
                   has_permissions,
-                  missing_permissions
+                  missing_permissions,
+                  sort
                 )
         
         return self._parse_rows(rows)
     
     
     
-    def _get_list_inv(self, id2, count = None, offset = None, sort_by = "sort_index", has_permissions = None, missing_permissions = None):
+    def _get_list_inv(self, id2, count = None, offset = None, sort_by = "sort_index", has_permissions = None, missing_permissions = None, sort = SORT_HI_TO_LO):
         rows = self._get_list( 
                   self._table_name + "_inv",
                   id2,
@@ -82,14 +84,15 @@ class EntityRelationDAO(DataAccessObject):
                   count,
                   offset,
                   has_permissions,
-                  missing_permissions
+                  missing_permissions,
+                  sort
                 )
         
         return self._parse_rows(rows)
     
     
     
-    def _get_list(self, table_name, id, id_name, sort_by = "sort_index",count = None, offset = None, has_permissions = None, missing_permissions = None):
+    def _get_list(self, table_name, id, id_name, sort_by = "sort_index",count = None, offset = None, has_permissions = None, missing_permissions = None, sort = SORT_HI_TO_LO):
          
         value_list = [id]
         params = [
@@ -115,7 +118,12 @@ class EntityRelationDAO(DataAccessObject):
         
         if sort_by:
             if offset:
-                sql += " AND " + sort_by + " > " + str(offset)
+                if sort == SORT_HI_TO_LO:
+                    operator = "<"
+                else:
+                    operator = ">"
+                
+                sql += " AND " + sort_by + " " + operator + " " + str(offset)
             
             sql += " ORDER BY " + sort_by
         
