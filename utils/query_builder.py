@@ -113,7 +113,12 @@ class BaseSQLQuery(metaclass=ABCMeta):
 
 class WhereQuery(BaseSQLQuery,metaclass=ABCMeta):
     def where(self, where_clause):
-        self._parts["where"] = "WHERE " + where_clause.build()
+        if isinstance(where_clause, tuple):
+            where = " ".join(str(n) for n in where_clause)
+        else:
+            where = where_clause.build()
+        
+        self._parts["where"] = "WHERE " + where
         return self
     
     def order_by(self, column, direction = None):
