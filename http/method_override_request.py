@@ -91,11 +91,18 @@ class MethodOverrideRequest(Request):
     
     def _get_list_param(self, dictionary, key, base_type):
         if key in dictionary:
-            return list(json.loads(dictionary[key]))
+            ret = list(json.loads(dictionary[key]))
+        else:
+            ret = dictionary.getlist(key + "[]")
+            
         
-        ret = dictionary.getlist(key + "[]")
         
-        return [self._coerce_type(a, base_type) for a in ret]
+        ret = [self._coerce_type(a, base_type) for a in ret]
+         
+        logging.getLogger().debug("LIST")
+        logging.getLogger().debug(repr(ret))
+        
+        return ret
     
     def _get_dict_param(self, dictionary, key, base_type):
         if key in dictionary:
