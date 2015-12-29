@@ -126,6 +126,11 @@ class EntityRelationDAO(DataAccessObject):
                 sql += " AND " + sort_by + " " + operator + " " + str(offset)
             
             sql += " ORDER BY " + sort_by
+            if sort == SORT_HI_TO_LO:
+                sql += " DESC"
+            else:
+                sql += " ASC"
+            
         
             if count:
                 sql += " LIMIT " + str(count)
