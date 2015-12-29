@@ -5,11 +5,11 @@ class SQLUtils:
         sql = ""
         
         if offset is not None and count is not None:
-            sql = "LIMIT " + int(offset) + "," + int(count)
+            sql = "LIMIT " + str( int(offset) ) + "," + str( int(count) )
         elif count is not None:
-            sql = "LIMIT " + int(count)
+            sql = "LIMIT " + str( int(count) )
         elif offset is not None:
-            sql = "LIMIT " + int(offset) + ",999999999"
+            sql = "LIMIT " + str( int(offset) ) + ",999999999"
         
         return sql
         
