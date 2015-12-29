@@ -165,7 +165,7 @@ class SQLSelectQuery(WhereQuery, BaseSQLQuery):
         return "SELECT"
     
     def _get_order(self):
-        return ["verb", "columns", "table", "where", "limit", "order", "lock"]
+        return ["verb", "columns", "table", "where", "order", "limit", "lock"]
     
     def _required(self):
         return ["verb", "columns", "table"]
