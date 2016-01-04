@@ -78,6 +78,9 @@ class SortIndex:
     
     
     def set_value(self, value):
+        #turn strings to ints
+        value = int(value)
+        
         self._value = value
         self._deconstruct_value()
     
