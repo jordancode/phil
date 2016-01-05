@@ -1,6 +1,7 @@
 from abc import ABCMeta
 from framework.utils.sql_utils import SQLUtils
 from _ctypes import ArgumentError
+from framework.utils.associative_array import SORT_HI_TO_LO, SORT_LO_TO_HI
 
 DIRECTION_ASC = "ASC"
 DIRECTION_DESC = "DESC"
@@ -122,7 +123,16 @@ class WhereQuery(BaseSQLQuery,metaclass=ABCMeta):
         return self
     
     def order_by(self, column, direction = None):
-        assert direction in [None, DIRECTION_ASC, DIRECTION_DESC]
+        assert direction in [None, DIRECTION_ASC, DIRECTION_DESC, 
+                             SORT_HI_TO_LO, SORT_LO_TO_HI]
+        
+        
+        if direction is SORT_HI_TO_LO:
+            direction = DIRECTION_DESC
+            
+        elif direction is SORT_LO_TO_HI:
+            direction = DIRECTION_ASC
+            
         
         self._parts["order"] = "ORDER BY " + column
         if direction:
@@ -146,6 +156,7 @@ class SQLSelectQuery(WhereQuery, BaseSQLQuery):
         
     def __init__(self, table_name):
         super().__init__(table_name)
+        self._parts["columns"] = "*" #use * as default for column list
         
     def columns(self, column_list):
         self._parts["columns"] = ",".join(column_list)

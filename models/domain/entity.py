@@ -2,8 +2,9 @@ import copy
 import pprint
 import logging
 from framework.utils.id import Id
+from abc import ABCMeta
 
-class Entity:
+class Entity(metaclass=ABCMeta):
     
     #this is the state when fetched from the DAO
     _stored_state = None
@@ -78,11 +79,7 @@ class Entity:
             except AttributeError:
                 new_value = value
                 if stringify_ids:
-                    try:
-                        if value > Id.MAX_32_BIT_INT:
-                            new_value = str(value)
-                    except (TypeError, AttributeError) as e:
-                        pass
+                    new_value = self._stringify_id(value)
                 
                 state[key] = new_value
             except CircularRefException:
@@ -90,6 +87,15 @@ class Entity:
             
             
         return state
+    
+    def _stringify_id(self, value):
+        try:
+            if value > Id.MAX_32_BIT_INT:
+                return str(value)
+        except (TypeError, AttributeError) as e:
+            pass
+        
+        return value
     
     def revert_to_stored_state(self):
         self._current_state = copy.copy(self._stored_state)

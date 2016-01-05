@@ -6,6 +6,7 @@ from framework.utils.sql_utils import SQLUtils
 from framework.storage.mysql import MySQL
 from framework.utils.id import BadIdError
 from framework.utils.associative_array import SORT_HI_TO_LO
+from framework.utils.query_builder import SQLQueryBuilder, And
 
 class EntityRelationDAO(DataAccessObject):
 
@@ -93,52 +94,32 @@ class EntityRelationDAO(DataAccessObject):
     
     
     def _get_list(self, table_name, id, id_name, sort_by = "sort_index",count = None, offset = None, has_permissions = None, missing_permissions = None, sort = SORT_HI_TO_LO):
-         
-        value_list = [id]
-        params = [
-                  (id_name, "%s"),
-                  ("deleted","0")
-                  ]
+
+        where_clause = And([
+                  (id_name, "=", "%s"),
+                  ("deleted", "=", "0")
+                  ]);
         
         if has_permissions:
-            params.append(
-                          ("permission|"+str(has_permissions), "permission" )
+            where_clause.append(
+                          ("permission|"+str(has_permissions), "=", "permission" )
                         )
         
         if missing_permissions:
-            params.append(
-                          ("permission&"+str(missing_permissions), "permission" )
+            where_clause.append(
+                          ("permission&"+str(missing_permissions), "=", "permission" )
                         )
-         
-        sql = (
-               "SELECT * FROM " + table_name + " WHERE " 
-               + " AND ".join(
-                    column_name+"="+value for (column_name,value) in  params
-                ))
+            
+        query_builder = (SQLQueryBuilder
+                            .select(table_name)
+                            .where(where_clause)
+                            .limit(count, offset))
         
         if sort_by:
-            if offset:
-                if sort == SORT_HI_TO_LO:
-                    operator = "<"
-                else:
-                    operator = ">"
-                
-                sql += " AND " + sort_by + " " + operator + " " + str(offset)
-            
-            sql += " ORDER BY " + sort_by
-            if sort == SORT_HI_TO_LO:
-                sql += " DESC"
-            else:
-                sql += " ASC"
-            
-        
-            if count:
-                sql += " LIMIT " + str(count)
-        else:
-            sql += SQLUtils.get_limit_string(count, offset)
+            query_builder.order_by(sort_by, sort)
         
         try:
-            ret = MySQL.get(id).query(sql, value_list)
+            ret = MySQL.get(id).query(query_builder.build(), [id])
         except BadIdError:
             raise RowNotFoundException()
         

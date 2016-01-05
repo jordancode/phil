@@ -4,6 +4,7 @@ from framework.models.data_access.data_access_object import DataAccessObject, Ro
 from framework.config.config import Config
 from app.models.data_access.user_dao import UserDAO
 import importlib
+from framework.utils.class_loader import ClassLoader
 
 class AuthDAO(DataAccessObject):
     
@@ -106,42 +107,12 @@ class AuthDAO(DataAccessObject):
 
 
     def _type_id_to_class(self, type_id):
-        type_to_class = Config.get("auth", "type_to_class")
-        if str(type_id) not in type_to_class:
-            raise InvalidAuthTypeError(type_id)
-        
-        dict = type_to_class[str(type_id)]
-        
-        module = importlib.import_module(dict["module"])
-        
-        class_ = getattr(module, dict["class"])
-        
-        return class_
-        
+        return ClassLoader("auth").get_class(type_id)
         
     def _class_to_type_id(self, auth_class):
-        type_to_class = Config.get("auth", "type_to_class")
+        return ClassLoader("auth").get_type_id(auth_class)
         
-        for type_id, dict in type_to_class.items():
-            if (dict["module"] == auth_class.__module__ and
-                    dict["class"] == auth_class.__name__):
-                
-                return int(type_id)
-           
-        raise InvalidAuthTypeError(type_id)
-        
-                
-class InvalidAuthTypeError(AuthException):
-    _type_id = None
-    
-    def __init__(self,type_id):
-        self._type_id = type_id
-    
-    
-    def __str__(self):
-        return ("Invalid auth type provided: " + str(self._type_id) + "."
-                " Type id and classes must be configured in auth.json")
-        
+
 class UserAuthMismatchError(AuthException):
     def __str__(self):
         return "auth id does not belong to provided user object"
