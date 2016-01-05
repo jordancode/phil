@@ -35,12 +35,26 @@ class ClassLoader:
         raise InvalidTypeError(type_id)
     
     
+    def get_type_id_from_name(self, name):
+        for type_id, dict in self._map.items():
+            if dict["name"] == name:
+                return int(type_id)
+        
+        raise InvalidTypeError(type_id)
+    
+    def get_name_from_type_id(self, type_id):
+        if str(type_id) not in self._map :
+            raise InvalidTypeError(type_id, self._config_name)
+        
+        return self._map[str(type_id)]["name"]
+        
+        
                 
 class InvalidTypeError(Exception):
     _type_id = None
     _config_name = None
     
-    def __init__(self,type_id, config_name):
+    def __init__(self,type_id = None, config_name = None):
         self._type_id = type_id
         self._config_name = config_name
     
