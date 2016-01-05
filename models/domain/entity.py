@@ -2,9 +2,9 @@ import copy
 import pprint
 import logging
 from framework.utils.id import Id
-from abc import ABCMeta
 
-class Entity(metaclass=ABCMeta):
+#Entity shouldn't be an ABC because it can be used stand-alone
+class Entity:
     
     #this is the state when fetched from the DAO
     _stored_state = None
