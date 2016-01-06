@@ -141,7 +141,7 @@ class MethodOverrideRequest(Request):
             elif type == "bool":
                 return value in truthy_values
             elif type == "unixtime":
-                return DateUtils.unix_to_datetime(value)
+                return DateUtils.unix_to_datetime(int(value))
             elif type == "json":
                 return json.loads(value)
         
