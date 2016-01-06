@@ -141,7 +141,8 @@ class MethodOverrideRequest(Request):
             elif type == "bool":
                 return value in truthy_values
             elif type == "unixtime":
-                return DateUtils.unix_to_datetime(int(value))
+                #cast to float from string then to int to remove decimal 
+                return DateUtils.unix_to_datetime(int(float(value)))
             elif type == "json":
                 return json.loads(value)
         
