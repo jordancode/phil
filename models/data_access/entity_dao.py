@@ -57,6 +57,10 @@ class EntityDAO(DataAccessObject):
                 self._model_cache_set(model)
                 ret.append(model)
         
+        #sort list by original order since it gets messed up with cache and shards
+        list_map = {id : index for index, id in enumerate(id_list)}
+        ret = sorted(ret, key=lambda row: list_map.get(row.id))
+        
         return ret
     
     
