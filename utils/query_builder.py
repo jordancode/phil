@@ -30,10 +30,11 @@ class WhereClause(metaclass=ABCMeta):
     
     _where_nodes = None
     
-    def __init__(self, node_list):
+    def __init__(self, node_list = None):
         self._where_nodes = []
-        for node in node_list:
-            self.append(node)
+        if node_list:
+            for node in node_list:
+                self.append(node)
     
     def append(self, where_node):
         if isinstance(where_node, tuple):
@@ -191,7 +192,17 @@ class SQLInsertQuery(IgnorableQuery, BaseSQLQuery):
         return self
     
     def values(self, values_arr):
-        self._parts["values"] = "VALUES " + ",".join(values_arr)
+        
+        if len(values_arr):
+            s = "VALUES "
+            #if we are inserting multiple rows, need to collapse to strings
+            if isinstance(values_arr[0], list):
+                values_arr = ["(" + ",".join(v) + ")" for v in values_arr]
+            
+            s += ",".join(values_arr)
+            
+            self._parts["values"] = s
+        
         return self
     
     def on_duplicate_key_update(self, col_to_value_array):

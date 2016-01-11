@@ -111,12 +111,14 @@ class Id:
     
     def set_shard_id(self, id):
         self._shard_id = id
+        self._id = None
     
     def get_shard_id(self):
         return self._shard_id
     
     def set_pool_id(self, id):
         self._pool_id = id
+        self._id = None
     
     def get_pool_id(self):
         return self._pool_id
@@ -126,6 +128,7 @@ class Id:
             interval = self._get_current_interval()
         
         self._interval = interval
+        self._id = None
         
     def get_interval(self):
         return self._interval
@@ -135,6 +138,7 @@ class Id:
             incr = self._get_next_increment()
         
         self._increment = incr
+        self._id = None
         
     def get_increment(self):
         return self._increment

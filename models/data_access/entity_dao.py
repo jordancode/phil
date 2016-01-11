@@ -4,6 +4,9 @@ from framework.storage.mysql import MySQL
 from framework.utils.multi_shard_query import MultiShardQuery
 import pprint
 import logging
+from framework.utils.query_builder import SQLQueryBuilder
+from framework.utils.id import Id
+from framework.storage.mysql_pool import MySQLPool
 
 class EntityDAO(DataAccessObject):
     
@@ -70,33 +73,82 @@ class EntityDAO(DataAccessObject):
         
     
     def save(self, model):
-        if not model.is_dirty:
-            return False
+        return self.save_list([model])
+    
+    
+    def save_list(self, models):
+        #saves a list of models with the assumption that they all belong on the same shard
+        #otherwise, use save() to save one at a time
+        models_to_save = []
         
-        if model.deleted:
-            self.remove_from_cache(model.id)
-        else:
-            self._model_cache_set(model)
+        for model in models:
+            if not model.is_dirty:
+                continue
+            
+            if model.deleted:
+                self.remove_from_cache(model.id)
+            else:
+                self._model_cache_set(model)
+            
+            models_to_save.append(model)
+            model.update_stored_state()
         
-        dict = self._model_to_row(model)
-        ret = self._primary_save(dict)
-        
-        model.update_stored_state()
-        
-        if ret:
+        return self._save_list(self._table, models_to_save)
+    
+    
+    def _save_list(self, table, models, shard_by_col = "id"):
+        if not len(models):
             return True
+                   
+        dicts = [self._model_to_row(model) for model in models]
+        d = dicts[0]
         
-        return False
+        #distribute dicts to respective shard ids
+        shard_id_to_dicts = {}
+        for dict_ in dicts:
+            id = dict_[shard_by_col]
+            shard_id = Id(id).get_shard_id()
+            
+            if not shard_id in shard_id_to_dicts:
+                shard_id_to_dicts[shard_id] = []
+                
+            shard_id_to_dicts[shard_id].append(dict_)
+        
+        for shard_id, dict_list in shard_id_to_dicts.items(): 
+            
+            vals = [ ["%s" for key in dict_ ] for dict_ in dict_list ]
+            params = [ value for dict_ in dict_list for key, value in dict_.items() ]
+            
+            cols_to_update = [
+                    (k, "VALUES(" + k + ")")  
+                    for k in self._get_columns_to_update(d.keys())
+                ]
+            
+            qb = (SQLQueryBuilder.insert(table)
+                  .columns(d.keys())
+                  .values(vals)
+                  .on_duplicate_key_update(cols_to_update))
+            
+            logging.getLogger().debug(qb.build())
+            logging.getLogger().debug(params)
+            
+            mysql = MySQL.get_by_shard_id(shard_id, MySQLPool.MAIN)
+            mysql.query(qb.build(), tuple(params))
+        
+        return True 
+        
+      
     
     def _primary_save(self, dict):
-        cols_to_update = [k for k in dict.keys() if (k != "id" and k != "created_ts")]
+        cols_to_update = [k for k in self._get_columns_to_update(dict.keys())]
        
         ret =  self._save(self._table, dict, cols_to_update, dict['id'])
         
-        logging.getLogger().debug("EntityDAO.primary_save RESULT: " + str(ret))
-        
         return ret
     
+    
+    def _get_columns_to_update(self, all_columns):
+        return [k for k in all_columns if (k != "id" and k != "created_ts")]
     
     def delete(self, id):
         self.remove_from_cache(id)
