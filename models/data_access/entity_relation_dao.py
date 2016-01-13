@@ -2,7 +2,6 @@ from framework.models.data_access.data_access_object import DataAccessObject,\
     RowNotFoundException
 from framework.utils.multi_shard_query import MultiShardQuery
 import logging
-from framework.utils.sql_utils import SQLUtils
 from framework.storage.mysql import MySQL
 from framework.utils.id import BadIdError
 from framework.utils.associative_array import SORT_HI_TO_LO

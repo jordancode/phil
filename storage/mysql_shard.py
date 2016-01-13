@@ -4,7 +4,6 @@ import random
 import mysql.connector
 from pprint import pprint
 from framework.utils.query_tracker import QueryTracker
-from framework.storage.mysql_transaction import MySQLTransaction
 
 class MySQLShard:
     
@@ -162,4 +161,6 @@ class MySQLShard:
     @property     
     def transaction(self):
         return MySQLTransaction(self)
-    
+  
+
+from framework.storage.mysql_transaction import MySQLTransaction

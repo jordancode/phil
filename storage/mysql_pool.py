@@ -1,6 +1,4 @@
 from framework.config.config import Config
-from framework.storage.mysql_shard import MySQLShard
-from framework.storage.mysql_transaction import MySQLTransaction
 import logging
 from framework.utils.id import BadIdError
 
@@ -91,5 +89,7 @@ class ShardIdOutOfRangeError(BadIdError):
 class PoolIdOutOfRangeError(BadIdError):
     def __init__(self, id ):
         super().__init__("Pool id " + str(id) + " is out of range") 
-    
-    
+  
+
+from framework.storage.mysql_shard import MySQLShard
+from framework.storage.mysql_transaction import MySQLTransaction    

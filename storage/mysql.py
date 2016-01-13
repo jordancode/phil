@@ -1,4 +1,3 @@
-from framework.storage.mysql_pool import MySQLPool
 from framework.utils.id import Id
 import random
 import hashlib
@@ -80,4 +79,5 @@ class MySQL:
             shard_id = random.randrange(0, pool.get_num_shards())
         
         return Id.next(shard_id, pool_id, number_ids)
-        
+
+from framework.storage.mysql_pool import MySQLPool   
