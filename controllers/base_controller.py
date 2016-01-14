@@ -3,6 +3,7 @@ from framework.models.domain.session import Session, SessionException
 from werkzeug.exceptions import Unauthorized, Forbidden
 from framework.http.json_response import JSONResponse
 from framework.http.json_http_exception import JSONHTTPException
+from app.models.data_access.user_dao import UserDAO
 
 class BaseController:
     
@@ -39,13 +40,23 @@ class BaseController:
         except SessionException:
             return False
     
-    def _get_user(self):
-        return self._get_session().user
+    def _get_user(self, user_id = None):
+        session = self._get_session()
+        u = session.user
+        
+        if user_id is not None and u.id != user_id:
+            if not self._is_admin():
+                raise Forbidden()
+            else:
+                #not the logged in user, but we're admin so we have access
+                return UserDAO().get(user_id)
+        
+        return u
+        
     
     def _get_session(self):
         #throws NoActiveSessionException, SessionNotFoundException, NoSessionStoreException
         return self._get_session_store().get_session(self._get_request())
-
 
 def require_login(f = None, return_json=True):
     def decorator(f):

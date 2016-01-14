@@ -56,7 +56,8 @@ class Session(Entity):
     #########
     
     
-    
+    def is_admin(self):
+        return self.has_flag(self.FLAG_IS_ADMIN)
     
     
     def has_flag(self, bit_mask):

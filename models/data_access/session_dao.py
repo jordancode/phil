@@ -5,6 +5,7 @@ from framework.models.domain.user_agent import UserAgent
 from framework.models.data_access.data_access_object import DataAccessObject, RowNotFoundException
 from framework.models.data_access.auth_dao import AuthDAO
 from app.models.data_access.user_dao import UserDAO
+
 from framework.utils.id import Id
 
 import hashlib
