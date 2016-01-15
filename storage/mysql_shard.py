@@ -4,6 +4,7 @@ import random
 import mysql.connector
 from pprint import pprint
 from framework.utils.query_tracker import QueryTracker
+import logging
 
 class MySQLShard:
     
@@ -48,21 +49,31 @@ class MySQLShard:
     
     
     def query(self, query, params = None, use_multi = False):
-        cursor = self._get_cursor()
-        
-        results = cursor.execute(query, params, multi=use_multi)
-        ret = []
-        
-        if use_multi:
-            for res in results:
-                ret.append(self._get_result_from_cursor(res))
-        else:
-            ret = self._get_result_from_cursor(cursor)
+        try:
+            cursor = self._get_cursor()
             
-        if not self._in_transaction:
-            self._close_cursor()
-        
-        QueryTracker.push(self.get_name(), query, params, ret)
+            results = cursor.execute(query, params, multi=use_multi)
+            ret = []
+            
+            if use_multi:
+                for res in results:
+                    ret.append(self._get_result_from_cursor(res))
+            else:
+                ret = self._get_result_from_cursor(cursor)
+                
+            if not self._in_transaction:
+                self._close_cursor()
+            
+            warnings = cursor.fetchwarnings()
+            if warnings:
+                for w in warnings:
+                    logging.getLogger().warn("MySQL warning: " + repr(w))
+            
+            QueryTracker.push(self.get_name(), query, params, ret)
+            
+        except Exception as e:
+            logging.getLogger().error("MySQL error: " + repr(e))
+            raise e
         
         return ret
     
