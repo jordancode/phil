@@ -6,6 +6,7 @@ import pprint
 from framework.utils.id import BadIdError
 from framework.utils.model_cache import ModelCache
 from framework.utils.sql_utils import SQLUtils
+from framework.storage.mysql_pool import MySQLPool
 
 
 class DataAccessObject(metaclass=Singleton):
@@ -22,6 +23,9 @@ class DataAccessObject(metaclass=Singleton):
     def __init__(self, model_class):
         self._model_class = model_class
         self._model_cache = ModelCache.get_for_model(model_class.__name__)
+        
+    def _pool(self):
+        return MySQLPool.MAIN
         
         
     def _model_in_cache(self,id):
@@ -42,9 +46,9 @@ class DataAccessObject(metaclass=Singleton):
     
     def next_id(self, id_like = None):
         if id_like:
-            return MySQL.next_id_like(id_like)
+            return MySQL.next_id_like(id_like, self._pool())
         
-        return MySQL.next_id()
+        return MySQL.next_id(pool_id=self._pool())
         
     
     def remove_from_cache(self, id):

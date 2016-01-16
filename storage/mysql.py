@@ -55,13 +55,13 @@ class MySQL:
         return cls._pools[pool_id]
     
     @classmethod
-    def next_id_like(cls, entity_id):
+    def next_id_like(cls, entity_id, pool_id = None):
         if not isinstance(entity_id, Id):
             entity_id = Id(entity_id)
         
         return MySQL.next_id(
                 entity_id.get_shard_id(), 
-                entity_id.get_pool_id()
+                pool_id or entity_id.get_pool_id()
                 )
         
         

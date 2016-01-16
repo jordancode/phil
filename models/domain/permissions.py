@@ -34,6 +34,9 @@ class Permissions:
 	def can_write(self):
 		return self._write
 	
+	def can_share(self):
+		return self._owner
+	
 	def has_mask(self, permissions_mask):
 		if permissions_mask.read is not None:
 			if self.can_read() != permissions_mask.read:
@@ -69,7 +72,11 @@ class Permissions:
 	def verify_can_write(self):
 		if not self.can_write():
 			raise PermissionsError()
-
+	
+	def verify_can_share(self):
+		if not self.can_share():
+			raise PermissionsError()
+	
 class PermissionsMask:
 	
 	_owner = None

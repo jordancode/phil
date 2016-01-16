@@ -3,6 +3,7 @@ from framework.config.config import Config
 import datetime
 import random
 import string
+from framework.utils.random_token import RandomToken
 
 class Session(Entity):
     
@@ -30,7 +31,7 @@ class Session(Entity):
         
     
     def generate_token(self):
-        return ''.join(random.SystemRandom().choice( (string.ascii_letters + string.digits) ) for _ in range(self.TOKEN_LENGTH))
+        return RandomToken.build(self.TOKEN_LENGTH, self.user.id)
     
     def verify_token(self, token_to_check):
         return self.token == token_to_check

@@ -132,7 +132,7 @@ class EntityDAO(DataAccessObject):
             logging.getLogger().debug(qb.build())
             logging.getLogger().debug(params)
             
-            mysql = MySQL.get_by_shard_id(shard_id, MySQLPool.MAIN)
+            mysql = MySQL.get_by_shard_id(shard_id, self._pool())
             mysql.query(qb.build(), tuple(params))
         
         return True 
