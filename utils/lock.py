@@ -22,10 +22,12 @@ class Lock:
                 retry_times=retry_times,
                 retry_delay=retry_delay,
                 ttl=ttl
-            )
-
+            ) 
 
 def withlock(lock_name, retry_times=NUM_RETRIES,retry_delay=RETRY_DELAY,ttl=TTL):
+    """
+    Decorator function for convenience
+    """
     #returns the real decorator
     def decorator(f):
         
