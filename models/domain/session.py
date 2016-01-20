@@ -22,7 +22,7 @@ class Session(Entity):
         self._set_attr("modified_ts", modified_ts, datetime.datetime.now())
         self._set_attr("log_out_ts", log_out_ts)
         
-        self._set_attr("flags",flags)
+        self._set_attr("flags",flags,0)
         
         if not token:
             token = self.generate_token()

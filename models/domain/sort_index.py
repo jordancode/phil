@@ -62,9 +62,11 @@ class SortIndex:
         
     
     @classmethod
-    def get_for_date(cls, datetime, type = SORT_INDEX_TYPE_DEFAULT):
+    def get_for_date(cls, dt = None, type = SORT_INDEX_TYPE_DEFAULT):
         sort_index = cls()
-        sort_index.set_date(datetime)
+        if dt is None:
+            dt = datetime.datetime.now()
+        sort_index.set_date(dt)
         sort_index.set_type(type)
         sort_index.set_incr()
         

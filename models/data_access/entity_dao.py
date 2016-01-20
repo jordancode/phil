@@ -69,7 +69,7 @@ class EntityDAO(DataAccessObject):
     
     def _primary_get_list(self, id_list):
         return MultiShardQuery.multi_shard_in_list_query(
-            id_list, "SELECT * FROM " + self._table + " WHERE id in %l")
+            id_list, "SELECT * FROM " + self._table + " WHERE id in %l", None, MySQL.get_pool(self._pool()))
         
     
     def save(self, model):

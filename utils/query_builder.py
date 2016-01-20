@@ -232,7 +232,7 @@ class SQLUpdateQuery(WhereQuery,IgnorableQuery,BaseSQLQuery):
         super().__init__(table_name)
     
     def set(self, col_to_value_array):
-        self._parts["dupe"] = ("SET " + 
+        self._parts["set"] = ("SET " + 
             ", ".join(col + "=" + val for (col,val) in col_to_value_array))
         return self
     
