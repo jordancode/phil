@@ -22,7 +22,7 @@ class AuthDAO(DataAccessObject):
         rows = MySQL.get(auth_id).query("SELECT * FROM auth WHERE id=%s", (auth_id,))
         
         if not len(rows):
-            raise NoAuthFoundException("id_" + auth_id)
+            raise NoAuthFoundException("_id" + str(auth_id))
         
         row = rows[0]
         
@@ -125,5 +125,5 @@ class NoAuthFoundException(AuthException):
         self._provider_id = provider_id
     
     def __str__(self):
-        return "auth row for " + self._provider_id + " does not exist"    
+        return "auth row for " + str(self._provider_id) + " does not exist"    
 
