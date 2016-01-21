@@ -8,6 +8,7 @@ from framework.http.method_override_request import MethodOverrideRequest
 from framework.http.json_response import JSONResponse
 import logging
 import pprint
+from framework.config.environment import Environment
 
 class BaseApplication():
     
@@ -31,6 +32,12 @@ class BaseApplication():
                           
         except HTTPException as e:
             response = e
+            
+        except Exception as e:
+            logging.exception(e)
+            response = JSONResponse(status=500)
+            if Environment.get() != Environment.PROD:
+                response.set_error(repr(e))
         
         return response
     

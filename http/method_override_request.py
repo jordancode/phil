@@ -69,15 +69,12 @@ class MethodOverrideRequest(Request):
         try:
             if self._is_array_type(type):
                 base = self._get_base_type(type)
-                logging.getLogger().debug("Array Type")
                 return self._get_list_param(dictionary,key,base) 
                         
             if self._is_dict_type(type):
                 base = self._get_base_type(type)
-                logging.getLogger().debug("Dict Type")
                 return self._get_dict_param(dictionary,key,base)
             else:
-                logging.getLogger().debug("Plain Type")
                 return self._coerce_type(dictionary[key], type)
         except KeyError:
             if not required:

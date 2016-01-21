@@ -15,7 +15,7 @@ class JSONResponse(BaseResponse,ETagResponseMixin,
     
     _success = True
     
-    def __init__(self, data_dict=None, headers=None):
+    def __init__(self, data_dict=None, headers=None, status=200):
         
         if data_dict is None:
             data_dict = {}
@@ -25,7 +25,7 @@ class JSONResponse(BaseResponse,ETagResponseMixin,
             
         self.set_data_dict(data_dict)
         
-        super().__init__(None, status=200, headers=headers, content_type="text/json")
+        super().__init__(None, status=status, headers=headers, content_type="text/json")
     
     
     _data_dict = None
