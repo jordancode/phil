@@ -71,7 +71,7 @@ class DataAccessObject(metaclass=Singleton):
             if count:
                 sql += " LIMIT " + str(count)
         else:
-            sql += SQLUtils.get_limit_string(count, offset)
+            sql += " " + SQLUtils.get_limit_string(count, offset)
         
         if shard_by is None:
             shard_by = value_list[0]
