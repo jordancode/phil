@@ -1,14 +1,56 @@
 from abc import ABCMeta
 from framework.utils.id import Id
+import logging
 
 class Serializeable(metaclass=ABCMeta):
     
-    def get_definition(self, optional_keys = None):
+    @classmethod
+    def get_definition(cls):
+        #abstract, returns definition config
         return None
+    
+    @classmethod
+    def get_definition_for_keys(cls, optional_keys = None):
+        #returns the required definition plus 
+        #any optional keys in the "optional_keys" array/dict
+        
+        defn = cls.get_definition()
+        if defn is None:
+            return None
+        
+        key_list = cls._get_optional_keys_for_class(optional_keys)
+        key_dict = {key : True for key in key_list}
+        
+        ret = {}
+        for key,attr in defn.items():
+            if attr.is_required() or key in key_dict:
+                ret[key] = attr
+        
+        return ret
+        
+    
+    @classmethod
+    def get_key_to_type(cls, optional_keys):
+        
+        return cls._recursive_key_to_type([],optional_keys)
+        
+        
+    @classmethod
+    def _get_optional_keys_for_class(cls, optional_keys = None):
+        try:
+            if isinstance(optional_keys,list):
+                return optional_keys
+            else:
+                return optional_keys[cls.__name__]
+            
+        except (TypeError, KeyError):
+            pass
+        
+        return []
+        
     
     def to_dict(self, stringify_ids = False, optional_keys = None):
         d = self._recursive_to_dict([], stringify_ids, optional_keys)
-        d["object"] = self.__class__.__name__
         
         return d
         
@@ -20,14 +62,19 @@ class Serializeable(metaclass=ABCMeta):
         
         seen_refs.append(self)
         
-        state = {}
+        state = {
+                "object" : self.__class__.__name__
+            }
+        
+        defn = self.get_definition_for_keys(optional_keys)
+        
         for key in self._get_keys():
-            if not self._include_key(key, optional_keys):
+            if not self._include_key(key, defn):
                 continue
             
             value = self._get_attr(key)
             try:
-                dict = value._recursive_to_dict(seen_refs, stringify_ids)
+                dict = value._recursive_to_dict(seen_refs, stringify_ids, optional_keys)
                 state[key] = dict
             except AttributeError:
                 new_value = value
@@ -37,16 +84,15 @@ class Serializeable(metaclass=ABCMeta):
                 state[key] = new_value
             except CircularRefException:
                 pass #skip circular references
-            
+        
+        
         return state
     
-    
-    def _include_key(self, key, optional_keys_to_include):
-        defn = self.get_definition(optional_keys_to_include)
-        
+    def _include_key(self, key, defn):
         if defn is None:
             return True
         return key in defn
+    
       
      
     def _stringify_id(self, value):
@@ -59,13 +105,21 @@ class Serializeable(metaclass=ABCMeta):
         return value
     
     
+    
     def _get_keys(self):
         if self.get_definition() is not None:
             return self.get_definition.keys()
         return []
     
     
+    
     def _get_attr(self, key):
+        defn = self.get_definition() 
+        if defn is not None and key in defn:
+            if defn[key].is_lazy():
+                logging.getLogger().debug("GET LAZY ATTR: " + key)
+                return defn[key].get_lazy_value(self)
+        
         return getattr(self, key)
 
      

@@ -2,6 +2,9 @@ from werkzeug.routing import Map, Rule
 from framework.config.config import Config
 from werkzeug.utils import redirect
 import copy
+import string
+import importlib
+from framework.utils.type import Type
 
 class Routes():
     
@@ -64,6 +67,8 @@ class DocRule(Rule):
     
     parameters = {}
     comment = None
+    return_data = None
+    not_implemented= False
     
     def __init__(self, *args, comment = None, parameters = None, **kargs):
         super().__init__(*args, **kargs)
@@ -95,3 +100,56 @@ class DocRule(Rule):
     def get_param_comment(self, param_name ):
         return self.get_param(param_name)['comment']
     
+    def get_method(self, request,session_store):
+        endpoint = self.endpoint
+        module_name, method = endpoint.rsplit(".",1)
+        
+        class_name = module_name.split(".")[-1]
+        class_name = string.capwords(class_name,"_").replace("_","")
+
+        module = importlib.import_module("app.controllers." + module_name)
+        class_ = getattr(module, class_name)
+        
+        return getattr(class_(request,session_store),method)
+    
+    def update_rule_with_meta(self, request = None, session_store=None):
+        m = self.get_method(request, session_store)
+        
+        if hasattr(m, "meta"):
+            if "comment" in m.meta:
+                self.set_comment(m.meta["comment"])
+            if "return" in m.meta:
+                optional_keys = []
+                if "optional_keys" in m.meta:
+                    optional_keys = m.meta["optional_keys"]
+                self.return_data = Type.serialize(m.meta["return"], optional_keys)
+            if "parameters" in m.meta:
+                self.set_parameters(m.meta["parameters"])
+            if "not_implemented" in m.meta:
+                self.not_implemented = True 
+            
+        return m
+    
+    def to_dict(self):
+        ret = {
+                    "route" : self.rule,
+                    "subdomain" : self.subdomain,
+                    "methods" : [m for m in self.methods if m != "HEAD"],#filter HEAD methods, added automatically
+                    "endpoint" : self.endpoint,
+                    "parameters" : self.parameters,
+                    "comment" : self.comment,
+                    "return" : self.return_data,
+                    "not_implemented" : self.not_implemented
+                }
+        
+        if self.comment:
+            ret["comment"] = self.comment
+        if self.parameters:
+            ret["parameters"] = self.parameters
+        if self.return_data:
+            ret["return"] = self.return_data
+        if self.not_implemented:
+            ret["not_implemented"] = True
+        
+        
+        return ret

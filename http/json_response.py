@@ -15,7 +15,7 @@ class JSONResponse(BaseResponse,ETagResponseMixin,
     
     _success = True
     
-    def __init__(self, data_dict=None, headers=None, status=200):
+    def __init__(self, data_dict=None, headers=None, status=200, optional_keys=None, caller=None):
         
         if data_dict is None:
             data_dict = {}
@@ -25,10 +25,17 @@ class JSONResponse(BaseResponse,ETagResponseMixin,
             
         self.set_data_dict(data_dict)
         
+        if optional_keys:
+            self.set_optional_keys(optional_keys)    
+        elif caller is not None and hasattr(caller, "meta") and "optional_keys" in caller.meta:
+            self.set_optional_keys(caller.meta["optional_keys"])
+        
+        
         super().__init__(None, status=status, headers=headers, content_type="text/json")
     
     
     _data_dict = None
+    _optional_keys = None
     
     def set_data_dict(self,dict_):
         self._data_dict = dict_
@@ -37,6 +44,8 @@ class JSONResponse(BaseResponse,ETagResponseMixin,
     def get_data_dict(self):
         return self._data_dict
     
+    def set_optional_keys(self, optional_keys):
+        self._optional_keys = optional_keys
     
     def _update_response(self):
         response = None
@@ -53,7 +62,7 @@ class JSONResponse(BaseResponse,ETagResponseMixin,
         
         #stringifies otherwise non-json nodes
         try:
-            return value.to_dict(True)
+            return value.to_dict(True, self._optional_keys)
         except AttributeError:
             pass
         
@@ -62,7 +71,8 @@ class JSONResponse(BaseResponse,ETagResponseMixin,
         except AttributeError:
             pass
         
-        raise TypeError()  
+        raise TypeError()
+      
         
     def set_error(self, error = None):
         self._success = False

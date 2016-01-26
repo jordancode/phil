@@ -50,7 +50,23 @@ class MethodOverrideRequest(Request):
             gets a form (POST) argument from the "form" array
         """
         return self._get_http_parameter(self.form,key,default_value)
-
+    
+    def get_all_values(self):
+        if not self.rule or not self.rule.parameters:
+            raise NoParametersConfigured()
+        
+        params = self.rule.parameters
+        
+        param_values = []
+        for p in params:
+            n = p["name"]
+            if n in self.values:
+                param_values.append(self.values[n])
+            else:
+                param_values.append(None)
+                 
+        return tuple( v for v in param_values )
+        
 
     def _get_http_parameter(self, dictionary, key, default_value):
         required = False
@@ -91,13 +107,8 @@ class MethodOverrideRequest(Request):
             ret = list(json.loads(dictionary[key]))
         else:
             ret = dictionary.getlist(key + "[]")
-            
-        
         
         ret = [self._coerce_type(a, base_type) for a in ret]
-         
-        logging.getLogger().debug("LIST")
-        logging.getLogger().debug(repr(ret))
         
         return ret
     
@@ -193,7 +204,10 @@ class InvalidHTTPMethodError(HTTPException):
     def __init__(self, value):
         super().__init__(value + " is not a valid HTTP method")
         
-        
+
+class NoParametersConfigured(BadRequest):
+    def __init__(self):
+        super().__init__("No Parameters Configured")
     
     
     

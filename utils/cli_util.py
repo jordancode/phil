@@ -1,5 +1,5 @@
 import sys
-class ArgUtil:
+class CLIUtil:
     
     @staticmethod
     def get_named_arg(name, short_name = None):

@@ -69,7 +69,7 @@ class Authentication(Entity):
         return self._get_attr("expires_ts")
         
         
-    def to_dict(self, for_client = False):
+    def to_dict(self, for_client = False, optional_keys=None):
         ret = super().to_dict(for_client)
         if for_client:
             del(ret["secret"])

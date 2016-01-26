@@ -103,6 +103,47 @@ def require_admin(f = None, return_json = True):
         return decorator(f)
 
 
+def not_implemented(f):
+    def wrapper():
+        raise NotImplementedError()
+    
+    if not hasattr(f, "meta"):
+        f.meta = {} #copy meta from old func
+    f.meta["not_implemented"] = True
+    wrapper.meta = f.meta
+    
+    return wrapper
+
+def comment(comment):
+    return meta(comment=comment)
+def params(parameters):
+    return meta(parameters=parameters)
+def returns(returns):
+    return meta(returns=returns)
+def optional_keys(optional_keys):
+    return meta(optional_keys=optional_keys)
+
+def meta(comment = None, parameters = None, returns = None, optional_keys = None):
+    
+    def decorator(f):
+        if not hasattr(f, "meta"):
+            f.meta = {}
+        
+        if comment:
+            f.meta["comment"] = comment
+        if parameters:
+            f.meta["parameters"] = parameters
+        if returns:
+            f.meta["return"] = returns
+        if optional_keys:
+            f.meta["optional_keys"] = optional_keys
+        
+        return f
+    
+    return decorator
+    
+    
+
 class NoSessionStoreError(SessionException):
     def __str__(self):
         return "SessionStore required to retreive or store session id"

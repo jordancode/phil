@@ -19,8 +19,7 @@ class BaseApplication():
     def dispatch_request(self, request):
         adapter = self._routes.bind_to_environ(request.environ,server_name=self.get_server_name())
         try:
-            rule, args = adapter.match(return_rule=True)  
-            
+            rule, args = adapter.match(return_rule=True)
             if rule is None:
                 raise NotFound()
             
@@ -44,7 +43,7 @@ class BaseApplication():
     def get_server_name(self):
         return "localhost"
     
-    def pre_hook(self,request):    
+    def pre_hook(self,request):
         pass
     
     def post_hook(self,request,response):
@@ -55,16 +54,10 @@ class BaseApplication():
         return CookieSessionStore()
     
     def call_controller(self, request, rule, args):
-        endpoint = rule.endpoint
-        module_name,method = endpoint.rsplit(".",1)
-        class_name = string.capwords(module_name,"_").replace("_","")
-
-        module = importlib.import_module("app.controllers." + module_name)
-        
-        class_ = getattr(module, class_name)
-        
         session_store = self.get_session_store(request)
-        response = getattr(class_(request,session_store),method)(**args)
+        controller_method = rule.update_rule_with_meta(request, session_store)
+        
+        response = controller_method(**args)
         
         return response
 

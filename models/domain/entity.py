@@ -42,6 +42,16 @@ class Entity(Serializeable):
     
     def set_deleted(self):
         self._deleted = True
+        
+        
+    def _recursive_to_dict(self, seen_refs, stringify_ids, optional_keys=None):
+        d = super()._recursive_to_dict(seen_refs, stringify_ids, optional_keys=optional_keys)
+        
+        #make sure deleted rows are marked
+        if self.deleted:
+            d["deleted"] = True
+            
+        return d
     
     def is_key_dirty(self, key):
         dirty_keys = self.get_dirty_keys()
@@ -55,11 +65,14 @@ class Entity(Serializeable):
             if not key in self._stored_state or self._stored_state[key] != current_val:
                 dirty_keys[key] = current_val
         
-        return dirty_keys                
-    
+        return dirty_keys 
     
     def _get_keys(self):
-        return set().union(self._stored_state.keys(), self._current_state.keys())
+        ret = set().union(self._stored_state.keys(), self._current_state.keys())
+        defn = self.get_definition()
+        if defn:
+            ret = set().union(defn.keys(), ret)
+        return ret
     
     
     def revert_to_stored_state(self):
@@ -75,12 +88,14 @@ class Entity(Serializeable):
         self._current_state[key] = value
     
     def _get_attr(self, key):
+        logging.getLogger().debug("KEY:" + key)
         if key in self._current_state:
             return self._current_state[key]
         elif key in self._stored_state:
             return self._stored_state[key]
+        else:
+            return super()._get_attr(key)
         
-        raise AttributeError("No attribute: " + key)
 
 class InvalidParameterError(Exception):
     def __init__(self, parameter_name, value_provided, expecting_description = None):
