@@ -2,17 +2,16 @@ from framework.utils.id import MissingInfoError
 from framework.storage.redis import Redis
 import datetime
 
-    
-SORT_INDEX_TYPE_DEFAULT = 0
-
 class SortIndex:
     
     """
-        We use 64-bit ids which are build from 4 pieces of data:
+        We use 64-bit ids which are build from 2 pieces of data:
         
         32 bits - current second interval
-        25 bits - current interval increment count 0 to ~33 million
-        7 bits - sort_index type: 0-127
+        32 bits - current interval increment count 0 to ~4.3B
+        
+        SortIndeces should be unique per parent_id 
+        (i.e. user_id in user_has_media or user_has_album, album_id in album_has_media)
 
     """
     
@@ -29,7 +28,9 @@ class SortIndex:
     _type = None
     
     @classmethod
-    def get_between(cls, sort_index_start, sort_index_end, type = None):
+    def get_between(cls, sort_index_start, sort_index_end, parent_id = None):
+        """
+        
         if isinstance(sort_index_start,int):
             sort_index_start = cls(sort_index_start)
         
@@ -40,9 +41,6 @@ class SortIndex:
         if (sort_index_start.get_time() == sort_index_end.get_time() and
                 sort_index_start.get_increment() == sort_index_end.get_increment()):
             raise NoGapError()
-            
-        if type is None:
-            type = sort_index_start.get_type()
         
         
         new_ts = sort_index_start.get_time() + int((sort_index_end.get_time() - sort_index_start.get_time())/2)
@@ -59,20 +57,50 @@ class SortIndex:
         
         
         return new_sort_index
-        
+        """
+        raise Exception("not implemented")
     
     @classmethod
-    def get_for_date(cls, dt = None, type = SORT_INDEX_TYPE_DEFAULT):
+    def get_for_date(cls, parent_id, dt = None):
         sort_index = cls()
         if dt is None:
             dt = datetime.datetime.now()
         sort_index.set_date(dt)
-        sort_index.set_type(type)
-        sort_index.set_incr()
+        sort_index.set_incr(cls.get_next_incr(parent_id))
         
         return sort_index
     
     
+    @classmethod
+    def get_next_incr(cls, parent_id, incr_count=1):
+        
+        # redis_key is per user_id
+        redis_key = cls._get_redis_key(parent_id)
+        
+        redis = Redis.get_instance("sort_index")
+        
+        if incr_count != 1:
+            res = redis.incrby(redis_key, incr_count)
+        else:    
+            res = redis.incr(redis_key)
+        
+        #increment bits in reverse to maximize space between sort indeces
+        return cls._reverse_bits(res, 32)
+    
+    @classmethod
+    def _reverse_bits(cls, int_to_flip, result_length):
+        ret = 0
+        
+        for i in range(result_length):
+            #start at end of integer, 
+            current_bit = (int_to_flip >> (result_length - i - 1)) & 0b1
+            ret = ret | (current_bit << i)
+        
+        return ret
+    
+    @classmethod
+    def _get_redis_key(cls, parent_id):
+        return "sort_index:u" + str(parent_id)
     
     def __init__(self, sort_index_long = None):
         if sort_index_long is not None:
@@ -111,86 +139,36 @@ class SortIndex:
         return self._ts
     
     
-    def set_type(self, type = SORT_INDEX_TYPE_DEFAULT):
-        self._type = type
-    
-    def get_type(self):
-        return self._type
-    
-    
-    def set_incr(self, incr = None):
-        if incr is None:
-            incr = self._get_next_increment()
-            
+    def set_incr(self, incr):
         self._incr = incr
     
     def get_incr(self):
         return self._incr
     
-        
-    def _get_next_increment(self, incr_count=1):
-        if self._ts is None or self._type is None:
-            raise MissingInfoError()
-        
-        # key changes every hour, count starts over
-        redis_key = self._get_redis_key(self._ts, self._type)
-        
-        redis = Redis.get_instance("id_gen")
-        pipe = redis.pipeline()
-        
-        if incr_count != 1:
-            pipe.incrby(redis_key, incr_count)
-        else:    
-            pipe.incr(redis_key)
-
-        pipe.expire(redis_key, self.INTERVAL_SECS)
-        res = pipe.execute()
-        
-        #increment bits in reverse to maximize space between sort indeces
-        return self._reverse_bits(res[0], 25)
-    
-    
-    def _reverse_bits(self, int_to_flip, result_length):
-        ret = 0
-        
-        for i in range(result_length):
-            #start at end of integer, 
-            current_bit = (int_to_flip >> (result_length - i - 1)) & 0b1
-            ret = ret | (current_bit << i)
-        
-        return ret
-        
     
     def _get_bit_mask(self, num_bits):
         return (2 ** num_bits) - 1
     
     def _deconstruct_value(self):
         try:
-            self._type = self._value & self._get_bit_mask(7)
-            self._incr = (self._value & (self._get_bit_mask(25) << 7)) >> 7
+            self._incr = self._value & self._get_bit_mask(32)
             self._ts = (self._value & (self._get_bit_mask(32) << 32)) >> 32
         except TypeError:
             raise BadSortIndexError(self._value);
     
     def _construct_value(self):
         
-        for prop in [self._ts, self._incr, self._type]:
+        for prop in [self._ts, self._incr]:
             if prop is None:
                 return
             
         # squeeze everything together into a 64 bit int    
         sort_index = (((self._ts & self._get_bit_mask(32)) << 32)
-            | ((self._incr & self._get_bit_mask(25)) << 7)
-            | (self._type & self._get_bit_mask(7)))
+            | (self._incr & self._get_bit_mask(32)))
         
         self._value = sort_index
 
-    
-    def _get_redis_key(self, ts, type):
-        
-        interval = ts // 60
-        
-        return "sort_index:i" + str(interval) + ":t" + str(type) 
+     
         
 class NoGapError(Exception):
     def __init__(self):

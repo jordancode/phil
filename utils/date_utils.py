@@ -43,11 +43,11 @@ class DateUtils:
         return int(time.mktime(dt.timetuple()))
 
     @staticmethod
-    def sort_index_from_date(dt = None):
+    def sort_index_from_date(parent_id, dt = None):
         if dt is None:
             dt = datetime.now()
         
-        return SortIndex.get_for_date(dt).get_value()
+        return SortIndex.get_for_date(parent_id, dt).get_value()
 
 
 from framework.models.domain.sort_index import SortIndex
