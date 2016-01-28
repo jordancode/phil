@@ -12,8 +12,10 @@ class SortIndex:
         
         SortIndeces should be unique per parent_id 
         (i.e. user_id in user_has_media or user_has_album, album_id in album_has_media)
-
+    
+        #
     """
+    
     
     # 1 minute intervals for id generation
     INTERVAL_SECS = 60
