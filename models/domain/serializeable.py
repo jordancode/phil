@@ -1,6 +1,5 @@
 from abc import ABCMeta
 from framework.utils.id import Id
-import logging
 
 class Serializeable(metaclass=ABCMeta):
     
@@ -117,7 +116,6 @@ class Serializeable(metaclass=ABCMeta):
         defn = self.get_definition() 
         if defn is not None and key in defn:
             if defn[key].is_lazy():
-                logging.getLogger().debug("GET LAZY ATTR: " + key)
                 return defn[key].get_lazy_value(self)
         
         return getattr(self, key)

@@ -72,8 +72,6 @@ class MethodOverrideRequest(Request):
         required = False
         type = None
         
-        logging.getLogger().debug("KEY" + key)
-        
         if self.rule:
             if self.rule.param_listed(key):
                 required = self.rule.get_param_required(key)

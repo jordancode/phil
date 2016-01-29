@@ -92,8 +92,6 @@ class Type:
                 logging.getLogger().debug("CIRCULAR REFERENCE")
                 return obj_.__name__
             except Exception as e:
-                logging.getLogger().debug("SERIALIZATION ERROR")
-                logging.exception(e)
                 return obj_.__name__
             
         elif isinstance(obj_, Attr):
