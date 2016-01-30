@@ -131,12 +131,8 @@ class JSONResponse(BaseResponse,ETagResponseMixin,
 class CustomEncoder(JSONEncoder):
     
     def encode(self,o):
-        
-        logging.getLogger().debug(repr(o))
-        
         try:
             if o > self._MAX_32_BIT_INT:
-                logging.getLogger().debug("found long!")
                 return repr(str(o))
         except TypeError as e:
             pass
