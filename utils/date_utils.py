@@ -33,8 +33,14 @@ class DateUtils:
     def unix_to_mysql(ts_seconds = None):
         dt = DateUtils.unix_to_datetime(ts_seconds)
         return DateUtils.datetime_to_mysql(dt)
-    
-   
+
+
+    @staticmethod
+    def fb_to_datetime(fb_time):
+        fb_time = fb_time[:fb_time.rindex("+")]
+        return datetime.strptime(fb_time, '%Y-%m-%dT%H:%M:%S')
+
+
     @staticmethod
     def datetime_to_unix(dt = None):
         if dt is None:
