@@ -3,6 +3,7 @@ import json
 from framework.models.domain.serializeable import CircularRefException
 from framework.utils.attr import Attr
 import logging
+import datetime
 
 
 class Type:
@@ -14,6 +15,7 @@ class Type:
     STRING = "string"
     UNIXTIME = "unixtime"
     JSON = "json"
+    BYTES = "bytes"
     
     #suffixes to make a type an array or dict type
     ARRAY_SUFFIX = "[]"
@@ -24,51 +26,58 @@ class Type:
         
     
     @classmethod
-    def coerce_type(cls, value, type):
-        
-        if cls.is_array_type(value):
-            base_type = cls.get_base_type(type)
-            return [ cls.coerce_type(v, base_type) for v in value ]
-        elif cls.is_dict_type(value):
-            base_type = cls.get_base_type(type)
-            return { k : cls.coerce_type(v, base_type) for k,v in value.items() }
+    def coerce_type(cls, value, dest_type):
         
         if value is not None:
-            if type == cls.TYPE_INT:
+            
+            if cls.is_array_type(dest_type):
+                base_type = cls.get_base_type(dest_type)
+                return [ cls.coerce_type(v, base_type) for v in value ]
+            elif cls.is_dict_type(dest_type):
+                base_type = cls.get_base_type(dest_type)
+                return { k : cls.coerce_type(v, base_type) for k,v in value.items() }
+            
+            
+            if dest_type == cls.INT:
                 return int(value)
-            elif type == cls.TYPE_FLOAT:
+            elif dest_type == cls.FLOAT:
                 return float(value)
-            elif type == cls.TYPE_STRING:
+            elif dest_type == cls.STRING:
+                if isinstance(value, bytes):
+                    value = value.decode("utf-8")
                 return str(value)
-            elif type == cls.TYPE_BOOL:
+            elif dest_type == cls.BOOL:
                 return value in cls.TRUTHY_VALUES
-            elif type == cls.TYPE_UNIXTIME:
+            elif dest_type == cls.UNIXTIME:
+                if isinstance(value, datetime.datetime):
+                    return value
+                
                 #cast to float from string then to int to remove decimal 
                 ts = int(float(value))
                 if ts > 0:
                     return DateUtils.unix_to_datetime(ts)
                 return None
-            elif type == cls.TYPE_JSON:
+            elif dest_type == cls.JSON:
                 return json.loads(value)
         
         #unknown type
         return value
     
     @classmethod
-    def get_base_type(cls, type):
-        return type[0:-2]
+    def get_base_type(cls, dest_type):
+        return dest_type[0:-2]
     
     @classmethod
-    def is_array_type(cls, type):
-        if type is None:
+    def is_array_type(cls, dest_type):
+        if dest_type is None or not isinstance(dest_type,str):
             return False
-        return type[-2:] == cls.ARRAY_SUFFIX
+        return dest_type[-2:] == cls.ARRAY_SUFFIX
     
     @classmethod
-    def is_dict_type(cls, type):
-        if type is None:
+    def is_dict_type(cls, dest_type):
+        if dest_type is None or not isinstance(dest_type,str):
             return False
-        return type[-2:] == cls.DICT_SUFFIX
+        return dest_type[-2:] == cls.DICT_SUFFIX
     
     @classmethod
     def serialize(cls, obj_, optional_keys=None):
@@ -91,7 +100,7 @@ class Type:
             except CircularRefException:
                 logging.getLogger().debug("CIRCULAR REFERENCE")
                 return obj_.__name__
-            except Exception as e:
+            except Exception:
                 return obj_.__name__
             
         elif isinstance(obj_, Attr):

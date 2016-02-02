@@ -3,6 +3,7 @@ import pprint
 import logging
 from framework.utils.id import Id
 from framework.models.domain.serializeable import Serializeable
+from framework.utils.type import Type
 
 #Entity shouldn't be an ABC because it can be used stand-alone
 class Entity(Serializeable):
@@ -84,6 +85,11 @@ class Entity(Serializeable):
     def _set_attr(self, key, value, default_value = None):
         if value is None:
             value = default_value
+        else:
+            #make sure inputs match definition
+            d = self.get_definition()
+            if d and key in d:
+                value = Type.coerce_type(value, d[key].get_type())
         
         self._current_state[key] = value
     

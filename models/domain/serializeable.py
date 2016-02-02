@@ -1,5 +1,6 @@
 from abc import ABCMeta
 from framework.utils.id import Id
+import base64
 
 class Serializeable(metaclass=ABCMeta):
     
@@ -95,11 +96,19 @@ class Serializeable(metaclass=ABCMeta):
       
      
     def _stringify_id(self, value):
+        
+        #try int
         try:
             if value > Id.MAX_32_BIT_INT:
                 return str(value)
         except (TypeError, AttributeError) as e:
             pass
+        
+        #try bytes
+        try:
+            return base64.standard_b64encode(value).decode("utf-8")
+        except (TypeError, AttributeError) as e:
+            pass        
         
         return value
     
