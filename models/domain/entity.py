@@ -10,6 +10,7 @@ class Entity(Serializeable):
     
     #this is the state when fetched from the DAO
     _stored_state = None
+    
     #this is the state after domain modifications
     _current_state = None
     
@@ -70,7 +71,7 @@ class Entity(Serializeable):
     
     def _get_keys(self):
         ret = set().union(self._stored_state.keys(), self._current_state.keys())
-        defn = self.get_definition()
+        defn = self.get_definition_for_keys()
         if defn:
             ret = set().union(defn.keys(), ret)
         return ret
