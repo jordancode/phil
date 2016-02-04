@@ -120,15 +120,21 @@ class Serializeable(metaclass=ABCMeta):
         return []
     
     
-    
     def _get_attr(self, key):
         defn = self.get_definition() 
+        required = False
         if defn is not None and key in defn:
             if defn[key].is_lazy():
                 return defn[key].get_lazy_value(self)
+            required = defn[key].is_required()
+            
+        try:
+            return getattr(self, key)
+        except AttributeError as e:
+            if required:
+                raise e
         
-        return getattr(self, key)
-
+        return None
      
 class CircularRefException(Exception):       
     def __init__(self):

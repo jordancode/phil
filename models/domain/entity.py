@@ -71,7 +71,7 @@ class Entity(Serializeable):
     
     def _get_keys(self):
         ret = set().union(self._stored_state.keys(), self._current_state.keys())
-        defn = self.get_definition_for_keys()
+        defn = self.get_definition()
         if defn:
             ret = set().union(defn.keys(), ret)
         return ret
@@ -95,7 +95,6 @@ class Entity(Serializeable):
         self._current_state[key] = value
     
     def _get_attr(self, key):
-        logging.getLogger().debug("KEY:" + key)
         if key in self._current_state:
             return self._current_state[key]
         elif key in self._stored_state:

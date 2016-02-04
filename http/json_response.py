@@ -7,6 +7,8 @@ import pprint
 import sys
 import logging
 from json.encoder import JSONEncoder
+import datetime
+from framework.utils.type import Type
 
 class JSONResponse(BaseResponse,ETagResponseMixin,
                CommonResponseDescriptorsMixin,
@@ -16,7 +18,6 @@ class JSONResponse(BaseResponse,ETagResponseMixin,
     _success = True
     
     def __init__(self, data_dict=None, headers=None, status=200, optional_keys=None, caller=None):
-        
         if data_dict is None:
             data_dict = {}
             
