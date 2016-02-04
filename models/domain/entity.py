@@ -3,12 +3,14 @@ import pprint
 import logging
 from framework.utils.id import Id
 from framework.models.domain.serializeable import Serializeable
+from framework.utils.type import Type
 
 #Entity shouldn't be an ABC because it can be used stand-alone
 class Entity(Serializeable):
     
     #this is the state when fetched from the DAO
     _stored_state = None
+    
     #this is the state after domain modifications
     _current_state = None
     
@@ -84,11 +86,15 @@ class Entity(Serializeable):
     def _set_attr(self, key, value, default_value = None):
         if value is None:
             value = default_value
+        else:
+            #make sure inputs match definition
+            d = self.get_definition()
+            if d and key in d:
+                value = Type.coerce_type(value, d[key].get_type())
         
         self._current_state[key] = value
     
     def _get_attr(self, key):
-        logging.getLogger().debug("KEY:" + key)
         if key in self._current_state:
             return self._current_state[key]
         elif key in self._stored_state:
