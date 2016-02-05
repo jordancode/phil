@@ -79,5 +79,10 @@ class MySQL:
             shard_id = random.randrange(0, pool.get_num_shards())
         
         return Id.next(shard_id, pool_id, number_ids)
-
+    
+    @classmethod
+    def close_all(cls):
+        for pool_id in cls._pools:
+            cls._pools[pool_id].close()
+    
 from framework.storage.mysql_pool import MySQLPool   

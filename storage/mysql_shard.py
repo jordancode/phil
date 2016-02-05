@@ -5,6 +5,7 @@ import mysql.connector
 from pprint import pprint
 from framework.utils.query_tracker import QueryTracker
 import logging
+from framework.storage.mysql import MySQL
 
 class MySQLShard:
     
@@ -23,7 +24,12 @@ class MySQLShard:
     
     def _get_connection(self):
         if self._connection is None:
-            self._connect()
+            try:
+                self._connect()
+            except mysql.connector.errors.OperationalError:
+                #could be a Too many connections error. Disconnect all and try again, bail on second fail
+                MySQL.close_all()
+                self._connect()
         
         return self._connection
     
@@ -34,13 +40,16 @@ class MySQLShard:
         
         if self._connection is None:
             server_config = self.get_server(side_num)
+            
             self._connection = mysql.connector.connect(
-                                    user=Config.get("mysql","user"), 
-                                    password=Config.get("mysql","pass"),
-                                    database=self.get_name(),
-                                    host = server_config["host"],
-                                    port = server_config["port"]
-                                    )
+                                user=Config.get("mysql","user"), 
+                                password=Config.get("mysql","pass"),
+                                database=self.get_name(),
+                                host = server_config["host"],
+                                port = server_config["port"]
+                                )
+            
+                
             
             if self._pool.start_transaction_on_connect:
                 self.start_transaction()
@@ -145,7 +154,7 @@ class MySQLShard:
     def close(self):
         self._close_transaction()
         if self._has_connection():
-            self._connection.close()
+            self._connection.disconnect()
             self._connection = None
     
     

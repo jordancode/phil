@@ -76,6 +76,11 @@ class MySQLPool:
         self.start_transaction_on_connect = False
         for shard in self._shards.values():
             shard.rollback()
+            
+    def close(self):
+        for shard_id in self._shards:
+            self._shards[shard_id].close()
+            
     
     @property     
     def transaction(self):
