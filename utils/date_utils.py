@@ -1,5 +1,7 @@
 from datetime import datetime
 import time
+from pathlib import _Accessor
+
 
 class DateUtils:
     
@@ -39,6 +41,20 @@ class DateUtils:
     def fb_to_datetime(fb_time):
         fb_time = fb_time[:fb_time.rindex("+")]
         return datetime.strptime(fb_time, '%Y-%m-%dT%H:%M:%S')
+
+
+    @staticmethod
+    def google_to_datetime(g_time):
+        g_time = g_time[:g_time.rindex(".")]
+        return datetime.strptime(g_time, '%Y-%m-%dT%H:%M:%S')
+
+    @staticmethod
+    def gmail_to_datetime(g_time):
+        try:
+            g_time = g_time[g_time.index(", ")+2:g_time.rindex(" +")]
+        except:
+            return datetime.now()
+        return datetime.strptime(g_time, '%d %b %Y %H:%M:%S')
 
 
     @staticmethod
