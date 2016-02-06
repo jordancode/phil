@@ -2,11 +2,9 @@ from framework.models.data_access.data_access_object import DataAccessObject,\
     RowNotFoundException
 from framework.storage.mysql import MySQL
 from framework.utils.multi_shard_query import MultiShardQuery
-import pprint
-import logging
 from framework.utils.query_builder import SQLQueryBuilder
 from framework.utils.id import Id
-from framework.storage.mysql_pool import MySQLPool
+import datetime
 
 class EntityDAO(DataAccessObject):
     
@@ -150,7 +148,7 @@ class EntityDAO(DataAccessObject):
     def delete(self, id):
         self.remove_from_cache(id)
         
-        return self._save(self._table, {"deleted" : 1}, ["deleted"], id)
+        return self._save(self._table, {"id" : id, "deleted" : 1, "modified_ts" : datetime.datetime()}, ["deleted", "modified_ts"], id)
         
         
         
