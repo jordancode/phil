@@ -148,7 +148,7 @@ class EntityDAO(DataAccessObject):
     def delete(self, id):
         self.remove_from_cache(id)
         
-        return self._save(self._table, {"id" : id, "deleted" : 1, "modified_ts" : datetime.datetime()}, ["deleted", "modified_ts"], id)
+        return self._save(self._table, {"id" : id, "deleted" : 1, "modified_ts" : datetime.datetime.now()}, ["deleted", "modified_ts"], id)
         
         
         
