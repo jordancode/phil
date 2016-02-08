@@ -55,7 +55,7 @@ class RandomToken:
         
         hex_str = hex(i)[2:]
         
-        return s[-4:] + "0000"[len(hex_str):] + hex_str
+        return s[:-4] + "0000"[len(hex_str):] + hex_str
     
     @classmethod
     def _get_bit_mask(cls, num_bits):
