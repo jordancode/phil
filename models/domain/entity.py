@@ -48,10 +48,7 @@ class Entity(Serializeable):
         
     def _recursive_to_dict(self, seen_refs, stringify_ids, optional_keys=None):
         d = super()._recursive_to_dict(seen_refs, stringify_ids, optional_keys=optional_keys)
-        
-        #make sure deleted rows are marked
-        if self.deleted:
-            d["deleted"] = True
+        d["deleted"] = self.deleted
             
         return d
     

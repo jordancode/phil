@@ -7,9 +7,10 @@ from framework.utils.id import BadIdError
 from framework.utils.model_cache import ModelCache
 from framework.utils.sql_utils import SQLUtils
 from framework.storage.mysql_pool import MySQLPool
+from abc import ABCMeta
 
 
-class DataAccessObject(metaclass=Singleton):
+class DataAccessObject(metaclass=ABCMeta):
     """
         maintains a list of rows for this model type that have been pulled from the database
         if we fetch a model twice, return a new model using the old row
@@ -18,6 +19,8 @@ class DataAccessObject(metaclass=Singleton):
     
     _model_cache = None
     _model_class = None
+    
+    _return_deleted = False
     
     
     def __init__(self, model_class):
@@ -53,7 +56,16 @@ class DataAccessObject(metaclass=Singleton):
     
     def remove_from_cache(self, id):
         del self._model_cache[id]
-   
+        
+    
+    #this is a property so it can be overriden
+    @property
+    def return_deleted(self):
+        return self._return_deleted
+    
+    @return_deleted.setter
+    def return_deleted(self, boolean):
+        self._return_deleted = boolean
     
     def _get(self, table_name, column_list, value_list, shard_by = None, order_by = None, count = None, offset = None):
         sql = (
@@ -142,14 +154,19 @@ class DataAccessObject(metaclass=Singleton):
         return d
     
     def _row_to_model(self, row):
-        if "deleted" in row:
-            if row["deleted"]:
-                raise RowDeletedException()
-            else:
-                del(row["deleted"])
-            
+        d = False
         
+        if "deleted" in row:
+            d = row["deleted"]
+            del(row["deleted"])
+        
+        if d and not self.return_deleted:
+            raise RowDeletedException()
+            
         ret = self._model_class(**row)
+        
+        if d:
+            ret.set_deleted()
         
         return ret
     
