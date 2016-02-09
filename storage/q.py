@@ -5,6 +5,7 @@ import uuid
 import datetime
 from rq import Queue
 
+
 class RedisDelay(object):
 
     def __init__(self, redis):
