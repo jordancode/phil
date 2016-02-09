@@ -49,6 +49,9 @@ class TemplateResponse(BaseResponse,ETagResponseMixin,
             app_config = Config.get("app")
             ret['config_'] = {
                 "app" : app_config,
+                "www_url" : app_config["default_protocol"] + "://" + app_config["subdomains"]["web"] + "." + app_config["server_name"],
+                "api_url" : app_config["default_protocol"] + "://" + app_config["subdomains"]["api"] + "." + app_config["server_name"],
+                "assets_url" : app_config["default_protocol"] + "://" + app_config["subdomains"]["assets"] + "." + app_config["server_name"], 
                 "app_json" : json.dumps(app_config)
                 
              }
