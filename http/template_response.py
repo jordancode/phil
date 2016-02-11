@@ -7,6 +7,7 @@ from pystache.loader import Loader
 from framework.config.config import Config
 import copy
 import json
+from framework.models.domain.entity import Entity
 
 class TemplateResponse(BaseResponse,ETagResponseMixin,
                CommonResponseDescriptorsMixin,
@@ -15,11 +16,14 @@ class TemplateResponse(BaseResponse,ETagResponseMixin,
     _template_name = None
     _template_data = None
     
+    _user = None
     
     
-    def __init__(self, template_name=None, template_data=None, headers=None):
+    
+    def __init__(self, template_name=None, template_data=None, user=None, headers=None):
         
         self.set_template(template_name)
+        self._user = user
         self.set_template_data(template_data)
         
         super().__init__(None, status=200, headers=headers, content_type="text/html")
@@ -47,15 +51,23 @@ class TemplateResponse(BaseResponse,ETagResponseMixin,
         
         if not "config_" in ret:
             app_config = Config.get("app")
+            
+            app_config["www_url"] = app_config["default_protocol"] + "://" + app_config["subdomains"]["web"] + "." + app_config["server_name"];
+            app_config["api_url"] = app_config["default_protocol"] + "://" + app_config["subdomains"]["api"] + "." + app_config["server_name"];
+            app_config["assets_url"] = app_config["default_protocol"] + "://" + app_config["subdomains"]["assets"] + "." + app_config["server_name"];
+            
             ret['config_'] = {
                 "app" : app_config,
-                "www_url" : app_config["default_protocol"] + "://" + app_config["subdomains"]["web"] + "." + app_config["server_name"],
-                "api_url" : app_config["default_protocol"] + "://" + app_config["subdomains"]["api"] + "." + app_config["server_name"],
-                "assets_url" : app_config["default_protocol"] + "://" + app_config["subdomains"]["assets"] + "." + app_config["server_name"], 
+                "www_url" : app_config["www_url"],
+                "api_url" : app_config["api_url"],
+                "assets_url" : app_config["assets_url"], 
                 "app_json" : json.dumps(app_config)
-                
              }
             
+            if isinstance(self._user, Entity):
+                ret["user_"] =self._user.to_dict(True)
+                ret["user_json_"] =json.dumps(ret["user_"], default=self._json_helper)
+        
         return ret
     
     def _render_template(self, template_name, template_data = None, partials = None):
@@ -74,7 +86,23 @@ class TemplateResponse(BaseResponse,ETagResponseMixin,
     
     def _update_response(self):
         self.set_data(self._render_template(self._template_name, self._template_data))
+    
         
+    def _json_helper(self, value):
+        
+        #stringifies otherwise non-json nodes
+        try:
+            return value.to_dict(True, self._optional_keys)
+        except AttributeError:
+            pass
+        
+        try:
+            return str(value)
+        except AttributeError:
+            pass
+        
+        raise TypeError()
+      
         
         
     def get_wsgi_response(self, environ):
