@@ -5,9 +5,14 @@ from framework.storage.mysql_pool import MySQLPool
 from framework.utils.id import Id
 class RandomToken:
     
+    MIN_LENGTH = 8
     
     @classmethod
     def build(cls, length, shard_id = None, pool_id = None):
+        
+        if length < cls.MIN_LENGTH:
+            raise Exception("Random token needs to be at least " + str(cls.MIN_LENGTH) + " chars long")
+            
         """
         Returns a random alphanumeric string with 
         """
