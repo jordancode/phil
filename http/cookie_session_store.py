@@ -36,7 +36,7 @@ class CookieSessionStore(BaseSessionStore):
         
     
     
-    def log_out_session(self, response):
+    def delete_session(self, response):
         
         response.delete_cookie(self._get_cookie_name())
         response.delete_cookie(self._get_token_cookie_name())
