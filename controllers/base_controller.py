@@ -4,6 +4,7 @@ from werkzeug.exceptions import Unauthorized, Forbidden
 from framework.http.json_response import JSONResponse
 from framework.http.json_http_exception import JSONHTTPException
 from app.models.data_access.user_dao import UserDAO
+from werkzeug import utils
 
 class BaseController:
     
@@ -69,7 +70,7 @@ def require_login(f = None, return_json=True):
                 if return_json:
                     raise JSONHTTPException(Unauthorized)
                 else:
-                    raise Unauthorized()
+                    return utils.redirect("/")
             
             return f(self, *args, **kwargs)
             
