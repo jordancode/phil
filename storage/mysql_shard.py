@@ -26,8 +26,9 @@ class MySQLShard:
         if self._connection is None:
             try:
                 self._connect()
-            except mysql.connector.errors.OperationalError:
+            except Exception:
                 #could be a Too many connections error. Disconnect all and try again, bail on second fail
+                logging.getLogger().error("MYSQL CONNECTION FAILED TO SHARD " + str(self._shard_id))
                 MySQL.close_all()
                 self._connect()
         
@@ -49,7 +50,6 @@ class MySQLShard:
                                 port = server_config["port"]
                                 )
             
-                
             
             if self._pool.start_transaction_on_connect:
                 self.start_transaction()
