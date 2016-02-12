@@ -6,6 +6,8 @@ from framework.http.json_http_exception import JSONHTTPException
 import json
 from framework.utils.date_utils import DateUtils
 from logging import getLogger
+from werkzeug.utils import cached_property
+from werkzeug.datastructures import MultiDict, CombinedMultiDict
 
 KEY = "_method"
 
@@ -45,11 +47,19 @@ class MethodOverrideRequest(Request):
         """
         return self._get_http_parameter(self.args,key,default_value) 
     
+    def get_json_value(self, key, default_value = None, required = False):
+        """
+            gets a form (POST) argument from the "form" array
+        """
+        return self._get_http_parameter(self.json,key,default_value)
+    
+    
     def get_form_value(self, key, default_value = None, required = False):
         """
             gets a form (POST) argument from the "form" array
         """
         return self._get_http_parameter(self.form,key,default_value)
+    
     
     def get_all_values(self):
         if not self.rule or not self.rule.parameters:
@@ -66,7 +76,28 @@ class MethodOverrideRequest(Request):
                 param_values.append(None)
                  
         return tuple( v for v in param_values )
+    
+    @cached_property
+    def values(self):
+        args = []
+        for d in self.args, self.form, self.json:
+            if not isinstance(d, MultiDict):
+                d = MultiDict(d)
+            args.append(d)
+        return CombinedMultiDict(args)
+    
+    @cached_property
+    def json(self):
+        #returns json form the request body
+        data_dict = {}
+        try:
+            data_str = self.get_data()
+            if data_str:
+                data_dict = json.loads(data_str.decode("utf-8"))
+        except Exception as e:
+            return e
         
+        return data_dict 
 
     def _get_http_parameter(self, dictionary, key, default_value):
         required = False
