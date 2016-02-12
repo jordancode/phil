@@ -38,6 +38,6 @@ class CookieSessionStore(BaseSessionStore):
     
     def delete_session(self, response):
         
-        response.delete_cookie(self._get_cookie_name())
-        response.delete_cookie(self._get_token_cookie_name())
+        response.delete_cookie(self._get_cookie_name(),'/', self._get_cookie_domain())
+        response.delete_cookie(self._get_token_cookie_name(),'/', self._get_cookie_domain())
         
