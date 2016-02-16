@@ -33,7 +33,14 @@ class BaseApplication():
             response = e
             
         except Exception as e:
+            logging.getLogger().error("============ INTERNAL SERVER ERROR ============")
             logging.exception(e)
+            logging.getLogger().error("============ INPUT ============")
+            logging.getLogger().debug(request.method + " " + request.url)
+            logging.getLogger().error("args: " + pprint.pformat(dict(request.args.items())))
+            logging.getLogger().error("form: " +pprint.pformat(dict(request.form.items())))
+            logging.getLogger().error("json: " +pprint.pformat(dict(request.json.items())))
+            logging.getLogger().error("values: " +pprint.pformat(dict(request.values.items())))
             response = JSONResponse(status=500)
             if Environment.get() != Environment.PROD:
                 response.set_error(repr(e))

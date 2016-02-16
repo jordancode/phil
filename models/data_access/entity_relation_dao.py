@@ -168,50 +168,21 @@ class EntityRelationDAO(DataAccessObject):
     
     def save_list(self, models):
         if not len(models):
-            return False
+            return 0
         
         models = self._filter_clean(models)
         
         dicts = [self._model_to_row(model) for model in models]
         cols_to_update = [key for key,value in self._columns.items() if value]
         
-        id1s = [model.id1 for model in models]
-        id2s = [model.id2 for model in models]
-        
-        self._save_multiple_helper(self._table_name, id1s, dicts, cols_to_update)
-        self._save_multiple_helper(self._table_name + "_inv", id2s, dicts, cols_to_update)
+        row_count = MultiShardQuery.multi_shard_insert(self._table_name, self._id1_name, dicts, cols_to_update)
+        row_count = MultiShardQuery.multi_shard_insert(self._table_name+"_inv", self._id2_name, dicts, cols_to_update)
         
         for model in models:
             model.update_stored_state()
             self._model_cache_set(model)
         
-        return True
-    
-    
-    def _save_multiple_helper(self, table_name, id_list, dicts, cols_to_update):
-        sql = ( "INSERT INTO " + table_name + "(" 
-            + ", ".join(dicts[0].keys()) + ") VALUES "
-        )
-        
-        values_list = []
-        param_list = []
-        for d in dicts:
-            param_list.append( "(" +
-                ", ".join(["%s" for key in d.keys()])
-                + ")" )
-            
-            values_list = values_list + list(d.values())
-            
-        params = ", ".join(param_list)
-    
-        sql = sql + params + (
-                 " ON DUPLICATE KEY UPDATE "
-                 + (" AND ".join(
-                        col +"=VALUES("+ col +")" for col in cols_to_update
-                ))
-            )
-        
-        return MultiShardQuery().multi_shard_query(id_list, sql, tuple(values_list))
+        return row_count
     
       
     """

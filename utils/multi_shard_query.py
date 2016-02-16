@@ -2,6 +2,7 @@ from framework.storage.mysql import MySQL
 from framework.storage.mysql_pool import MySQLPool
 from framework.utils.id import Id
 from multiprocessing.pool import Pool
+from framework.utils.query_builder import SQLQueryBuilder
 
 class MultiShardQuery:
     
@@ -35,6 +36,52 @@ class MultiShardQuery:
     
     
     @classmethod
+    def multi_shard_insert(cls, table_name, shard_by_col_name, dicts_to_insert, cols_to_update = None, pool = None,num_threads = None):
+        if pool is None:
+            pool = MySQLPool(MySQLPool.MAIN)
+        elif isinstance(pool, int):
+            pool = MySQLPool(pool)
+            
+        count = 0
+            
+        #construct mapping of inserted objects to shard that they go to
+        shard_to_dicts = {}
+        for d in dicts_to_insert:
+            try:
+                primary_id = d[shard_by_col_name]
+                shard_id = Id(primary_id).get_shard_id()
+                
+                if shard_id not in shard_to_dicts:
+                    shard_to_dicts[shard_id] = []
+                shard_to_dicts[shard_id].append(d)
+                
+            except Exception as e:
+                #skip objects that don't have the shard_by_col, or in wrong format
+                raise e
+        
+        for shard_id, dict_list in shard_to_dicts.items():
+            #get vals array
+            vals = [ ["%s" for k in d.keys()] for d in dict_list ]
+            #create parameter placeholders
+            params = [ v for d in dict_list for v in d.values()]
+            #get cols
+            cols = dict_list[0].keys()
+            
+            
+            qb = SQLQueryBuilder.insert(table_name).columns(cols).values(vals)
+            
+            if cols_to_update:
+                update_list = [ ("`" + c + "`", "VALUES(`" + c+ "`)") for c in cols_to_update ]
+                qb.on_duplicate_key_update(update_list)
+            
+            
+            #do insert
+            count = count + MySQL.get_by_shard_id(shard_id, pool.get_id()).query(qb.build(), params)
+            
+        return count
+    
+    
+    @classmethod
     def multi_shard_query_by_shard_id(cls, shard_id_list, query, params = None, pool = None,num_threads = None):
         """
             Runs a query shards given by the provided shard_ids
@@ -43,13 +90,10 @@ class MultiShardQuery:
         if pool is None:
             pool = MySQLPool(MySQLPool.MAIN)
         
-            
-        
         run_one = cls._get_query_runner(pool, query, params ) 
         
         #with Pool(num_threads) as p:
         res = map(run_one, shard_id_list)
-        
         
         return cls._prepare_result(res)
         

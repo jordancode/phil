@@ -96,41 +96,17 @@ class EntityDAO(DataAccessObject):
     
     def _save_list(self, table, models, shard_by_col = "id"):
         if not len(models):
-            return True
+            return 0
                    
         dicts = [self._model_to_row(model) for model in models]
         d = dicts[0]
         
-        #distribute dicts to respective shard ids
-        shard_id_to_dicts = {}
-        for dict_ in dicts:
-            id = dict_[shard_by_col]
-            shard_id = Id(id).get_shard_id()
-            
-            if not shard_id in shard_id_to_dicts:
-                shard_id_to_dicts[shard_id] = []
-                
-            shard_id_to_dicts[shard_id].append(dict_)
-        
-        for shard_id, dict_list in shard_id_to_dicts.items(): 
-            
-            vals = [ ["%s" for key in dict_ ] for dict_ in dict_list ]
-            params = [ value for dict_ in dict_list for key, value in dict_.items() ]
-            
-            cols_to_update = [
-                    (k, "VALUES(" + k + ")")  
-                    for k in self._get_columns_to_update(d.keys())
-                ]
-            
-            qb = (SQLQueryBuilder.insert(table)
-                  .columns(d.keys())
-                  .values(vals)
-                  .on_duplicate_key_update(cols_to_update))
-            
-            mysql = MySQL.get_by_shard_id(shard_id, self._pool())
-            mysql.query(qb.build(), tuple(params))
-        
-        return True 
+        return MultiShardQuery.multi_shard_insert(
+                    table, 
+                    shard_by_col, 
+                    dicts, 
+                    self._get_columns_to_update(d.keys()), 
+                    self._pool())
         
       
     
