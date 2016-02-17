@@ -31,16 +31,10 @@ class BaseApplication():
                           
         except HTTPException as e:
             response = e
+            self.log_error(request, e)
             
         except Exception as e:
-            logging.getLogger().error("============ INTERNAL SERVER ERROR ============")
-            logging.exception(e)
-            logging.getLogger().error("============ INPUT ============")
-            logging.getLogger().debug(request.method + " " + request.url)
-            logging.getLogger().error("args: " + pprint.pformat(dict(request.args.items())))
-            logging.getLogger().error("form: " +pprint.pformat(dict(request.form.items())))
-            logging.getLogger().error("json: " +pprint.pformat(dict(request.json.items())))
-            logging.getLogger().error("values: " +pprint.pformat(dict(request.values.items())))
+            self.log_error(request,e)
             response = JSONResponse(status=500)
             if Environment.get() != Environment.PROD:
                 response.set_error(repr(e))
@@ -75,7 +69,17 @@ class BaseApplication():
         self.post_hook(request, response)
         
         return response(environ, start_response)
-
+    
+    def log_error(self, request, e):
+        logging.getLogger().error("============ INTERNAL SERVER ERROR ============")
+        logging.exception(e)
+        logging.getLogger().error("============ INPUT ============")
+        logging.getLogger().debug(request.method + " " + request.url)
+        logging.getLogger().error("args: " + pprint.pformat(dict(request.args.items())))
+        logging.getLogger().error("form: " +pprint.pformat(dict(request.form.items())))
+        logging.getLogger().error("json: " +pprint.pformat(dict(request.json.items())))
+        logging.getLogger().error("values: " +pprint.pformat(dict(request.values.items())))
+    
     def __call__(self, environ, start_response):
         return self.wsgi_app(environ, start_response)
 

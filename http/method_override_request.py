@@ -132,8 +132,14 @@ class MethodOverrideRequest(Request):
     
     
     def _get_list_param(self, dictionary, key, base_type):
+        
         if key in dictionary:
-            ret = list(json.loads(dictionary[key]))
+            try:
+                ret = list(json.loads(dictionary[key]))
+            except TypeError:
+                pass
+            ret = dictionary.getlist(key)
+            
         else:
             ret = dictionary.getlist(key + "[]")
         
