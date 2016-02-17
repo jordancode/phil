@@ -175,8 +175,8 @@ class EntityRelationDAO(DataAccessObject):
         dicts = [self._model_to_row(model) for model in models]
         cols_to_update = [key for key,value in self._columns.items() if value]
         
-        row_count = MultiShardQuery.multi_shard_insert(self._table_name, self._id1_name, dicts, cols_to_update)
-        row_count = MultiShardQuery.multi_shard_insert(self._table_name+"_inv", self._id2_name, dicts, cols_to_update)
+        row_count = MultiShardQuery(self._pool()).multi_shard_insert(self._table_name, self._id1_name, dicts, cols_to_update)
+        row_count = MultiShardQuery(self._pool()).multi_shard_insert(self._table_name+"_inv", self._id2_name, dicts, cols_to_update)
         
         for model in models:
             model.update_stored_state()

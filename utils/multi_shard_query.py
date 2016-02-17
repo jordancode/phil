@@ -5,43 +5,49 @@ from multiprocessing.pool import Pool
 from framework.utils.query_builder import SQLQueryBuilder
 
 class MultiShardQuery:
+    _DEFAULT_NUM_THREADS = 1
     
-    @classmethod
-    def all_shard_query(cls, query, params = None, pool = None, num_threads = None):
+    def __init__(self, pool = None, num_threads = None, use_multi = False, catch_errors = False):
+        if pool is None:
+            pool = MySQLPool(MySQLPool.MAIN)
+        elif isinstance(pool, int):
+            pool = MySQLPool(pool)
+        self._pool = pool
+        
+        if not num_threads:
+            num_threads = self._DEFAULT_NUM_THREADS
+        self._num_threads = int(num_threads)
+        
+        self._use_multi = bool(use_multi)
+        self._catch_errors = bool(catch_errors)
+
+        
+    
+    def all_shard_query(self, query, params = None):
         """
             Runs a query on all shards and returns result. 
         """
-        if pool is None:
-            pool = MySQLPool(MySQLPool.MAIN)
         
-        return cls.multi_shard_query_by_shard_id(
-                range(pool.get_num_shards()), query, params, pool, num_threads
+        return self.multi_shard_query_by_shard_id(
+                range(self._pool.get_num_shards()), query, params
             )
     
-    @classmethod
-    def multi_shard_query(cls, id_list, query, params = None, pool = None,num_threads = None):
+
+    def multi_shard_query(self, id_list, query, params = None):
         """
             Runs a query on just the shards used for the provided id_list 
         """
-        if pool is None:
-            pool = MySQLPool(MySQLPool.MAIN)
         
         seen_shard_ids = {}
         for id in id_list:
             seen_shard_ids[Id(id).get_shard_id()] = True
             
-        return cls.multi_shard_query_by_shard_id(
-                seen_shard_ids.keys(), query, params, pool, num_threads
+        return self.multi_shard_query_by_shard_id(
+                seen_shard_ids.keys(), query, params
             )
     
     
-    @classmethod
-    def multi_shard_insert(cls, table_name, shard_by_col_name, dicts_to_insert, cols_to_update = None, pool = None,num_threads = None):
-        if pool is None:
-            pool = MySQLPool(MySQLPool.MAIN)
-        elif isinstance(pool, int):
-            pool = MySQLPool(pool)
-            
+    def multi_shard_insert(self, table_name, shard_by_col_name, dicts_to_insert, cols_to_update = None):            
         count = 0
             
         #construct mapping of inserted objects to shard that they go to
@@ -76,30 +82,33 @@ class MultiShardQuery:
             
             
             #do insert
-            count = count + MySQL.get_by_shard_id(shard_id, pool.get_id()).query(qb.build(), params)
+            shard = MySQL.get_by_shard_id(shard_id, self._pool.get_id())
+            try:
+                count = count + shard.query(qb.build(), params, self._use_multi)
+            except Exception as e:
+                if not self._catch_errors:
+                    raise e
+                count = 0
+            finally:
+                shard.close()
             
         return count
     
     
-    @classmethod
-    def multi_shard_query_by_shard_id(cls, shard_id_list, query, params = None, pool = None,num_threads = None):
+    def multi_shard_query_by_shard_id(self, shard_id_list, query, params = None):
         """
             Runs a query shards given by the provided shard_ids
         """
         
-        if pool is None:
-            pool = MySQLPool(MySQLPool.MAIN)
-        
-        run_one = cls._get_query_runner(pool, query, params ) 
+        run_one = self._get_query_runner(self._pool, query, params, self._use_multi, self._catch_errors) 
         
         #with Pool(num_threads) as p:
         res = map(run_one, shard_id_list)
         
-        return cls._prepare_result(res)
+        return self._prepare_result(res)
         
     
-    @classmethod
-    def multi_shard_in_list_query(cls, in_list, query, other_params = None, pool = None,num_threads = None):
+    def multi_shard_in_list_query(self, in_list, query, other_params = None):
         """
             Looks for a %l in the query string and replaces it with (%s, %s ...)
             It will parse the in_list parameter and run the correct list on each shard
@@ -112,9 +121,6 @@ class MultiShardQuery:
         """
         if other_params is None:
             other_params = ()
-        
-        if pool is None:
-            pool = MySQLPool(MySQLPool.MAIN)
             
         shard_id_to_in_list = {}
         for id in in_list:
@@ -124,17 +130,16 @@ class MultiShardQuery:
             else:
                 shard_id_to_in_list[shard_id].append(id)
         
-        run_one = cls._get_in_list_query_runner(pool, query, other_params, shard_id_to_in_list) 
+        run_one = self._get_in_list_query_runner(self._pool, query, other_params, shard_id_to_in_list, self._use_multi, self._catch_errors) 
         
         #with Pool(num_threads) as p:
         res = map(run_one, shard_id_to_in_list.keys())
         
         
-        return cls._prepare_result(res)
+        return self._prepare_result(res)
             
             
-    @staticmethod
-    def _get_in_list_query_runner(pool, query_str, other_params, shard_id_to_in_list):
+    def _get_in_list_query_runner(self, pool, query_str, other_params, shard_id_to_in_list, use_multi, catch_errors):
         # bind pool and query string to a function
         # that can make a query per shard id  
         def run_one_query(shard_id):
@@ -145,30 +150,42 @@ class MultiShardQuery:
             qry = query_str.replace("%l", "( " + ", ".join(map(lambda x :"%s", in_list)) + " )",1)
             
             shard = pool.get_shard(shard_id)
-            query_res = shard.query(qry, other_params + tuple(in_list))
-            shard.close() 
+            try:
+                query_res = shard.query(qry, other_params + tuple(in_list), use_multi)
+            except Exception as e:
+                if not catch_errors:
+                    raise e
+                query_res = None
+            finally:
+                shard.close()
+                 
             return query_res
         
         return run_one_query
             
             
                 
-    @staticmethod
-    def _get_query_runner(pool, query_str, params):
+    def _get_query_runner(self, pool, query_str, params, use_multi, catch_errors):
         # bind pool and query string to a function
         # that can make a query per shard id  
         def run_one_query(shard_id):
             shard = pool.get_shard(shard_id)
-            query_res = shard.query(query_str, params)
-            shard.close() 
+            try:
+                query_res = shard.query(query_str, params, use_multi)
+            except Exception as e:
+                if not catch_errors:
+                    raise e
+                query_res = None
+            finally:
+                shard.close()
+                 
             return query_res
         
         return run_one_query
         
             
             
-    @staticmethod
-    def _prepare_result(res):
+    def _prepare_result(self, res):
         try:
             return sum(res, [])
         except TypeError:
