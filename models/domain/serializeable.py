@@ -77,6 +77,9 @@ class Serializeable(metaclass=ABCMeta):
             
             try:
                 value = getattr(self, key)
+                if hasattr(value, '__call__'):
+                    #whoops it looks like a function
+                    raise AttributeError()
             except AttributeError:
                 value = self._get_attr(key)
             
