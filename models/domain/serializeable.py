@@ -1,6 +1,8 @@
 from abc import ABCMeta
 from framework.utils.id import Id
 import base64
+from framework.utils.date_utils import DateUtils
+import datetime
 
 class Serializeable(metaclass=ABCMeta):
     
@@ -103,6 +105,11 @@ class Serializeable(metaclass=ABCMeta):
                 return str(value)
         except (TypeError, AttributeError) as e:
             pass
+        
+        
+        if isinstance(value, datetime.datetime):
+            return DateUtils.datetime_to_unix(value)
+        
         
         #try bytes
         try:

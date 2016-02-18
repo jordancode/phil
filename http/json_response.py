@@ -9,6 +9,7 @@ import logging
 from json.encoder import JSONEncoder
 import datetime
 from framework.utils.type import Type
+from framework.utils.date_utils import DateUtils
 
 class JSONResponse(BaseResponse,ETagResponseMixin,
                CommonResponseDescriptorsMixin,
@@ -67,7 +68,12 @@ class JSONResponse(BaseResponse,ETagResponseMixin,
         except AttributeError:
             pass
         
+        
+        
         try:
+            if isinstance(value, datetime.datetime):
+                return DateUtils.datetime_to_unix(value)
+            
             return str(value)
         except AttributeError:
             pass
