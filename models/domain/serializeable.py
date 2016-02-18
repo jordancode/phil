@@ -1,8 +1,12 @@
 from abc import ABCMeta
 from framework.utils.id import Id
 import base64
+<<<<<<< Updated upstream
 from framework.utils.date_utils import DateUtils
 import datetime
+=======
+from enum import Enum
+>>>>>>> Stashed changes
 
 class Serializeable(metaclass=ABCMeta):
     
@@ -106,10 +110,8 @@ class Serializeable(metaclass=ABCMeta):
         except (TypeError, AttributeError) as e:
             pass
         
-        
         if isinstance(value, datetime.datetime):
             return DateUtils.datetime_to_unix(value)
-        
         
         #try bytes
         try:

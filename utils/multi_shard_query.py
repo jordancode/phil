@@ -63,7 +63,8 @@ class MultiShardQuery:
                 
             except Exception as e:
                 #skip objects that don't have the shard_by_col, or in wrong format
-                raise e
+                if not self._catch_errors:
+                    raise e
         
         for shard_id, dict_list in shard_to_dicts.items():
             #get vals array
@@ -99,11 +100,10 @@ class MultiShardQuery:
         """
             Runs a query shards given by the provided shard_ids
         """
+        qr = QueryRunner(self._pool, query, params, self._use_multi, self._catch_errors) 
         
-        run_one = self._get_query_runner(self._pool, query, params, self._use_multi, self._catch_errors) 
-        
-        #with Pool(num_threads) as p:
-        res = map(run_one, shard_id_list)
+        with Pool(self._num_threads) as p:
+            res = p.map(qr.run_one_query, shard_id_list)
         
         return self._prepare_result(res)
         
@@ -130,60 +130,13 @@ class MultiShardQuery:
             else:
                 shard_id_to_in_list[shard_id].append(id)
         
-        run_one = self._get_in_list_query_runner(self._pool, query, other_params, shard_id_to_in_list, self._use_multi, self._catch_errors) 
+        qr = InListQueryRunner(self._pool, query, other_params, shard_id_to_in_list, self._use_multi, self._catch_errors) 
         
-        #with Pool(num_threads) as p:
-        res = map(run_one, shard_id_to_in_list.keys())
+        with Pool(self._num_threads) as p:
+            res = p.map(qr.run_one_query, shard_id_to_in_list.keys())
         
         
         return self._prepare_result(res)
-            
-            
-    def _get_in_list_query_runner(self, pool, query_str, other_params, shard_id_to_in_list, use_multi, catch_errors):
-        # bind pool and query string to a function
-        # that can make a query per shard id  
-        def run_one_query(shard_id):
-            if not shard_id in shard_id_to_in_list:
-                return None;
-            
-            in_list = shard_id_to_in_list[shard_id]
-            qry = query_str.replace("%l", "( " + ", ".join(map(lambda x :"%s", in_list)) + " )",1)
-            
-            shard = pool.get_shard(shard_id)
-            try:
-                query_res = shard.query(qry, other_params + tuple(in_list), use_multi)
-            except Exception as e:
-                if not catch_errors:
-                    raise e
-                query_res = None
-            finally:
-                shard.close()
-                 
-            return query_res
-        
-        return run_one_query
-            
-            
-                
-    def _get_query_runner(self, pool, query_str, params, use_multi, catch_errors):
-        # bind pool and query string to a function
-        # that can make a query per shard id  
-        def run_one_query(shard_id):
-            shard = pool.get_shard(shard_id)
-            try:
-                query_res = shard.query(query_str, params, use_multi)
-            except Exception as e:
-                if not catch_errors:
-                    raise e
-                query_res = None
-            finally:
-                shard.close()
-                 
-            return query_res
-        
-        return run_one_query
-        
-            
             
     def _prepare_result(self, res):
         try:
@@ -191,3 +144,62 @@ class MultiShardQuery:
         except TypeError:
             return sum(res, 0)
 
+
+
+class BaseQueryRunner():
+    
+    def __init__(self, pool, query_str, use_multi, catch_errors ):
+        self.pool = pool
+        self.query_str = query_str
+        self.use_multi = use_multi
+        self.catch_errors = catch_errors
+    
+    def run_one_query(self, shard_id):
+        #abstract
+        pass
+    
+class QueryRunner(BaseQueryRunner):
+    
+    def __init__(self, pool, query_str, params, use_multi, catch_errors):
+        self.params = params
+        super().__init__(pool, query_str, use_multi, catch_errors)
+        
+    def run_one_query(self,shard_id):
+        shard = self.pool.get_shard(shard_id)
+        try:
+            query_res = shard.query(self.query_str, self.params, self.use_multi)
+        except Exception as e:
+            if not self.catch_errors:
+                raise e
+            query_res = []
+        finally:
+            shard.close()
+             
+        return query_res
+        
+class InListQueryRunner(BaseQueryRunner):
+    
+    def __init__(self,  pool, query_str, other_params, shard_id_to_in_list, use_multi, catch_errors):
+        self.other_params = other_params
+        self.shard_id_to_in_list = shard_id_to_in_list
+        
+        super().__init__(pool, query_str, use_multi, catch_errors)
+        
+    def run_one_query(self,shard_id):
+        if not shard_id in self.shard_id_to_in_list:
+            return [];
+        
+        in_list = self.shard_id_to_in_list[shard_id]
+        qry = self.query_str.replace("%l", "( " + ", ".join(map(lambda x :"%s", in_list)) + " )",1)
+        
+        shard = self.pool.get_shard(shard_id)
+        try:
+            query_res = shard.query(qry, self.other_params + tuple(in_list), self.use_multi)
+        except Exception as e:
+            if not self.catch_errors:
+                raise e
+            query_res = []
+        finally:
+            shard.close()
+             
+        return query_res
