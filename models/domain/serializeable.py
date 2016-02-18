@@ -1,12 +1,9 @@
 from abc import ABCMeta
 from framework.utils.id import Id
 import base64
-<<<<<<< Updated upstream
 from framework.utils.date_utils import DateUtils
 import datetime
-=======
 from enum import Enum
->>>>>>> Stashed changes
 
 class Serializeable(metaclass=ABCMeta):
     

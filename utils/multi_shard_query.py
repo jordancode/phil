@@ -102,8 +102,12 @@ class MultiShardQuery:
         """
         qr = QueryRunner(self._pool, query, params, self._use_multi, self._catch_errors) 
         
-        with Pool(self._num_threads) as p:
-            res = p.map(qr.run_one_query, shard_id_list)
+        
+        if self._num_threads <= 1:
+            res = [qr.run_one_query(i) for i in shard_id_list]
+        else:
+            with Pool(self._num_threads) as p:
+                res = p.map(qr.run_one_query, shard_id_list)
         
         return self._prepare_result(res)
         
@@ -132,8 +136,11 @@ class MultiShardQuery:
         
         qr = InListQueryRunner(self._pool, query, other_params, shard_id_to_in_list, self._use_multi, self._catch_errors) 
         
-        with Pool(self._num_threads) as p:
-            res = p.map(qr.run_one_query, shard_id_to_in_list.keys())
+        if self._num_threads <= 1:
+            res = [qr.run_one_query(i) for i in shard_id_to_in_list.keys()]
+        else:
+            with Pool(self._num_threads) as p:
+                res = p.map(qr.run_one_query, shard_id_to_in_list.keys())
         
         
         return self._prepare_result(res)
