@@ -25,7 +25,8 @@ class EntityRelation(Entity):
     
     def to_dict(self, stringify_ids = False, optional_keys=None):
         d = super().to_dict(stringify_ids,optional_keys)
-        del(d["id"])
+        if "id" in d:
+            del(d["id"])
         
         return d
     

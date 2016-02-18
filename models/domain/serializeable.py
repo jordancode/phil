@@ -103,7 +103,6 @@ class Serializeable(metaclass=ABCMeta):
       
      
     def _stringify_id(self, value):
-        
         #try int
         try:
             if value > Id.MAX_32_BIT_INT:
