@@ -75,7 +75,11 @@ class Serializeable(metaclass=ABCMeta):
             if not self._include_key(key, defn):
                 continue
             
-            value = self._get_attr(key)
+            try:
+                value = getattr(self, key)
+            except AttributeError:
+                value = self._get_attr(key)
+            
             try:
                 dict = value._recursive_to_dict(seen_refs, stringify_ids, optional_keys)
                 state[key] = dict
@@ -133,12 +137,9 @@ class Serializeable(metaclass=ABCMeta):
             if defn[key].is_lazy():
                 return defn[key].get_lazy_value(self)
             required = defn[key].is_required()
-            
-        try:
-            return getattr(self, key)
-        except AttributeError as e:
-            if required:
-                raise e
+        
+        if required:
+            raise AttributeError()
         
         return None
      
