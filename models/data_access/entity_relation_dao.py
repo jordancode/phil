@@ -19,8 +19,10 @@ class EntityRelationDAO(DataAccessObject):
         self._id2_name = id2_name
         
         self._columns = columns
-        self._columns[id1_name] = False
-        self._columns[id2_name] = False
+        if not id1_name in columns:
+            self._columns[id1_name] = False
+        if not id2_name in columns:
+            self._columns[id2_name] = False
     
     
     

@@ -13,7 +13,6 @@ class SortIndex:
         SortIndeces should be unique per parent_id 
         (i.e. user_id in user_has_media or user_has_album, album_id in album_has_media)
     
-        #
     """
     
     
@@ -55,7 +54,6 @@ class SortIndex:
             new_incr = int((sort_index_start.get_increment() + sort_index_end.get_increment()) / 2)
             if new_incr ==  sort_index_start.get_increment() or new_incr == sort_index_end.get_increment():
                 raise NoGapError()
-        
         
         
         return new_sort_index

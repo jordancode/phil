@@ -58,8 +58,11 @@ class MySQLShard:
     
     
     def query(self, query, params = None, use_multi = False):
+        query_obj = {}
         try:
             cursor = self._get_cursor()
+            
+            query_obj = QueryTracker.push(self.get_name(), query, params)
             
             results = cursor.execute(query, params, multi=use_multi)
             ret = []
@@ -78,9 +81,10 @@ class MySQLShard:
                 for w in warnings:
                     logging.getLogger().warn("MySQL warning: " + repr(w))
             
-            QueryTracker.push(self.get_name(), query, params, ret)
+            query_obj["result"] = ret
             
         except Exception as e:
+            query_obj["error"] = repr(e)
             logging.getLogger().error("MySQL error: " + repr(e))
             raise e
         

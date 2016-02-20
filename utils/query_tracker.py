@@ -5,16 +5,17 @@ class QueryTracker():
     _stack = []
     
     @classmethod
-    def push(cls, shard_name, query, parameters, result):
-        cls._stack.append(
-            {
+    def push(cls, shard_name, query, parameters, result = None, error = None):
+        q_data ={
              "shard_name" : shard_name, 
              "query" : query, 
              "parameters" : parameters, 
              "result" : result, 
              "ts" : datetime.now()
             }
-        )
+        cls._stack.append(q_data)
+        
+        return q_data
         
         
     @classmethod
