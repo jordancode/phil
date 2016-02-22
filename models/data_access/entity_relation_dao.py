@@ -4,7 +4,7 @@ from framework.utils.multi_shard_query import MultiShardQuery
 import logging
 from framework.storage.mysql import MySQL
 from framework.utils.id import BadIdError
-from framework.utils.associative_array import SORT_HI_TO_LO
+from framework.utils.associative_array import SORT_HI_TO_LO, SORT_LO_TO_HI
 from framework.utils.query_builder import SQLQueryBuilder, And
 
 class EntityRelationDAO(DataAccessObject):
@@ -111,10 +111,17 @@ class EntityRelationDAO(DataAccessObject):
                           ("permission&"+str(missing_permissions), "=", "permission" )
                         )
             
+        if offset and sort_by:
+            if SORT_HI_TO_LO:
+                comp = "<"
+            else:
+                comp = ">"
+            where_clause.append((sort_by, comp, offset))
+            
         query_builder = (SQLQueryBuilder
                             .select(table_name)
                             .where(where_clause)
-                            .limit(count, offset))
+                            .limit(count))
         
         if sort_by:
             query_builder.order_by(sort_by, sort)
