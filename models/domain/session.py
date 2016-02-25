@@ -39,8 +39,12 @@ class Session(Entity):
     @property
     def token(self):
         return self._get_attr("token")
-    
-    
+
+
+    def make_admin(self):
+      #  self.FLAG_IS_ADMIN = 1
+
+        self.set_flag(Session.FLAG_IS_ADMIN)
     
     #########
     @property
@@ -70,7 +74,8 @@ class Session(Entity):
         if value:
             self._set_attr("flags", flags | bit_mask)
         else:
-            self._set_attr("flags", flags | bit_mask)
+            self._set_attr("flags", None, 0 )
+
    
     def update_session_modified(self):
         self._set_attr("modified_ts", int(datetime.datetime.now()))

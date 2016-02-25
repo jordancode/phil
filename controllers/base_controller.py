@@ -37,6 +37,7 @@ class BaseController:
     def _is_admin(self):
         try:
             sesh = self._get_session()
+            #sesh.set_flag(Session.FLAG_IS_ADMIN)
             return sesh.has_flag(Session.FLAG_IS_ADMIN)
         except SessionException:
             return False
