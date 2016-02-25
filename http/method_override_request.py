@@ -137,8 +137,7 @@ class MethodOverrideRequest(Request):
             try:
                 ret = list(json.loads(dictionary[key]))
             except TypeError:
-                pass
-            ret = dictionary.getlist(key)
+                ret = dictionary.getlist(key)
             
         else:
             ret = dictionary.getlist(key + "[]")
