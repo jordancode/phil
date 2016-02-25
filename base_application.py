@@ -9,6 +9,8 @@ from framework.http.json_response import JSONResponse
 import logging
 import pprint
 from framework.config.environment import Environment
+import traceback
+import sys
 
 class BaseApplication():
     
@@ -34,10 +36,16 @@ class BaseApplication():
             self.log_error(request, e)
             
         except Exception as e:
+            #-- uncaught exception
+            #-- print to screen and log
             self.log_error(request,e)
             response = JSONResponse(status=500)
             if Environment.get() != Environment.PROD:
+                exc_type, exc_value, exc_traceback = sys.exc_info()
                 response.set_error(repr(e))
+                response.set_key("taceback", traceback.format_exception(
+                        exc_type, exc_value, exc_traceback
+                    ))
         
         return response
     

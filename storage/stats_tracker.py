@@ -17,7 +17,10 @@ class StatsTracker(TCPStatsClient):
             logging.getLogger().warn("Stat failed")
             logging.getLogger().exception(e)
             self.close()
-            
+    
+    def track(self, event):
+        return self.incr(event)
+        
     
     def verify_checksum(self, event, count, sample, checksum):
         key = (str(event) + ":" + str(count) + ":" + str(sample)).encode("utf-8")
