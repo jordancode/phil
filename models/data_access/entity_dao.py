@@ -49,7 +49,8 @@ class EntityDAO(DataAccessObject):
         if len(ids_to_find):
             rows = self._primary_get_list(ids_to_find)
             
-            rows = self._filter_deleted(rows)
+            if not self.return_deleted:
+                rows = self._filter_deleted(rows)
             
             for row in rows:
                 model = self._row_to_model(row)
