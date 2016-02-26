@@ -52,10 +52,18 @@ class Type:
                 if isinstance(value, datetime.datetime):
                     return value
                 
-                #cast to float from string then to int to remove decimal 
-                ts = int(float(value))
-                if ts > 0:
-                    return DateUtils.unix_to_datetime(ts)
+                #cast to float from string then to int to remove decimal
+                try: 
+                    ts = int(float(value))
+                    if ts > 0:
+                        return DateUtils.unix_to_datetime(ts)
+                except (ValueError, TypeError):
+                    pass
+                try:
+                    return DateUtils.mysql_to_datetime(value)
+                except (ValueError, TypeError):
+                    pass
+                
                 return None
             elif dest_type == cls.JSON:
                 return json.loads(value)
