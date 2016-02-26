@@ -28,3 +28,14 @@ class EmailUtils:
                 return True
         
         return False
+    
+    
+    @classmethod
+    def is_valid_email(cls,email_address):
+        split = email_address.split("@")
+        good_at = (len(split) == 2 
+                   and len(split[0]) >= 1 
+                   and len(split[1]) >= 3)
+        
+        return len(email_address) <= 255 and good_at 
+        
