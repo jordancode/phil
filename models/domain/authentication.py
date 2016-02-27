@@ -55,6 +55,11 @@ class Authentication(Entity):
     def secret(self):
         return self._get_attr("secret")
     
+    @secret.setter
+    def secret(self, new_secret):
+        self._validate_secret(new_secret)
+        self._set_attr("secret", self._hash_secret(new_secret))
+    
     
     @property
     def user(self):
