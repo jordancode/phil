@@ -141,7 +141,7 @@ class Serializeable(metaclass=ABCMeta):
             required = defn[key].is_required()
         
         if required:
-            raise AttributeError()
+            raise AttributeError(key)
         
         return None
      
