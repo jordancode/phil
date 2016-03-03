@@ -1,10 +1,9 @@
-from framework.storage.mysql import MySQL
-from framework.models.domain.authentication import Authentication, AuthException
+from app.models.user import UserDAO
 from framework.models.data_access.data_access_object import DataAccessObject, RowDeletedException
-from framework.config.config import Config
-from app.models.data_access.user_dao import UserDAO
-import importlib
+from framework.models.domain.authentication import Authentication, AuthException
+from framework.storage.mysql import MySQL
 from framework.utils.class_loader import ClassLoader
+
 
 class AuthDAO(DataAccessObject):
     

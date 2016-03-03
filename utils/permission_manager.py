@@ -1,8 +1,8 @@
-from framework.models.domain.permissions import Permissions, PermissionsMask,\
-    PermissionsError
-from app.models.domain.interactable import Interactable
+from app.models.interactable import Interactable
 from framework.models.data_access.data_access_object import RowDeletedException,\
     RowNotFoundException
+from framework.models.domain.permissions import PermissionsMask,\
+    PermissionsError
 
 
 class PermissionManager:

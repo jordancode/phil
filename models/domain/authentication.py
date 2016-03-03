@@ -1,9 +1,10 @@
-from passlib.hash import bcrypt
-from framework.models.domain.entity import Entity
 import string
-import logging
-from app.models.data_access.user_dao import UserDAO
 from _datetime import datetime
+
+from passlib.hash import bcrypt
+
+from app.models.user import UserDAO
+from framework.models.domain.entity import Entity
 
 
 class Authentication(Entity):
