@@ -11,8 +11,9 @@ class CLIUtil:
             if arg.startswith(long_prefix):
                 return arg[len(long_prefix):]
             
-            short_prefix = "-" + short_name + "="
-            if arg.startswith(short_prefix):
-                return arg[len(short_prefix):]
+            if short_name:
+                short_prefix = "-" + short_name + "="
+                if arg.startswith(short_prefix):
+                    return arg[len(short_prefix):]
         
         return None
