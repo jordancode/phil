@@ -1,7 +1,7 @@
 from app.models.interactable import Interactable
-from framework.models.data_access.data_access_object import RowDeletedException,\
+from framework.models.data_access_object import RowDeletedException,\
     RowNotFoundException
-from framework.models.domain.permissions import PermissionsMask,\
+from framework.models.permissions import PermissionsMask,\
     PermissionsError
 
 

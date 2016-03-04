@@ -1,6 +1,9 @@
-from framework.models.domain.entity import Entity
 import hashlib
+
 from user_agents import parse
+
+from framework.models.entity import Entity
+
 
 class UserAgent(Entity):
     

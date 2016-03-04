@@ -4,7 +4,7 @@ from _datetime import datetime
 from passlib.hash import bcrypt
 
 from app.models.user import UserDAO
-from framework.models.domain.entity import Entity
+from framework.models.entity import Entity
 
 
 class Authentication(Entity):

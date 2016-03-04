@@ -1,4 +1,4 @@
-from framework.models.domain.entity import Entity
+from framework.models.entity import Entity
 from framework.utils.associative_array import AssociativeArray
 from framework.utils.disjoint_interval import DisjointInterval
 

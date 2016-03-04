@@ -1,5 +1,5 @@
-from framework.models.data_access.data_access_object import DataAccessObject
-from framework.models.domain.entity import Entity
+from framework.models.data_access_object import DataAccessObject
+from framework.models.entity import Entity
 from framework.storage.mysql import MySQL
 
 class BaseUserDAO(DataAccessObject):

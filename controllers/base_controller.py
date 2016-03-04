@@ -3,7 +3,7 @@ from werkzeug.exceptions import Unauthorized, Forbidden
 
 from app.models.user import UserDAO
 from framework.http.json_http_exception import JSONHTTPException
-from framework.models.domain.session import Session, SessionException
+from framework.models.session import Session, SessionException
 
 
 class BaseController:

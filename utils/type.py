@@ -1,9 +1,10 @@
-from framework.utils.date_utils import DateUtils
-import json
-from framework.models.domain.serializeable import CircularRefException
-from framework.utils.attr import Attr
-import logging
 import datetime
+import json
+import logging
+
+from framework.models.serializeable import CircularRefException
+from framework.utils.attr import Attr
+from framework.utils.date_utils import DateUtils
 
 
 class Type:
