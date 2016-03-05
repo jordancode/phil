@@ -1,7 +1,8 @@
-from abc import ABCMeta
-from framework.utils.sql_utils import SQLUtils
 from _ctypes import ArgumentError
+from abc import ABCMeta
+
 from framework.utils.associative_array import SORT_HI_TO_LO, SORT_LO_TO_HI
+from framework.utils.sql_utils import SQLUtils
 
 DIRECTION_ASC = "ASC"
 DIRECTION_DESC = "DESC"

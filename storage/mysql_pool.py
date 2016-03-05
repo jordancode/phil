@@ -1,6 +1,8 @@
-from framework.config.config import Config
 import logging
+
+from framework.config.config import Config
 from framework.utils.id import BadIdError
+
 
 class MySQLPool:
     

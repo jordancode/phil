@@ -1,6 +1,6 @@
-from framework.http.template_response import TemplateResponse
 from framework.config.config import Config
-import copy
+from framework.http.template_response import TemplateResponse
+
 
 class PageResponse(TemplateResponse):
 

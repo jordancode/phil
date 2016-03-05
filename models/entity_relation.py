@@ -34,8 +34,7 @@ class EntityRelation(Entity):
 
 import logging
 
-from framework.models.data_access_object import DataAccessObject,\
-    RowNotFoundException
+import framework.models.data_access_object
 from framework.storage.mysql import MySQL
 from framework.utils.associative_array import SORT_HI_TO_LO
 from framework.utils.id import BadIdError
@@ -43,7 +42,7 @@ from framework.utils.multi_shard_query import MultiShardQuery
 from framework.utils.query_builder import SQLQueryBuilder, And
 
 
-class EntityRelationDAO(DataAccessObject):
+class EntityRelationDAO(framework.models.data_access_object.DataAccessObject):
 
     
     
@@ -83,7 +82,7 @@ class EntityRelationDAO(DataAccessObject):
                 )
         
         if not len(rows):
-            raise RowNotFoundException()
+            raise framework.models.data_access_object.RowNotFoundException()
         
         row = rows[0]
         
@@ -165,7 +164,7 @@ class EntityRelationDAO(DataAccessObject):
         try:
             ret = MySQL.get(id).query(query_builder.build(), [id])
         except BadIdError:
-            raise RowNotFoundException()
+            raise framework.models.data_access_object.RowNotFoundException()
         
         
         return ret

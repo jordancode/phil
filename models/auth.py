@@ -1,11 +1,11 @@
-from app.models.user import UserDAO
+import app.models.user
 from framework.models.authentication import Authentication, AuthException
-from framework.models.data_access_object import DataAccessObject, RowDeletedException
+import framework.models.data_access_object
 from framework.storage.mysql import MySQL
 from framework.utils.class_loader import ClassLoader
 
 
-class AuthDAO(DataAccessObject):
+class AuthDAO(framework.models.data_access_object.DataAccessObject):
 
     def __init__(self):
         super().__init__(Authentication)
@@ -26,7 +26,7 @@ class AuthDAO(DataAccessObject):
         row = rows[0]
 
         if user is None:
-            user_dao = UserDAO()
+            user_dao = app.models.user.UserDAO()
             user = user_dao.get(row['user_id'])
         elif user.id != row['user_id']:
             raise UserAuthMismatchError()
@@ -93,7 +93,7 @@ class AuthDAO(DataAccessObject):
 
     def _row_to_model(self, row):
         if row['deleted']:
-            raise RowDeletedException()
+            raise framework.models.data_access_object.RowDeletedException()
 
         auth_class = self._type_id_to_class(row['provider_type'])
         auth = auth_class(row['id'], row['provider_id'].decode("utf-8") , row['secret'].decode("utf-8") , row["user_id"], secret_hashed=True,expires_ts=row["expires_ts"])
@@ -128,7 +128,7 @@ class NoAuthFoundException(AuthException):
 
 
 
-from framework.models.data_access_object import RowDeletedException
+import framework.models.data_access_object
 from framework.models.session import SessionDAO
 
 
@@ -175,7 +175,7 @@ class AuthService:
             
             raise ProviderIdTakenException(auth)
             
-        except (NoAuthFoundException, RowDeletedException):
+        except (NoAuthFoundException, framework.models.data_access_object.RowDeletedException):
             pass
         
         # can throw exceptions if these credentials don't work

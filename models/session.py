@@ -1,4 +1,4 @@
-from framework.models.data_access_object import DataAccessObject, RowNotFoundException
+import framework.models.data_access_object
 
 from framework.models.entity import Entity
 
@@ -104,7 +104,7 @@ class SessionException(Exception):
 
 
 
-class SessionDAO(DataAccessObject):
+class SessionDAO(framework.models.data_access_object.DataAccessObject):
 
     _user_agents = None
 
@@ -244,7 +244,7 @@ class SessionDAO(DataAccessObject):
         ua = self._get_user_agent_by_id(row['user_agent_id'])
 
         if user is None:
-            user_dao = UserDAO()
+            user_dao =  app.models.user.UserDAO()
             user = user_dao.get(row['user_id'])
 
         auth_dao = AuthDAO()
@@ -271,18 +271,16 @@ class SessionDAO(DataAccessObject):
         }
 
 
-class UserAgentNotFoundException(RowNotFoundException, SessionException):
+class UserAgentNotFoundException(framework.models.data_access_object.RowNotFoundException, SessionException):
     def __str__(self):
         return "User Agent not found"
 
-class SessionNotFoundException(RowNotFoundException, SessionException):
+class SessionNotFoundException(framework.models.data_access_object.RowNotFoundException, SessionException):
     def __str__(self):
         return "Session row not found"
 
 
-
-
-from app.models.user import UserDAO
+import app.models.user
 from framework.models.auth import AuthDAO
 from framework.models.user_agent import UserAgent
 from framework.storage.mysql import MySQL

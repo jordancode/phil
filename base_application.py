@@ -1,16 +1,15 @@
-from werkzeug.routing import Map, Rule
-from werkzeug.wrappers import Request, Response
-from werkzeug.exceptions import HTTPException, NotFound
-from framework.http.cookie_session_store import CookieSessionStore
-import string
-import importlib
-from framework.http.method_override_request import MethodOverrideRequest
-from framework.http.json_response import JSONResponse
 import logging
 import pprint
-from framework.config.environment import Environment
-import traceback
 import sys
+import traceback
+
+from werkzeug.exceptions import HTTPException, NotFound
+
+import framework.http.cookie_session_store
+from framework.config.environment import Environment
+from framework.http.json_response import JSONResponse
+from framework.http.method_override_request import MethodOverrideRequest
+
 
 class BaseApplication():
     
@@ -60,7 +59,7 @@ class BaseApplication():
     
     def get_session_store(self,request):
         #override if want to store session id's another way on the client
-        return CookieSessionStore()
+        return framework.http.cookie_session_store.CookieSessionStore()
     
     def call_controller(self, request, rule, args):
         session_store = self.get_session_store(request)

@@ -1,5 +1,5 @@
 from redlock import RedLock
-from framework.config.config import Config
+
 from framework.storage.redis import Redis
 
 TTL = 10000

@@ -1,9 +1,10 @@
+import datetime
 import pickle
 import time
 import uuid
 
-import datetime
 from rq import Queue
+
 from framework.storage.redis import Redis
 
 

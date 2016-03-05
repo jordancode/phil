@@ -1,5 +1,7 @@
-from framework.http.json_response import JSONResponse
 from werkzeug.exceptions import HTTPException
+
+from framework.http.json_response import JSONResponse
+
 
 class JSONHTTPException(HTTPException):
     

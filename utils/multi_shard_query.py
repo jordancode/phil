@@ -1,8 +1,10 @@
+from multiprocessing.pool import Pool
+
 from framework.storage.mysql import MySQL
 from framework.storage.mysql_pool import MySQLPool
 from framework.utils.id import Id
-from multiprocessing.pool import Pool
 from framework.utils.query_builder import SQLQueryBuilder
+
 
 class MultiShardQuery:
     _DEFAULT_NUM_THREADS = 1

@@ -1,6 +1,8 @@
-import time
-from framework.storage.redis import Redis
 import pprint
+import time
+
+from framework.storage.redis import Redis
+
 
 class Id:
     """

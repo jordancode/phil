@@ -1,8 +1,11 @@
 import random
 import string
+
 from framework.storage.mysql import MySQL
 from framework.storage.mysql_pool import MySQLPool
 from framework.utils.id import Id
+
+
 class RandomToken:
     
     MIN_LENGTH = 8

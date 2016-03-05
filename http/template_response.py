@@ -10,6 +10,7 @@ from werkzeug.wrappers import (BaseResponse,ETagResponseMixin,
 from framework.config.config import Config
 from framework.models.entity import Entity
 
+
 class TemplateResponse(BaseResponse,ETagResponseMixin,
                CommonResponseDescriptorsMixin,
                WWWAuthenticateMixin):

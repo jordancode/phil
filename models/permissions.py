@@ -1,5 +1,6 @@
 from werkzeug.exceptions import Forbidden
-from asyncore import read
+
+
 class Permissions:
 
 	PERMISSION_MASK_OWNER = 0b1

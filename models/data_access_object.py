@@ -1,13 +1,11 @@
-from framework.utils.singleton import Singleton
-from framework.storage.mysql import MySQL
 import logging
-from pprint import pformat
-import pprint
+from abc import ABCMeta
+
+from framework.storage.mysql import MySQL
+from framework.storage.mysql_pool import MySQLPool
 from framework.utils.id import BadIdError
 from framework.utils.model_cache import ModelCache
 from framework.utils.sql_utils import SQLUtils
-from framework.storage.mysql_pool import MySQLPool
-from abc import ABCMeta
 
 
 class DataAccessObject(metaclass=ABCMeta):

@@ -1,8 +1,8 @@
-from framework.models.data_access_object import DataAccessObject
+import framework.models.data_access_object
 from framework.models.entity import Entity
 from framework.storage.mysql import MySQL
 
-class BaseUserDAO(DataAccessObject):
+class BaseUserDAO(framework.models.data_access_object.DataAccessObject):
     
     def __init__(self, _class = None):
         super().__init__(_class or Entity)

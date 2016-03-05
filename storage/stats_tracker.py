@@ -1,7 +1,10 @@
-from statsd.client import TCPStatsClient
-from framework.config.config import Config
-import logging
 import hashlib
+import logging
+
+from statsd.client import TCPStatsClient
+
+from framework.config.config import Config
+
 
 class StatsTracker(TCPStatsClient):
     

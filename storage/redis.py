@@ -1,7 +1,9 @@
-from redis import StrictRedis, ConnectionPool
-from framework.config.config import Config
 from copy import copy
-from pprint import pprint
+
+from redis import StrictRedis, ConnectionPool
+
+from framework.config.config import Config
+
 
 class Redis(StrictRedis):
     

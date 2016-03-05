@@ -118,12 +118,11 @@ class InvalidParameterError(Exception):
 
 import datetime
 
-from framework.models.data_access_object import DataAccessObject,\
-    RowNotFoundException
+import framework.models.data_access_object
 from framework.utils.multi_shard_query import MultiShardQuery
 
 
-class EntityDAO(DataAccessObject):
+class EntityDAO(framework.models.data_access_object.DataAccessObject):
     
     _table = None
     
@@ -139,7 +138,7 @@ class EntityDAO(DataAccessObject):
         rows = self._primary_get(id)
         
         if not len(rows):
-            raise RowNotFoundException()
+            raise framework.models.data_access_object.RowNotFoundException()
         
         model = self._row_to_model(rows[0])
         model.update_stored_state()
