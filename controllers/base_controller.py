@@ -1,10 +1,10 @@
-from framework.models.services.session_service import SessionService
-from framework.models.domain.session import Session, SessionException
-from werkzeug.exceptions import Unauthorized, Forbidden
-from framework.http.json_response import JSONResponse
-from framework.http.json_http_exception import JSONHTTPException
-from app.models.data_access.user_dao import UserDAO
 from werkzeug import utils
+from werkzeug.exceptions import Unauthorized, Forbidden
+
+from app.models.user import UserDAO
+from framework.http.json_http_exception import JSONHTTPException
+from framework.models.session import Session, SessionException
+
 
 class BaseController:
     

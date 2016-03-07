@@ -1,13 +1,15 @@
+import copy
+import json
+
+from pystache import Renderer
+from pystache.loader import Loader
 from werkzeug.wrappers import (BaseResponse,ETagResponseMixin,
                CommonResponseDescriptorsMixin,
                WWWAuthenticateMixin)
 
-from pystache import Renderer
-from pystache.loader import Loader
 from framework.config.config import Config
-import copy
-import json
-from framework.models.domain.entity import Entity
+from framework.models.entity import Entity
+
 
 class TemplateResponse(BaseResponse,ETagResponseMixin,
                CommonResponseDescriptorsMixin,

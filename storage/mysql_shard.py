@@ -1,11 +1,12 @@
-from framework.utils.id import Id
-from framework.config.config import Config
-import random
-import mysql.connector
-from pprint import pprint
-from framework.utils.query_tracker import QueryTracker
 import logging
+import random
+
+import mysql.connector
+
+from framework.config.config import Config
 from framework.storage.mysql import MySQL
+from framework.utils.query_tracker import QueryTracker
+
 
 class MySQLShard:
     

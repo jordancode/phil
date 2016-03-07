@@ -1,13 +1,48 @@
-from framework.models.data_access.data_access_object import DataAccessObject,\
-    RowNotFoundException
-from framework.utils.multi_shard_query import MultiShardQuery
+from framework.models.entity import Entity
+
+class EntityRelation(Entity):
+    """
+        represents a relationship between two entities
+    """
+
+    def __init__(self, id1, id2, id1_name, id2_name):
+        super().__init__(str(id1) + "_" + str(id2))
+
+        self._id1_name = id1_name
+        self._id2_name = id2_name
+
+        self._set_attr(id1_name,id1)
+        self._set_attr(id2_name,id2)
+
+
+    @property
+    def id1(self):
+        return self._get_attr(self._id1_name)
+
+    @property
+    def id2(self):
+        return self._get_attr(self._id2_name)
+
+    def to_dict(self, stringify_ids = False, optional_keys=None):
+        d = super().to_dict(stringify_ids,optional_keys)
+        if "id" in d:
+            del(d["id"])
+
+        return d
+
+
+
 import logging
+
+import framework.models.data_access_object
 from framework.storage.mysql import MySQL
+from framework.utils.associative_array import SORT_HI_TO_LO
 from framework.utils.id import BadIdError
-from framework.utils.associative_array import SORT_HI_TO_LO, SORT_LO_TO_HI
+from framework.utils.multi_shard_query import MultiShardQuery
 from framework.utils.query_builder import SQLQueryBuilder, And
 
-class EntityRelationDAO(DataAccessObject):
+
+class EntityRelationDAO(framework.models.data_access_object.DataAccessObject):
 
     
     
@@ -47,7 +82,7 @@ class EntityRelationDAO(DataAccessObject):
                 )
         
         if not len(rows):
-            raise RowNotFoundException()
+            raise framework.models.data_access_object.RowNotFoundException()
         
         row = rows[0]
         
@@ -129,7 +164,7 @@ class EntityRelationDAO(DataAccessObject):
         try:
             ret = MySQL.get(id).query(query_builder.build(), [id])
         except BadIdError:
-            raise RowNotFoundException()
+            raise framework.models.data_access_object.RowNotFoundException()
         
         
         return ret

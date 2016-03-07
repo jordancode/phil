@@ -1,6 +1,5 @@
 import datetime
 import time
-from pathlib import _Accessor
 
 
 class DateUtils:
@@ -91,4 +90,4 @@ class DateUtils:
         return DateUtils.datetime_to_unix(dt)
 
 
-from framework.models.domain.sort_index import SortIndex
+from framework.models.sort_index import SortIndex

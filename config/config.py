@@ -1,6 +1,8 @@
-import json
-from framework.config.environment import Environment
 import copy
+import json
+
+from framework.config.environment import Environment
+
 
 class Config:
     """

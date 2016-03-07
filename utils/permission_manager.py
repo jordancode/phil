@@ -1,8 +1,8 @@
-from framework.models.domain.permissions import Permissions, PermissionsMask,\
+from app.models.interactable import Interactable
+import framework.models.data_access_object
+
+from framework.models.permissions import PermissionsMask,\
     PermissionsError
-from app.models.domain.interactable import Interactable
-from framework.models.data_access.data_access_object import RowDeletedException,\
-    RowNotFoundException
 
 
 class PermissionManager:
@@ -30,7 +30,7 @@ class PermissionManager:
         try:
             dao = cls_.getUserHasDAO()
             uhx_objs = dao.get_list(self._logged_in_user.id, id_list)
-        except (RowDeletedException, RowNotFoundException):
+        except (framework.models.data_access_object.RowDeletedException, framework.models.data_access_object.RowNotFoundException):
             #verify ownership rows exist
             raise PermissionError()
         

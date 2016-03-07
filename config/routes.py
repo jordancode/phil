@@ -1,10 +1,12 @@
-from werkzeug.routing import Map, Rule
-from framework.config.config import Config
-from werkzeug.utils import redirect
 import copy
-import string
 import importlib
+import string
+
+from werkzeug.routing import Map, Rule
+
+from framework.config.config import Config
 from framework.utils.type import Type
+
 
 class Routes():
     

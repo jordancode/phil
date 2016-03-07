@@ -1,9 +1,11 @@
-from passlib.hash import bcrypt
-from framework.models.domain.entity import Entity
 import string
-import logging
-from app.models.data_access.user_dao import UserDAO
 from _datetime import datetime
+
+from passlib.hash import bcrypt
+
+import app.models.user
+
+from framework.models.entity import Entity
 
 
 class Authentication(Entity):
@@ -63,7 +65,7 @@ class Authentication(Entity):
     
     @property
     def user(self):
-        return UserDAO().get(self.user_id)
+        return app.models.user.UserDAO().get(self.user_id)
     
     
     def is_expired(self):

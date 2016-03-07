@@ -1,5 +1,7 @@
-from framework.config.config import Config
 import importlib
+
+from framework.config.config import Config
+
 
 class ClassLoader:
 

@@ -1,7 +1,7 @@
-from framework.http.base_session_store import BaseSessionStore
-from framework.models.services.session_service import SessionService, NoActiveSessionException
-from framework.models.domain.session import SessionException
+import framework.models.session
 from framework.config.config import Config
+from framework.http.base_session_store import BaseSessionStore
+
 
 class CookieSessionStore(BaseSessionStore):
     
@@ -30,9 +30,9 @@ class CookieSessionStore(BaseSessionStore):
             session_id = request.cookies[self._get_cookie_name()]
             token = request.cookies[self._get_token_cookie_name()]
         except KeyError:
-            raise NoActiveSessionException()
+            raise framework.models.session.NoActiveSessionException()
         
-        return  SessionService().get_active_session(int(session_id), token)
+        return  framework.models.session.SessionService().get_active_session(int(session_id), token)
         
     
     

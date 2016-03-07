@@ -1,6 +1,8 @@
-from framework.utils.id import Id
-import random
 import hashlib
+import random
+
+from framework.utils.id import Id
+
 
 class MySQL:
     

@@ -1,9 +1,10 @@
-from abc import ABCMeta
-from framework.utils.id import Id
 import base64
-from framework.utils.date_utils import DateUtils
 import datetime
-from enum import Enum
+from abc import ABCMeta
+
+from framework.utils.date_utils import DateUtils
+from framework.utils.id import Id
+
 
 class Serializeable(metaclass=ABCMeta):
     

@@ -1,15 +1,14 @@
+import datetime
 import json
+from builtins import Exception
+from json.encoder import JSONEncoder
+
 from werkzeug.wrappers import (BaseResponse,ETagResponseMixin,
                CommonResponseDescriptorsMixin,
                WWWAuthenticateMixin)
-from builtins import Exception
-import pprint
-import sys
-import logging
-from json.encoder import JSONEncoder
-import datetime
-from framework.utils.type import Type
+
 from framework.utils.date_utils import DateUtils
+
 
 class JSONResponse(BaseResponse,ETagResponseMixin,
                CommonResponseDescriptorsMixin,
