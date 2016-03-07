@@ -1,6 +1,5 @@
 import app.models.user
 import framework.models.data_access_object
-import framework.models.data_access_object
 from framework.models.authentication import Authentication, AuthException
 import framework.models.session
 from framework.storage.mysql import MySQL
