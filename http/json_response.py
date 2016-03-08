@@ -52,6 +52,7 @@ class JSONResponse(BaseResponse,ETagResponseMixin,
         response = None
         
         self._data_dict["success"] = self._success
+        self._data_dict["now_ts"] = DateUtils.datetime_to_unix()
         
         if self._data_dict is not None:
             response = json.dumps(self._data_dict, sort_keys=True, default=self._json_helper)
