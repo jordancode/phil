@@ -36,7 +36,7 @@ class RedisDelay(object):
         
         pickled_job = pickle.dumps({
             'job': job, 
-            'queue': self.queue_name, 
+            'queue': self.queue_name,
             'args': args, 
             'kwargs': kwargs, 
             'id': uuid.uuid1().hex
