@@ -135,6 +135,11 @@ class Id:
         self._interval = interval
         self._id = None
         return self
+    
+    def set_ts(self, ts):
+        self._interval = self._get_interval_from_ts(ts)
+        self._id = None
+        return self
         
     def get_interval(self):
         return self._interval
@@ -154,11 +159,12 @@ class Id:
         return "ticket:p" + str(pool) + ":s" + str(shard) + ":i" + str(interval)
     
     def _get_current_interval(self):
+        
+        return self._get_interval_from_ts(int(time.time()))
+    
+    def _get_interval_from_ts(self, t):
         if self._shard_id is None:
             raise MissingInfoError()
-        
-        # get current seconds
-        t = int(time.time())
         
         # subtract off start time to save space
         t -= self.START_TIME
@@ -169,6 +175,7 @@ class Id:
         
         # interval changes every 15 minutes
         return t // self.INTERVAL_SECS
+    
         
     def _get_next_increment(self, incr_count=1):
         if self._shard_id is None or self._pool_id is None or self._interval is None:
