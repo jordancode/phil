@@ -27,38 +27,7 @@ class SortIndex:
     _ts = None
     _incr = None
     _type = None
-
-    @classmethod
-    def get_between(cls, sort_index_start, sort_index_end, parent_id=None):
-        """
-        
-        if isinstance(sort_index_start,int):
-            sort_index_start = cls(sort_index_start)
-        
-        if isinstance(sort_index_end,int):
-            sort_index_end = cls(sort_index_end)
-        
-        
-        if (sort_index_start.get_time() == sort_index_end.get_time() and
-                sort_index_start.get_increment() == sort_index_end.get_increment()):
-            raise NoGapError()
-        
-        
-        new_ts = sort_index_start.get_time() + int((sort_index_end.get_time() - sort_index_start.get_time())/2)
-        
-        new_sort_index = cls()
-        new_sort_index.set_time(new_ts)
-        new_sort_index.set_type(type)
-        new_incr = None
-        if new_ts == sort_index_start.get_time() or new_ts == sort_index_end.get_time():
-            new_incr = int((sort_index_start.get_increment() + sort_index_end.get_increment()) / 2)
-            if new_incr ==  sort_index_start.get_increment() or new_incr == sort_index_end.get_increment():
-                raise NoGapError()
-        
-        
-        return new_sort_index
-        """
-        raise Exception("not implemented")
+    
 
     @classmethod
     def get_for_date(cls, parent_id, dt=None):

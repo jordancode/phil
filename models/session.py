@@ -61,7 +61,7 @@ class Session(Entity):
     @property
     def auth(self):
         return self._get_attr("auth")
-        #########
+    #########
 
     def is_admin(self):
         return self.has_flag(self.FLAG_IS_ADMIN)
