@@ -152,10 +152,10 @@ class MethodOverrideRequest(Request):
         return self._construct_dict(key)
     
     def _construct_dict(self, dictionary, key, base_type):
-        ret = {};
+        ret = {}
         
-        prefix = key + "[";
-        default_index = 0;
+        prefix = key + "["
+        default_index = 0
         for d_key, d_value in dictionary.items():
             if d_key.startswith(prefix):
                 index = d_key[len(prefix):-1]

@@ -13,7 +13,7 @@ class JSONHTTPException(HTTPException):
         
         
     def get_response(self, environ=None):
-        resp = JSONResponse();
+        resp = JSONResponse()
         resp.set_error(self)
         
         return resp

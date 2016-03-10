@@ -54,9 +54,9 @@ class TemplateResponse(BaseResponse,ETagResponseMixin,
         if not "config_" in ret:
             app_config = Config.get("app")
             
-            app_config["www_url"] = app_config["default_protocol"] + "://" + app_config["subdomains"]["web"] + "." + app_config["server_name"];
-            app_config["api_url"] = app_config["default_protocol"] + "://" + app_config["subdomains"]["api"] + "." + app_config["server_name"];
-            app_config["assets_url"] = app_config["default_protocol"] + "://" + app_config["subdomains"]["assets"] + "." + app_config["server_name"];
+            app_config["www_url"] = app_config["default_protocol"] + "://" + app_config["subdomains"]["web"] + "." + app_config["server_name"]
+            app_config["api_url"] = app_config["default_protocol"] + "://" + app_config["subdomains"]["api"] + "." + app_config["server_name"]
+            app_config["assets_url"] = app_config["default_protocol"] + "://" + app_config["subdomains"]["assets"] + "." + app_config["server_name"]
             
             ret['config_'] = {
                 "app" : app_config,

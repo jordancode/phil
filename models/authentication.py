@@ -1,7 +1,7 @@
 import string
 from _datetime import datetime
 
-from passlib.hash import bcrypt
+import bcrypt
 
 import app.models.user
 from framework.models.entity import Entity

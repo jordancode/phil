@@ -122,7 +122,7 @@ class EntityRelationDAO(framework.models.data_access_object.DataAccessObject):
         where_clause = And([
             (id_name, "=", "%s"),
             ("deleted", "=", "0")
-        ]);
+        ])
 
         if has_permissions:
             where_clause.append(
@@ -240,7 +240,7 @@ class EntityRelationDAO(framework.models.data_access_object.DataAccessObject):
         return True
 
     def _delete_list_by_primary_id(self, id1):
-        models = self._get_list_primary(id1, None, None, None);
+        models = self._get_list_primary(id1, None, None, None)
         for model in models:
             self.delete(model)
 
@@ -248,7 +248,7 @@ class EntityRelationDAO(framework.models.data_access_object.DataAccessObject):
 
     def _delete_list_by_inv_id(self, id2):
 
-        models = self._get_list_inv(id2, None, None, None);
+        models = self._get_list_inv(id2, None, None, None)
         for model in models:
             self.delete(model)
 

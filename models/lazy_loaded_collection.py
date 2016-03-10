@@ -1,5 +1,5 @@
 from framework.models.entity import Entity
-from framework.utils.associative_array import AssociativeArray
+from framework.utils.associative_array import AssociativeArray, SORT_HI_TO_LO
 from framework.utils.disjoint_interval import DisjointInterval
 
 
@@ -10,7 +10,7 @@ class LazyLoadedCollection(Entity):
         
     """
     
-    def __init__(self, sort_order = AssociativeArray.SORT_HI_TO_LO):
+    def __init__(self, sort_order = SORT_HI_TO_LO):
         #dict mapping sort_key to entity
         self._set_attr("key_to_id", AssociativeArray(sort_order))
         #dict mapping entity id to sort key

@@ -196,7 +196,7 @@ class InListQueryRunner(BaseQueryRunner):
         
     def run_one_query(self,shard_id):
         if not shard_id in self.shard_id_to_in_list:
-            return [];
+            return []
         
         in_list = self.shard_id_to_in_list[shard_id]
         qry = self.query_str.replace("%l", "( " + ", ".join(map(lambda x :"%s", in_list)) + " )",1)

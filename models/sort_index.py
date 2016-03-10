@@ -147,7 +147,7 @@ class SortIndex:
             self._incr = self._value & self._get_bit_mask(32)
             self._ts = (self._value & (self._get_bit_mask(32) << 32)) >> 32
         except TypeError:
-            raise BadSortIndexError(self._value);
+            raise BadSortIndexError(self._value)
 
     def _construct_value(self):
 
@@ -164,7 +164,7 @@ class SortIndex:
 
 class NoGapError(Exception):
     def __init__(self):
-        super().__in
+        super().__init__()
 
 
 class BadSortIndexError(Exception):

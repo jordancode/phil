@@ -214,7 +214,7 @@ class Id:
             self._increment = (self._id & (self._get_bit_mask(26) << 14)) >> 14
             self._interval = (self._id & (self._get_bit_mask(24) << 40)) >> 40
         except TypeError:
-            raise BadIdError(self._id);
+            raise BadIdError(self._id)
     
     def _construct_id(self):
         for prop in [self._shard_id, self._pool_id,
