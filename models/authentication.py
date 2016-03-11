@@ -84,12 +84,12 @@ class Authentication(Entity):
     
     def verify_secret(self, new_secret):
         #override if you want to do a different validation
-        return not self.is_expired() and bcrypt.verify(new_secret, self._get_attr("secret"))
+        return not self.is_expired() and (bcrypt.hashpw(new_secret, self._get_attr("secret")) == self._get_attr("secret"))
     
     def _hash_secret(self, secret):
         
         #override if we don't need to encrypt
-        return bcrypt.encrypt(secret)
+        return bcrypt.hashpw(secret,bcrypt.gensalt())
 
 class AuthException(Exception):
     pass
