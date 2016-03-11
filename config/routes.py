@@ -59,11 +59,11 @@ class Routes():
                             path,
                             subdomain=subdomain,
                             **route
-                            );
+                            )
                             
                 ret.append(rule)
         
-        return Map(ret, strict_slashes=False);
+        return Map(ret, strict_slashes=False)
 
 class DocRule(Rule):
     

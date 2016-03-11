@@ -91,7 +91,7 @@ class DataAccessObject(metaclass=ABCMeta):
         try:
             ret = MySQL.get(shard_by).query(sql, value_list)
         except BadIdError:
-            raise RowNotFoundException();
+            raise RowNotFoundException()
         
         logging.getLogger().debug("RESULTS: " + str(len(ret)))
         
@@ -126,7 +126,7 @@ class DataAccessObject(metaclass=ABCMeta):
         
         logging.getLogger().debug("DAO._save RESULT " + str(ret))
         
-        return ret;
+        return ret
         
     def _delete(self, table_name, column_list, value_list, shard_by = None):
         
@@ -191,5 +191,5 @@ class RowNotFoundException(Exception):
 class RowDeletedException(Exception):
     
     def __init__(self):
-        super().__init__("Cannot access deleted row");
+        super().__init__("Cannot access deleted row")
       

@@ -29,7 +29,7 @@ class MySQLPool:
         
     def get_shard(self, shard_id):
         if not shard_id in self._shards:
-            self._shards[shard_id] = MySQLShard(shard_id, self.get_config_for_shard(shard_id), self);
+            self._shards[shard_id] = MySQLShard(shard_id, self.get_config_for_shard(shard_id), self)
             
         return self._shards[shard_id]
         
@@ -47,11 +47,11 @@ class MySQLPool:
     
     @property
     def start_transaction_on_connect(self):
-        return self._stoc;
+        return self._stoc
     
     @start_transaction_on_connect.setter
     def start_transaction_on_connect(self, boolean):
-        self._stoc = boolean;
+        self._stoc = boolean
     
     def get_config_for_shard(self, shard_id):
         box_list = self._config["phys_shards"]

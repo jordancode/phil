@@ -117,7 +117,7 @@ class SessionService:
             raise NoActiveSessionException()
 
         if not session.verify_token(token):
-            raise InvalidSessionTokenError(token, session.token)
+            raise InvalidSessionTokenError()
 
         return session
 
@@ -292,7 +292,7 @@ class SessionNotFoundException(framework.models.data_access_object.RowNotFoundEx
 
 
 class InvalidSessionTokenError(SessionException):
-    def __init__(self, ):
+    def __init__(self ):
         super().__init__("Session token does not match")
 
 

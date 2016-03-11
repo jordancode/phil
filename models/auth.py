@@ -122,7 +122,7 @@ class NoAuthFoundException(AuthException):
 
 
 class AuthService:
-    def log_in(self, auth_class, provider_id, secret, user_agent):
+    def log_in(self, auth_class, provider_id, secret, user_agent, time = None):
         """
            returns a user_id
            else throws an authentication exception

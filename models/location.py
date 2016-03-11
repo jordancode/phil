@@ -31,7 +31,7 @@ class Location:
             raise InvalidLongitudeError()
 
     def to_dict(self, stringify_ids=False, optional_keys=None):
-        return self._recursive_to_dict([], stringify_ids, optional_keys);
+        return self._recursive_to_dict([], stringify_ids, optional_keys)
 
     def _recursive_to_dict(self, refs, stringify_ids=False, optional_keys=None):
         return {

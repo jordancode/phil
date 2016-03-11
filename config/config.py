@@ -63,7 +63,7 @@ class Config:
     
     @classmethod
     def _get_config_by_key(cls, config_dict, key, file_name):
-        config_dict = copy.deepcopy(config_dict);
+        config_dict = copy.deepcopy(config_dict)
         """
             key is a string or array of strings for deeper access
         """

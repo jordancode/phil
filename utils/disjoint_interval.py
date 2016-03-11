@@ -69,7 +69,7 @@ class DisjointInterval:
             if node.lower_bound <= start and node.upper_bound >= end:
                 return True
             elif node.lower_bound > start:
-                break;
+                break
             node = node.next
         
         return False
