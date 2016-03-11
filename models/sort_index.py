@@ -38,6 +38,20 @@ class SortIndex:
         sort_index.set_incr(cls.get_next_incr(parent_id))
 
         return sort_index
+    
+    @classmethod
+    def get_first_in_month(cls, dt=None):
+        
+        #make this the first of the month
+        dt = dt.replace(day=1,hour=0,minute=0,second=0)
+        
+        #month rollups have 0 incr
+        sort_index  =  cls()
+        sort_index.set_date(dt)
+        sort_index.set_incr(0)
+        
+        return sort_index
+    
 
     @classmethod
     def get_next_incr(cls, parent_id, incr_count=1):

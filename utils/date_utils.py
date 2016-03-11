@@ -70,18 +70,33 @@ class DateUtils:
         
         return SortIndex.get_for_date(parent_id, dt).get_value()
     
+    
+    @staticmethod
+    def date_from_sort_index(parent_id, dt = None):
+        if dt is None:
+            dt = datetime.datetime.now()
+        
+        return SortIndex.get_for_date(parent_id, dt).get_value()
+    
+    @staticmethod
+    def get_absolute_month_from_date(dt = None):
+        if dt is None:
+            dt = datetime.datetime.now()
+            
+        return 12 * dt.year + dt.month - 1 #map JAN to 0, DEC to 11 
+    
     @staticmethod
     def get_absolute_month_from_unix(ts_seconds = None):
         dt = DateUtils.unix_to_datetime(ts_seconds)
         
-        return 12 * dt.year + dt.month
+        return DateUtils.get_absolute_month_from_date(dt)
     
     @staticmethod
     def get_start_ts_of_month(absolute_month = None):
         if not absolute_month:
             absolute_month = DateUtils.get_absolute_month_from_unix()
         
-        month_int = absolute_month%12
+        month_int = absolute_month%12 + 1
         year_int = int(absolute_month/12)
         
         #get the first of the month

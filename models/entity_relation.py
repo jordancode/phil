@@ -191,6 +191,7 @@ class EntityRelationDAO(framework.models.data_access_object.DataAccessObject):
         self._model_cache_set(model)
 
         return True
+    
 
     def save_list(self, models):
         if not len(models):
@@ -219,21 +220,16 @@ class EntityRelationDAO(framework.models.data_access_object.DataAccessObject):
     """
 
     def delete(self, model):
-        self._delete(
-            self._table_name,
-            [self._id1_name, self._id2_name],
-            [model.id1, model.id2],
-            model.id1
-        )
-
-        self._delete(
-            self._table_name + "_inv",
-            [self._id2_name, self._id1_name],
-            [model.id2, model.id1],
-            model.id2
-        )
-
         model.is_deleted = True
+        
+        #try to nullify sort_index so we can later re-add
+        try:
+            model.sort_index = None
+        except (AttributeError, ValueError):
+            pass
+        
+        
+        self.save(model)
 
         self.remove_from_cache(self._get_cache_id(model.id1, model.id2))
 
