@@ -37,7 +37,11 @@ class ModelUtils:
                     #if getter_name, then call that, otherwise use model2 as value
                     to_set = temp_hash[model1_key]
                     if getter_name:
-                        to_set = getattr(to_set, getter_name)
+                        getter = getattr(model2, getter_name)
+                        if type(getter) == types.MethodType:
+                            to_set = getter()
+                        else:
+                            to_set = getattr(to_set, getter_name)
                     
                     setter = getattr(model1, setter_name)
                     if type(setter) == types.MethodType:
