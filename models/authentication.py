@@ -16,8 +16,6 @@ class Authentication(Entity):
     def __init__(self, id, provider_id, secret, user_id, secret_hashed = False, expires_ts = None):
         super().__init__(id)
 
-        secret = secret.encode("utf-8")
-
         self._validate_provider_id(provider_id)
         self._set_attr("provider_id", provider_id)
         
