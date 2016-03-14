@@ -2,8 +2,10 @@ from werkzeug import utils
 from werkzeug.exceptions import Unauthorized, Forbidden
 
 import app.models.user
-from framework.http.json_http_exception import JSONHTTPException
 import framework.models.session
+
+from framework.http.json_http_exception import JSONHTTPException
+
 
 class BaseController:
     
@@ -37,6 +39,7 @@ class BaseController:
         try:
             sesh = self._get_session()
             #sesh.set_flag(framework.models.session.Session.FLAG_IS_ADMIN)
+
             return sesh.has_flag(framework.models.session.Session.FLAG_IS_ADMIN)
         except framework.models.session.SessionException:
             return False
@@ -145,9 +148,9 @@ def meta(comment = None, parameters = None, returns = None, optional_keys = None
     
     
 
-class NoSessionException:
+class NoSessionStoreError(framework.models.session.SessionException):
     def __str__(self):
-        return "framework.models.session.SessionStore required to retreive or store session id"
+        return "SessionStore required to retreive or store session id"
     
     
         
