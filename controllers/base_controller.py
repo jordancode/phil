@@ -1,10 +1,9 @@
 from werkzeug import utils
 from werkzeug.exceptions import Unauthorized, Forbidden
 
-from app.models.user import UserDAO
+import app.models.user
 from framework.http.json_http_exception import JSONHTTPException
-from framework.models.session import Session, SessionException
-
+import framework.models.session
 
 class BaseController:
     
@@ -21,7 +20,7 @@ class BaseController:
     
     def _get_session_store(self):
         if self.__session_store is None:
-            raise NoSessionStoreError()
+            raise framework.models.session.SessionException()
         
         return self.__session_store
     
@@ -30,16 +29,16 @@ class BaseController:
         try:
             self._get_session()
             return True  
-        except SessionException:
+        except framework.models.session.SessionException:
             return False
     
     
     def _is_admin(self):
         try:
             sesh = self._get_session()
-            #sesh.set_flag(Session.FLAG_IS_ADMIN)
-            return sesh.has_flag(Session.FLAG_IS_ADMIN)
-        except SessionException:
+            #sesh.set_flag(framework.models.session.Session.FLAG_IS_ADMIN)
+            return sesh.has_flag(framework.models.session.Session.FLAG_IS_ADMIN)
+        except framework.models.session.SessionException:
             return False
     
     def _get_user(self, user_id = None):
@@ -51,13 +50,13 @@ class BaseController:
                 raise Forbidden()
             else:
                 #not the logged in user, but we're admin so we have access
-                return UserDAO().get(user_id)
+                return app.models.user.UserDAO().get(user_id)
         
         return u
         
     
     def _get_session(self):
-        #throws NoActiveSessionException, SessionNotFoundException, NoSessionStoreException
+        #throws NoActiveframework.models.session.SessionException, framework.models.session.SessionNotFoundException, Noframework.models.session.SessionStoreException
         return self._get_session_store().get_session(self._get_request())
 
 def require_login(f = None, return_json=True):
@@ -146,9 +145,9 @@ def meta(comment = None, parameters = None, returns = None, optional_keys = None
     
     
 
-class NoSessionStoreError(SessionException):
+class NoSessionException:
     def __str__(self):
-        return "SessionStore required to retreive or store session id"
+        return "framework.models.session.SessionStore required to retreive or store session id"
     
     
         

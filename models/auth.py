@@ -133,7 +133,7 @@ class AuthService:
         # throws NoAuthFoundException
         auth = dao.get_auth_by_provider_id(auth_class, provider_id)
 
-        if not auth.verify_secret(secret):
+        if not auth.verify_secret(secret, time):
             raise InvalidCredentialsException()
 
         session_dao = framework.models.session.SessionDAO()

@@ -15,7 +15,9 @@ class Authentication(Entity):
 
     def __init__(self, id, provider_id, secret, user_id, secret_hashed = False, expires_ts = None):
         super().__init__(id)
-        
+
+        secret = secret.encode("utf-8")
+
         self._validate_provider_id(provider_id)
         self._set_attr("provider_id", provider_id)
         
@@ -82,7 +84,7 @@ class Authentication(Entity):
             
         return ret
     
-    def verify_secret(self, new_secret):
+    def verify_secret(self, new_secret, time=None):
         #override if you want to do a different validation
         return not self.is_expired() and (bcrypt.hashpw(new_secret, self._get_attr("secret")) == self._get_attr("secret"))
     
