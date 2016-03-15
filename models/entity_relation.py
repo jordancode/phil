@@ -220,7 +220,7 @@ class EntityRelationDAO(framework.models.data_access_object.DataAccessObject):
     """
 
     def delete(self, model):
-        model.is_deleted = True
+        model.set_deleted()
         
         #try to nullify sort_index so we can later re-add
         try:
