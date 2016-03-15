@@ -230,7 +230,6 @@ class EntityRelationDAO(framework.models.data_access_object.DataAccessObject):
         
         
         self.save(model)
-
         self.remove_from_cache(self._get_cache_id(model.id1, model.id2))
 
         return True
