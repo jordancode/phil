@@ -59,8 +59,9 @@ class WhereClause(metaclass=ABCMeta):
         if isinstance(node, WhereClause):
             return node.build()
         else:
-            return " ".join(str(n) for n in node)
-    
+            
+            return backtick(str(node[0])) + " " + str(node[1]) + " " + str(node[2])
+     
     def _get_conjuction(self):
         pass
 
@@ -111,7 +112,6 @@ class BaseSQLQuery(metaclass=ABCMeta):
                 string_parts.append(self._parts[part])
         
         return " ".join(string_parts)        
-
 
 
 class WhereQuery(BaseSQLQuery,metaclass=ABCMeta):
@@ -172,7 +172,7 @@ class SQLSelectQuery(WhereQuery, BaseSQLQuery):
         return self 
     
     def _get_table_clause(self, table_name):
-        return "FROM " + table_name
+        return "FROM " + backtick(table_name)
     
     def _get_verb(self):
         return "SELECT"
@@ -189,7 +189,7 @@ class SQLInsertQuery(IgnorableQuery, BaseSQLQuery):
         super().__init__(table_name)
             
     def columns(self, col_array):
-        self._parts["table_def"] = "("+ ",".join(col_array) + ")"
+        self._parts["table_def"] = paren(",".join(backtick(c) for c in col_array) )
         return self
     
     def values(self, values_arr):
@@ -198,17 +198,17 @@ class SQLInsertQuery(IgnorableQuery, BaseSQLQuery):
             s = "VALUES "
             #if we are inserting multiple rows, need to collapse to strings
             if isinstance(values_arr[0], list):
-                values_arr = ["(" + ",".join(v) + ")" for v in values_arr]
+                values_arr = [paren(",".join(v)) for v in values_arr]
             
-            s += ",".join(values_arr)
+            s += paren(",".join(values_arr))
             
-            self._parts["values"] = s
+            self._parts["values"] = s 
         
         return self
     
     def on_duplicate_key_update(self, col_to_value_array):
         self._parts["dupe"] = ("ON DUPLICATE KEY UPDATE " + 
-            ", ".join(col + "=" + val for (col,val) in col_to_value_array))
+            ", ".join(backtick(col) + "=" + val for (col,val) in col_to_value_array))
         return self
     
     def select(self, select_query_string):
@@ -216,7 +216,7 @@ class SQLInsertQuery(IgnorableQuery, BaseSQLQuery):
         return self
         
     def _get_table_clause(self, table_name):
-        return "INTO " + table_name
+        return "INTO " + backtick(table_name)
     
     def _get_verb(self):
         return "INSERT"
@@ -234,7 +234,7 @@ class SQLUpdateQuery(WhereQuery,IgnorableQuery,BaseSQLQuery):
     
     def set(self, col_to_value_array):
         self._parts["set"] = ("SET " + 
-            ", ".join(col + "=" + val for (col,val) in col_to_value_array))
+            ", ".join(backtick(col) + "=" + val for (col,val) in col_to_value_array))
         return self
     
     
@@ -242,7 +242,7 @@ class SQLUpdateQuery(WhereQuery,IgnorableQuery,BaseSQLQuery):
         return "UPDATE"
     
     def _get_table_clause(self, table_name):
-        return table_name
+        return backtick(table_name)
     
     def _get_order(self):
         return ["verb", "ignore", "table", "set", "where", "order", "limit"]
@@ -260,7 +260,7 @@ class SQLDeleteQuery(WhereQuery,IgnorableQuery,BaseSQLQuery):
         return "DELETE"
     
     def _get_table_clause(self, table_name):
-        return "FROM " + table_name
+        return "FROM " + backtick(table_name)
     
     def _get_order(self):
         return ["verb", "ignore", "table", "where", "order", "limit"]
@@ -290,3 +290,21 @@ class SQLQueryBuilder:
     @staticmethod
     def delete(table_name) -> SQLDeleteQuery:
         return SQLDeleteQuery(table_name)
+    
+
+
+def backtick(col):
+    if not col[0] == "`":
+        col = "`" + col
+    if not col[-1] == "`":
+        col = col + "`"
+        
+    return col
+
+def paren(col):
+    if not col[0] == "(":
+        col = "(" + col
+    if not col[-1] == ")":
+        col = col + ")"
+        
+    return col
