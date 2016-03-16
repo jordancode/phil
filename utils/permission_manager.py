@@ -32,7 +32,7 @@ class PermissionManager:
             uhx_objs = dao.get_list(self._logged_in_user.id, id_list)
         except (framework.models.data_access_object.RowDeletedException, framework.models.data_access_object.RowNotFoundException):
             #verify ownership rows exist
-            raise PermissionError()
+            raise PermissionsError()
         
         for uhx in uhx_objs:
             if not uhx.permission.has_mask(permissions_mask):
