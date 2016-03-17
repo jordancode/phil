@@ -8,6 +8,7 @@ from werkzeug.wrappers import (BaseResponse,ETagResponseMixin,
                WWWAuthenticateMixin)
 
 from framework.utils.date_utils import DateUtils
+from app.utils.constants import SERVER_VERSION, MIN_SUPPORTED_CLIENTS
 
 
 class JSONResponse(BaseResponse,ETagResponseMixin,
@@ -53,6 +54,10 @@ class JSONResponse(BaseResponse,ETagResponseMixin,
         
         self._data_dict["success"] = self._success
         self._data_dict["now_ts"] = DateUtils.datetime_to_unix()
+        
+        self._data_dict["v"] = SERVER_VERSION
+        self._data_dict["min_v"] = MIN_SUPPORTED_CLIENTS
+        
         
         if self._data_dict is not None:
             response = json.dumps(self._data_dict, sort_keys=True, default=self._json_helper)
