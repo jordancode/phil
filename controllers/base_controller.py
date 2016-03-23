@@ -92,6 +92,7 @@ def require_admin(f = None, return_json = True):
         
         def wrapper(self, *args, **kwargs):
             if not self._is_admin():
+                
                 if return_json:
                     raise JSONHTTPException(Forbidden)
                 else:

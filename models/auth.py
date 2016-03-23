@@ -90,7 +90,19 @@ class AuthDAO(framework.models.data_access_object.DataAccessObject):
             raise framework.models.data_access_object.RowDeletedException()
 
         auth_class = self._type_id_to_class(row['provider_type'])
-        auth = auth_class(row['id'], row['provider_id'].decode("utf-8"), row['secret'].decode("utf-8"), row["user_id"],
+        
+        if row['provider_id']:
+            provider_id = row['provider_id'].decode("utf-8")
+        else:
+            provider_id = None
+            
+        if row['secret']:
+            secret = row['secret'].decode("utf-8")
+        else:
+            secret = None
+        
+        
+        auth = auth_class(row['id'], provider_id, secret, row["user_id"],
                           secret_hashed=True, expires_ts=row["expires_ts"])
 
         return auth
