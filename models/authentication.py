@@ -13,7 +13,7 @@ class Authentication(Entity):
     """
     
 
-    def __init__(self, id, provider_id, secret, user_id, secret_hashed = False, expires_ts = None):
+    def __init__(self, id, provider_id, secret, user_id, secret_hashed = False, expires_ts = None, created_ts = None):
         super().__init__(id)
 
         self._validate_provider_id(provider_id)
@@ -25,7 +25,9 @@ class Authentication(Entity):
             
         self._set_attr("secret", secret)
         self._set_attr("user_id", user_id)
+        
         self._set_attr("expires_ts",expires_ts)
+        self._set_attr("created_ts",created_ts, datetime.now())
     
     
     def _validate_secret(self,secret):
@@ -66,6 +68,9 @@ class Authentication(Entity):
     def user(self):
         return app.models.user.UserDAO().get(self.user_id)
     
+    @property
+    def created_ts(self):
+        return self._get_attr("created_ts")
     
     def is_expired(self):
         return (self._get_attr("expires_ts") is not None and

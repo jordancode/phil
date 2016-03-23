@@ -83,6 +83,7 @@ class AuthDAO(framework.models.data_access_object.DataAccessObject):
     def _model_to_row(self, model):
         dict = super()._model_to_row(model)
         dict["provider_type"] = self._class_to_type_id(model.__class__)
+        
         return dict
 
     def _row_to_model(self, row):
@@ -103,7 +104,9 @@ class AuthDAO(framework.models.data_access_object.DataAccessObject):
         
         
         auth = auth_class(row['id'], provider_id, secret, row["user_id"],
-                          secret_hashed=True, expires_ts=row["expires_ts"])
+                          secret_hashed=True, 
+                          expires_ts=row["expires_ts"], 
+                          created_ts=row['created_ts'])
 
         return auth
 
