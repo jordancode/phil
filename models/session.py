@@ -8,6 +8,8 @@ from framework.models.user_agent import UserAgent
 from framework.storage.mysql import MySQL
 from framework.utils.id import Id
 from framework.utils.random_token import RandomToken
+from framework.models.data_access_object import RowNotFoundException,\
+    RowDeletedException
 
 
 class Session(Entity):
@@ -208,8 +210,11 @@ class SessionDAO(framework.models.data_access_object.DataAccessObject):
 
         if not len(rows):
             raise SessionNotFoundException()
-
-        return self._row_to_session(rows[0])
+        
+        try:
+            return self._row_to_session(rows[0])
+        except (RowNotFoundException,RowDeletedException):
+            raise SessionNotFoundException()
 
     def _get_user_agent_by_string(self, user_agent_string):
         shard_id = MySQL.get_shard_id_for_string(user_agent_string)

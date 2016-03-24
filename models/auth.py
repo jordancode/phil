@@ -4,6 +4,7 @@ from framework.models.authentication import Authentication, AuthException
 import framework.models.session
 from framework.storage.mysql import MySQL
 from framework.utils.class_loader import ClassLoader
+from framework.models.data_access_object import RowDeletedException
 
 
 class AuthDAO(framework.models.data_access_object.DataAccessObject):
@@ -45,8 +46,11 @@ class AuthDAO(framework.models.data_access_object.DataAccessObject):
             raise NoAuthFoundException(provider_id)
 
         row = rows[0]
-
-        auth = self._row_to_model(row)
+        try:
+            auth = self._row_to_model(row)
+        except RowDeletedException:
+            raise NoAuthFoundException(provider_id)
+        
         auth.update_stored_state()
 
         return auth
