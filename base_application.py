@@ -42,7 +42,7 @@ class BaseApplication():
             if Environment.get() != Environment.PROD:
                 exc_type, exc_value, exc_traceback = sys.exc_info()
                 response.set_error(repr(e))
-                response.set_key("taceback", traceback.format_exception(
+                response.set_key("traceback", traceback.format_exception(
                         exc_type, exc_value, exc_traceback
                     ))
         
