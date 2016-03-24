@@ -70,7 +70,7 @@ class AuthDAO(framework.models.data_access_object.DataAccessObject):
             return False
 
         params = self._model_to_row(auth)
-        params["deleted"] = 0
+        params["deleted"] = auth.deleted
 
         result = self._save("auth", params, ["id", "user_id", "secret", "created_ts", "expires_ts", "deleted"], auth.id)
         self._save("auth_lookup", params, ["id", "user_id", "secret", "created_ts", "expires_ts", "deleted"],
@@ -79,7 +79,11 @@ class AuthDAO(framework.models.data_access_object.DataAccessObject):
         auth.update_stored_state()
 
         return result
-
+    
+    def save_list(self, auth_list):
+        for auth in auth_list:
+            self.save(auth)
+    
     def _model_to_row(self, model):
         dict = super()._model_to_row(model)
         dict["provider_type"] = self._class_to_type_id(model.__class__)
