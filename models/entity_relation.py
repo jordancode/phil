@@ -122,16 +122,16 @@ class EntityRelationDAO(framework.models.data_access_object.DataAccessObject):
         where_clause = And([
             (id_name, "=", "%s"),
             ("deleted", "=", "0")
-        ])
+        ],backtick=False)
 
         if has_permissions:
             where_clause.append(
-                ("permission|" + str(has_permissions), "=", "permission")
+                ("`permission`|" + str(has_permissions), "=", "`permission`")
             )
 
         if missing_permissions:
             where_clause.append(
-                ("permission&" + str(missing_permissions), "=", "permission")
+                ("`permission`&" + str(missing_permissions), "=", "`permission`")
             )
 
         if offset and sort_by:

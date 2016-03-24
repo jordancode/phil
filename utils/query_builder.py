@@ -31,8 +31,9 @@ class WhereClause(metaclass=ABCMeta):
     
     _where_nodes = None
     
-    def __init__(self, node_list = None):
+    def __init__(self, node_list = None, backtick = True):
         self._where_nodes = []
+        self._backtick = backtick
         if node_list:
             for node in node_list:
                 self.append(node)
@@ -59,8 +60,10 @@ class WhereClause(metaclass=ABCMeta):
         if isinstance(node, WhereClause):
             return node.build()
         else:
-            
-            return backtick(str(node[0])) + " " + str(node[1]) + " " + str(node[2])
+            if self._backtick:
+                return backtick(str(node[0])) + " " + str(node[1]) + " " + str(node[2])
+            else:
+                return str(node[0]) + " " + str(node[1]) + " " + str(node[2])
      
     def _get_conjuction(self):
         pass
