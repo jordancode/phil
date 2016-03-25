@@ -67,9 +67,9 @@ class Entity(Serializeable):
 
         return dirty_keys
 
-    def _get_keys(self):
+    def _get_keys(self, opitional_keys = None):
         ret = set().union(self._stored_state.keys(), self._current_state.keys())
-        defn = self.get_definition()
+        defn =  self.get_definition_for_keys(opitional_keys)
         if defn:
             ret = set().union(defn.keys(), ret)
         return ret

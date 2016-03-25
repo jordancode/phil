@@ -67,7 +67,7 @@ class Serializeable(metaclass=ABCMeta):
 
         defn = self.get_definition_for_keys(optional_keys)
 
-        for key in self._get_keys():
+        for key in self._get_keys(optional_keys):
             if not self._include_key(key, defn):
                 continue
 
@@ -117,9 +117,9 @@ class Serializeable(metaclass=ABCMeta):
 
         return value
 
-    def _get_keys(self):
-        if self.get_definition() is not None:
-            return self.get_definition.keys()
+    def _get_keys(self, opitional_keys = None):
+        if self._() is not None:
+            return self.get_definition_for_keys(opitional_keys)
         return []
 
     def _get_attr(self, key):

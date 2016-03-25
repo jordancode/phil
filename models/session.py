@@ -2,7 +2,8 @@ import datetime
 
 import app.models.user
 import framework.models.data_access_object
-from framework.models.auth import AuthDAO
+import framework.models.auth
+
 from framework.models.entity import Entity
 from framework.models.user_agent import UserAgent
 from framework.storage.mysql import MySQL
@@ -257,7 +258,7 @@ class SessionDAO(framework.models.data_access_object.DataAccessObject):
             user_dao = app.models.user.UserDAO()
             user = user_dao.get(row['user_id'])
 
-        auth_dao = AuthDAO()
+        auth_dao = framework.models.auth.AuthDAO()
         auth = auth_dao.get_auth_by_id(row['auth_id'])
 
         sesh = Session(row['id'], user, ua, auth, row['created_ts'], row['modified_ts'], row['log_out_ts'],

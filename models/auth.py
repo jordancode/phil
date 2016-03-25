@@ -1,7 +1,9 @@
 import app.models.user
 import framework.models.data_access_object
-from framework.models.authentication import Authentication, AuthException
 import framework.models.session
+
+from framework.models.authentication import Authentication, AuthException
+
 from framework.storage.mysql import MySQL
 from framework.utils.class_loader import ClassLoader
 from framework.models.data_access_object import RowDeletedException
