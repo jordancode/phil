@@ -1,5 +1,6 @@
 from framework.utils.singleton import Singleton
 import bcrypt
+from app.utils.constants import ROOT_PATH
 
 MIN_PASSWORD = 6
 MIN_UN = 3
@@ -34,7 +35,7 @@ class AdminAccount(metaclass=Singleton):
         self._user_hash = {}
         
         try:
-            with open('./config/admin_accounts.txt',"r") as data_file:
+            with open(ROOT_PATH+'/config/admin_accounts.txt',"r") as data_file:
                 account_list = data_file.read().splitlines() 
         except IOError:
             return False
@@ -48,7 +49,7 @@ class AdminAccount(metaclass=Singleton):
     
     def _write_file(self):
         try:
-            with open('./config/admin_accounts.txt',"w") as data_file:
+            with open(ROOT_PATH+'/config/admin_accounts.txt',"w") as data_file:
                 temp =  self._user_hash.copy()
                 for un,p in self._user_hash.items():
                     try:

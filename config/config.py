@@ -2,6 +2,7 @@ import copy
 import json
 
 from framework.config.environment import Environment
+from app.utils.constants import ROOT_PATH
 
 
 class Config:
@@ -52,7 +53,7 @@ class Config:
     def _get_dict_by_file_name(cls, file_name):
         
         try:
-            with open('./config/' + file_name + '.json') as data_file:
+            with open(ROOT_PATH+'/config/' + file_name + '.json') as data_file:
                 config_dict = json.load(data_file)
         except IOError:
             raise ConfigFileNotFound(file_name)
