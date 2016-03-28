@@ -1,7 +1,6 @@
 from multiprocessing.pool import Pool
 
-from framework.storage.mysql import MySQL
-from framework.storage.mysql_pool import MySQLPool
+from framework.storage.mysql import MySQL, MySQLPool
 from framework.utils.id import Id
 from framework.utils.query_builder import SQLQueryBuilder
 
@@ -18,6 +17,7 @@ class MultiShardQuery:
         
         if not num_threads:
             num_threads = self._DEFAULT_NUM_THREADS
+            
         self._num_threads = int(num_threads)
         
         self._use_multi = bool(use_multi)
@@ -92,8 +92,6 @@ class MultiShardQuery:
                 if not self._catch_errors:
                     raise e
                 count = 0
-            finally:
-                shard.close()
             
         return count
     
@@ -181,8 +179,6 @@ class QueryRunner(BaseQueryRunner):
             if not self.catch_errors:
                 raise e
             query_res = []
-        finally:
-            shard.close()
              
         return query_res
         
@@ -208,7 +204,5 @@ class InListQueryRunner(BaseQueryRunner):
             if not self.catch_errors:
                 raise e
             query_res = []
-        finally:
-            shard.close()
              
         return query_res

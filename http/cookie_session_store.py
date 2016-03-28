@@ -1,6 +1,7 @@
 import framework.models.session
 from framework.config.config import Config
 from framework.http.base_session_store import BaseSessionStore
+import logging
 
 
 class CookieSessionStore(BaseSessionStore):
@@ -25,11 +26,15 @@ class CookieSessionStore(BaseSessionStore):
         response.set_cookie(self._get_token_cookie_name(), session.token, None, session.log_out_ts, '/', self._get_cookie_domain())
     
     
-    def get_session(self, request):  
+    def get_session(self, request):
+                
+        logging.getLogger().debug("TRY GET SESSION!")
+        logging.getLogger().debug("Cookies:  " + repr(request.cookies))
         try:
             session_id = request.cookies[self._get_cookie_name()]
             token = request.cookies[self._get_token_cookie_name()]
-        except KeyError:
+        except KeyError as e:
+            logging.getLogger().debug("No session cookie :(")
             raise framework.models.session.NoActiveSessionException()
         
         return  framework.models.session.SessionService().get_active_session(int(session_id), token)

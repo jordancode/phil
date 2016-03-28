@@ -26,8 +26,6 @@ class BaseApplication():
             
             request.rule = rule
             
-            self.pre_hook(request)
-            
             response = self.call_controller(request, rule, args)
                           
         except HTTPException as e:
@@ -57,6 +55,9 @@ class BaseApplication():
     def post_hook(self,request,response):
         pass
     
+    def clean_up(self):
+        pass
+    
     def get_session_store(self,request):
         #override if want to store session id's another way on the client
         return framework.http.cookie_session_store.CookieSessionStore()
@@ -71,11 +72,18 @@ class BaseApplication():
 
     def wsgi_app(self, environ, start_response):
         request = MethodOverrideRequest(environ)
+        
+        self.pre_hook(request)
+        
         response = self.dispatch_request(request)
                     
         self.post_hook(request, response)
         
-        return response(environ, start_response)
+        ret = response(environ, start_response)
+        
+        self.clean_up()
+        
+        return ret
     
     def log_error(self, request, e):
         logging.getLogger().error("============ INTERNAL SERVER ERROR ============")

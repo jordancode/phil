@@ -1,8 +1,7 @@
 import random
 import string
 
-from framework.storage.mysql import MySQL
-from framework.storage.mysql_pool import MySQLPool
+from framework.storage.mysql import MySQL,MySQLPool
 from framework.utils.id import Id
 
 

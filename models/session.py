@@ -11,6 +11,7 @@ from framework.utils.id import Id
 from framework.utils.random_token import RandomToken
 from framework.models.data_access_object import RowNotFoundException,\
     RowDeletedException
+import logging
 
 
 class Session(Entity):

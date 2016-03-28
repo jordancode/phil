@@ -1,8 +1,7 @@
 import logging
 from abc import ABCMeta
 
-from framework.storage.mysql import MySQL
-from framework.storage.mysql_pool import MySQLPool
+from framework.storage.mysql import MySQL, MySQLPool
 from framework.utils.id import BadIdError
 from framework.utils.model_cache import ModelCache
 from framework.utils.sql_utils import SQLUtils
