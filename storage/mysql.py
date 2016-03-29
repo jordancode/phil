@@ -7,6 +7,7 @@ from framework.config.config import Config
 import mysql.connector
 from framework.utils.query_tracker import QueryTracker
 import pprint
+from mysql.connector.errors import DatabaseError
 
 
 class MySQL:
@@ -301,11 +302,17 @@ class MySQLConnectionManager:
         return host + ":" + str(port)
     
 
-    def get_connection(self, host, port):
+    def get_connection(self, host, port, verify_connection = True):
         if self._conns is None:
             self._conns = {}
         
         key = self._get_server_key(host, port)
+        
+        if verify_connection and key in self._conns:
+            if not self._verify(self._conns[key]):
+                del(self._conns[key])
+        
+        
         if not key in self._conns:
             conn = self._connect(host, port)
             self._conns[key] = conn
@@ -331,6 +338,16 @@ class MySQLConnectionManager:
             conn.autocommit = True
         
         return conn
+    
+    def _verify(self, connection):
+        try:
+            cursor = connection.cursor()
+            cursor.execute("SELECT 1")
+            cursor.fetchall()
+            return True
+        except mysql.connector.Error:
+            return False
+        
     
     def close(self, host, port ):
         if not self.has_connection(host,port):
