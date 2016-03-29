@@ -1,6 +1,9 @@
 import tinys3
 
 from framework.config.config import Config
+from tinys3.request_factory import GetRequest
+import pprint
+import logging
 
 
 class S3(tinys3.Connection):
@@ -8,3 +11,24 @@ class S3(tinys3.Connection):
     def __init__(self):
         config = Config.get("s3")
         super().__init__(**config)
+        
+        
+    def get(self, key, bucket=None, headers=None):
+
+        r = GetRequestWithHeaders(self, key, self.bucket(bucket), headers)
+
+        return self.run(r)
+    
+class GetRequestWithHeaders(GetRequest):
+    
+    def __init__(self, conn, key, bucket, headers = None):
+        self.headers = headers
+        super().__init__(conn, key, bucket)
+    
+    def run(self):
+        url = self.bucket_url(self.key, self.bucket)
+        r = self.adapter().get(url, auth=self.auth, headers=self.headers)
+
+        r.raise_for_status()
+
+        return r
