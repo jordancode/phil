@@ -1,4 +1,5 @@
 
+
 GMAIL= "@gmail."
 YAHOO = "@yahoo."
 AIM = "@aim."
@@ -19,7 +20,6 @@ class EmailUtils:
     @classmethod
     def is_isp(cls, email, isp):
         return email.find(isp) > 0 #verify we have at least one char before "@"
-    
     
     
     @classmethod
