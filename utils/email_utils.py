@@ -21,6 +21,7 @@ class EmailUtils:
         return email.find(isp) > 0 #verify we have at least one char before "@"
     
     
+    
     @classmethod
     def is_consumer(cls, email):
         for isp in CONSUMER_IPS:
@@ -32,10 +33,24 @@ class EmailUtils:
     
     @classmethod
     def is_valid_email(cls,email_address):
+        good_length = (len(email_address) >= 5 and len(email_address) <= 255)
+        if not good_length:
+            return False 
+        
+        
         split = email_address.split("@")
         good_at = (len(split) == 2 
                    and len(split[0]) >= 1 
                    and len(split[1]) >= 3)
+        if not good_at:
+            return False
         
-        return len(email_address) <= 255 and good_at 
+        
+        dot_split = split[1].split(".")
+        good_dot = (len(dot_split) >= 2)
+        for s in dot_split:
+            good_dot = good_dot and len(s) >= 1
+        
+        
+        return good_dot 
         
