@@ -8,8 +8,9 @@ class DateUtils:
     def mysql_to_datetime(mysql_time_string = None):
         if mysql_time_string is None:
             return datetime.datetime.now()
+        date_string_split = mysql_time_string.split(".")
         
-        return datetime.datetime.strptime(mysql_time_string, "%Y-%m-%d %H:%M:%S")
+        return datetime.datetime.strptime(date_string_split[0], "%Y-%m-%d %H:%M:%S")
     
     @staticmethod
     def datetime_to_mysql(dt = None):
