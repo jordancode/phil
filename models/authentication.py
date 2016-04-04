@@ -100,6 +100,11 @@ class Authentication(Entity):
     def _hash_secret(self, secret):
         #override if we don't need to encrypt
         return bcrypt.hashpw(secret.encode('utf-8'),bcrypt.gensalt())
+    
+    
+    def disconnect(self):
+        #used by child classes to disconnect from 3rd party service
+        pass
 
 class AuthException(Exception):
     pass
