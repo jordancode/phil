@@ -2,8 +2,8 @@ from redlock import RedLock
 
 from framework.storage.redis import Redis
 
-TTL = 10000
-NUM_RETRIES = 3
+TTL = 30000
+NUM_RETRIES = 30
 RETRY_DELAY = 1000
 
 class Lock:
