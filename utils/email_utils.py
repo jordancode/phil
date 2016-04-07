@@ -7,6 +7,8 @@ AOL = "@aol."
 APPLE = "@apple."
 ICLOUD = "@icloud."
 MSN = "@msn."
+LIVE_COM = "@live.com"
+PASSPORT = "@pasport."
 OUTLOOK = "@outlook."
 HOTMAIL = "@hotmail."
 MAIL_COM = "@mail.com"
@@ -16,7 +18,7 @@ SCHOOLFEED = "@schoolfeed.com"
 PHOTOKEEPER = "@photokeeper.com"
 
 GOOGLE_TYPES = [GMAIL,HEARTTHIS,SCHOOLFEED,PHOTOKEEPER]
-MICROSOFT_TYPES = [MSN,OUTLOOK,HOTMAIL]
+MICROSOFT_TYPES = [MSN,OUTLOOK,HOTMAIL,LIVE_COM,PASSPORT]
 APPLE_TYPES = [APPLE,ICLOUD]
 AOL_TYPES = [AOL,AIM]
     
