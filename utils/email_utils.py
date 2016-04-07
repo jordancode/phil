@@ -11,15 +11,34 @@ OUTLOOK = "@outlook."
 HOTMAIL = "@hotmail."
 MAIL_COM = "@mail.com"
 YANDEX = "@yandex."
+HEARTTHIS = "@heartthis.com"
+SCHOOLFEED = "@schoolfeed.com"
+PHOTOKEEPER = "@photokeeper.com"
 
+GOOGLE_TYPES = [GMAIL,HEARTTHIS,SCHOOLFEED,PHOTOKEEPER]
+MICROSOFT_TYPES = [MSN,OUTLOOK,HOTMAIL]
+APPLE_TYPES = [APPLE,ICLOUD]
+AOL_TYPES = [AOL,AIM]
     
-CONSUMER_IPS = [GMAIL, GMAIL, AIM, AOL, APPLE, ICLOUD, MSN, OUTLOOK, HOTMAIL, MAIL_COM, YANDEX]
+CONSUMER_IPS = GOOGLE_TYPES + MICROSOFT_TYPES + APPLE_TYPES + AOL_TYPES + [YAHOO, MAIL_COM, YANDEX]
 
 class EmailUtils:
      
     @classmethod
     def is_isp(cls, email, isp):
-        return email.find(isp) > 0 #verify we have at least one char before "@"
+        
+        if isinstance(isp, str):
+            isp_list = [isp]
+        else:
+            isp_list = isp
+        
+        for isp_type in isp_list:
+            if email.find(isp_type) > 0:
+                #verify we have at least one char before "@"
+                return True
+        
+        return False
+        
     
     
     @classmethod
