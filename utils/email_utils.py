@@ -22,6 +22,21 @@ AOL_TYPES = [AOL,AIM]
     
 CONSUMER_IPS = GOOGLE_TYPES + MICROSOFT_TYPES + APPLE_TYPES + AOL_TYPES + [YAHOO, MAIL_COM, YANDEX]
 
+WHITELIST = [
+    "jordan.claassen@gmail.com", 
+    "claassja@gmail.com", 
+    "devjordan1@gmail.com", 
+    "bob.dobalina.sf@gmail.com", 
+    "phdlance@gmail.com", 
+    "lance@heartthis.com", 
+    "lance@schoolfeed.com",
+    "phdlance@yahoo.com",
+    "georgekooney@yahoo.com",
+    "samerssally@yahoo.com",
+    "mayor.mason@yahoo.com",
+    ]
+
+
 class EmailUtils:
      
     @classmethod
@@ -49,6 +64,12 @@ class EmailUtils:
         
         return False
     
+    @classmethod
+    def is_whitelisted(cls, email):
+        if cls.is_isp(email, PHOTOKEEPER):
+            return True
+        
+        return email in WHITELIST
     
     @classmethod
     def is_valid_email(cls,email_address):
