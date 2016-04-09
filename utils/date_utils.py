@@ -42,6 +42,11 @@ class DateUtils:
         fb_time = fb_time[:fb_time.rindex("+")]
         return datetime.datetime.strptime(fb_time, '%Y-%m-%dT%H:%M:%S')
 
+    @staticmethod
+    def hotmail_to_datetime(fb_time):
+        return datetime.datetime.strptime(fb_time, '%Y-%m-%dT%H:%M:%SZ')
+
+
 
     @staticmethod
     def google_to_datetime(g_time):
