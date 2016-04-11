@@ -2,6 +2,7 @@
 
 GMAIL= "@gmail."
 YAHOO = "@yahoo."
+ATT_NET = "@att.net"
 AIM = "@aim."
 AOL = "@aol."
 APPLE = "@apple."
@@ -17,12 +18,15 @@ HEARTTHIS = "@heartthis.com"
 SCHOOLFEED = "@schoolfeed.com"
 PHOTOKEEPER = "@photokeeper.com"
 
+
 GOOGLE_TYPES = [GMAIL,HEARTTHIS,SCHOOLFEED,PHOTOKEEPER]
 MICROSOFT_TYPES = [MSN,OUTLOOK,HOTMAIL,LIVE_COM,PASSPORT]
 APPLE_TYPES = [APPLE,ICLOUD]
 AOL_TYPES = [AOL,AIM]
-    
-CONSUMER_IPS = GOOGLE_TYPES + MICROSOFT_TYPES + APPLE_TYPES + AOL_TYPES + [YAHOO, MAIL_COM, YANDEX]
+YAHOO_TYPES = [YAHOO, ATT_NET]
+
+
+CONSUMER_IPS = GOOGLE_TYPES + MICROSOFT_TYPES + APPLE_TYPES + AOL_TYPES + YAHOO_TYPES + [MAIL_COM, YANDEX]
 
 WHITELIST = [
     "jordan.claassen@gmail.com", 
@@ -36,6 +40,7 @@ WHITELIST = [
     "georgekooney@yahoo.com",
     "samerssally@yahoo.com",
     "mayor.mason@yahoo.com",
+    "lancetokuda@att.net"
     ]
 
 
