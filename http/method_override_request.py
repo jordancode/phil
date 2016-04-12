@@ -94,7 +94,7 @@ class MethodOverrideRequest(Request):
             if data_str:
                 data_dict = json.loads(data_str.decode("utf-8"))
         except Exception as e:
-            return e
+            pass
         
         return data_dict 
 
