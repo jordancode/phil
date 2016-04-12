@@ -339,6 +339,9 @@ class MySQLConnectionManager:
         
         return conn
     
+    
+    
+    
     def _verify(self, connection):
         try:
             cursor = connection.cursor()
@@ -385,6 +388,7 @@ class MySQLConnectionManager:
             for conn in self._conns.values():
                 if not conn.in_transaction: 
                     conn.start_transaction()
+                    conn.autocommit = False
             
     
     def commit(self):
@@ -395,6 +399,7 @@ class MySQLConnectionManager:
             for conn in self._conns.values():
                 if conn.in_transaction:
                     conn.commit()
+                    conn.autocommit = True
     
     
     def rollback(self):
@@ -405,6 +410,7 @@ class MySQLConnectionManager:
             for conn in self._conns.values():
                 if conn.in_transaction:
                     conn.rollback()
+                    conn.autocommit = True
                     
     @property
     def start_transaction_on_connect(self):
