@@ -11,7 +11,6 @@ from framework.utils.id import Id
 from framework.utils.random_token import RandomToken
 from framework.models.data_access_object import RowNotFoundException,\
     RowDeletedException
-import logging
 
 
 class Session(Entity):
@@ -215,7 +214,7 @@ class SessionDAO(framework.models.data_access_object.DataAccessObject):
         
         try:
             return self._row_to_session(rows[0])
-        except (RowNotFoundException,RowDeletedException):
+        except (RowNotFoundException,RowDeletedException,NoAuthFoundException):
             raise SessionNotFoundException()
 
     def _get_user_agent_by_string(self, user_agent_string):
@@ -306,3 +305,6 @@ class InvalidSessionTokenError(SessionException):
 class NoActiveSessionException(SessionException):
     def __str__(self):
         return "No active session"
+
+
+from framework.models.auth import NoAuthFoundException
