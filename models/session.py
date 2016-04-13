@@ -214,7 +214,7 @@ class SessionDAO(framework.models.data_access_object.DataAccessObject):
         
         try:
             return self._row_to_session(rows[0])
-        except (RowNotFoundException,RowDeletedException,NoAuthFoundException):
+        except (RowNotFoundException,RowDeletedException,framework.models.auth.NoAuthFoundException):
             raise SessionNotFoundException()
 
     def _get_user_agent_by_string(self, user_agent_string):
@@ -305,6 +305,3 @@ class InvalidSessionTokenError(SessionException):
 class NoActiveSessionException(SessionException):
     def __str__(self):
         return "No active session"
-
-
-from framework.models.auth import NoAuthFoundException
