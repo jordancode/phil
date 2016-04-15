@@ -17,6 +17,7 @@ YANDEX = "@yandex."
 HEARTTHIS = "@heartthis.com"
 SCHOOLFEED = "@schoolfeed.com"
 PHOTOKEEPER = "@photokeeper.com"
+EDU = ".edu"
 
 
 GOOGLE_TYPES = [GMAIL,HEARTTHIS,SCHOOLFEED,PHOTOKEEPER]
