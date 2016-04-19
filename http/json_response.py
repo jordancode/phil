@@ -9,6 +9,7 @@ from werkzeug.wrappers import (BaseResponse,ETagResponseMixin,
 
 from framework.utils.date_utils import DateUtils
 from app.utils.constants import SERVER_VERSION, MIN_SUPPORTED_CLIENTS
+from framework.utils.json_utils import JSONUtils
 
 
 class JSONResponse(BaseResponse,ETagResponseMixin,
@@ -60,31 +61,12 @@ class JSONResponse(BaseResponse,ETagResponseMixin,
         
         
         if self._data_dict is not None:
-            response = json.dumps(self._data_dict, sort_keys=True, default=self._json_helper)
+            response = JSONUtils.dumps(self._data_dict, optional_keys=self._optional_keys)
         
         self.set_data(response)
     
     
-    def _json_helper(self, value):
-        
-        #stringifies otherwise non-json nodes
-        try:
-            return value.to_dict(True, self._optional_keys)
-        except AttributeError:
-            pass
-        
-        
-        
-        try:
-            if isinstance(value, datetime.datetime):
-                return DateUtils.datetime_to_unix(value)
-            
-            return str(value)
-        except AttributeError:
-            pass
-        
-        raise TypeError()
-      
+    
         
     def set_error(self, error = None):
         self._success = False
