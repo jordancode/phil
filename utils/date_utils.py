@@ -1,5 +1,6 @@
 import datetime
 import time
+from dateutil import tz
 from dateutil.parser import parse
 
 
@@ -56,7 +57,8 @@ class DateUtils:
 
     @staticmethod
     def gmail_to_datetime(g_time):
-        return parse(g_time)
+        date = parse(g_time)
+        return date.astimezone(tz.gettz('UTC')).replace(tzinfo=None)
 
 
     @staticmethod
