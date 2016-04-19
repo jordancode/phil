@@ -101,4 +101,27 @@ class EmailUtils:
         
         
         return good_dot 
+    
+    
+    @classmethod
+    def parse_from_field(cls, from_field):
+        ret = []
+        from_arr = from_field.split(",")
+        for address in from_arr:
+            address = address.strip()
+            address_parts = address.split("<")
+            if len(address_parts) == 2:
+                ret.append({
+                    "name" : address_parts[0], 
+                    "email" : address_parts[1].split(">")[0]
+                })
+            else:
+                if cls.is_valid_email(address_parts[0]):
+                    ret.append({"email" : address_parts[0]})
+                else:
+                    ret.append({"name" : address_parts[0]})
+        
+        return ret
+        
+        
         

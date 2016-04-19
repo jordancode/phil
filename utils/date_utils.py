@@ -1,5 +1,6 @@
 import datetime
 import time
+from dateutil.parser import parse
 
 
 class DateUtils:
@@ -55,11 +56,7 @@ class DateUtils:
 
     @staticmethod
     def gmail_to_datetime(g_time):
-        try:
-            g_time = g_time[g_time.index(", ")+2:g_time.rindex(" +")]
-        except:
-            return datetime.datetime.now()
-        return datetime.datetime.strptime(g_time, '%d %b %Y %H:%M:%S')
+        return parse(g_time)
 
 
     @staticmethod
