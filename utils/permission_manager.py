@@ -34,6 +34,9 @@ class PermissionManager:
             #verify ownership rows exist
             raise PermissionsError()
         
+        if len(uhx_objs) < len(id_list):
+            raise PermissionsError()
+        
         for uhx in uhx_objs:
             if not uhx.permission.has_mask(permissions_mask):
                 #verify permissions
@@ -41,4 +44,4 @@ class PermissionManager:
         
         
         
-        
+        return uhx_objs
