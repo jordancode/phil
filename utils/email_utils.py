@@ -106,20 +106,21 @@ class EmailUtils:
     @classmethod
     def parse_from_field(cls, from_field):
         ret = []
+        from_field.replace("'","")
         from_arr = from_field.split(",")
         for address in from_arr:
-            address = address.strip()
             address_parts = address.split("<")
+            
             if len(address_parts) == 2:
                 ret.append({
-                    "name" : address_parts[0], 
-                    "email" : address_parts[1].split(">")[0]
+                    "name" : address_parts[0].strip(), 
+                    "email" : address_parts[1].split(">")[0].strip()
                 })
             else:
-                if cls.is_valid_email(address_parts[0]):
-                    ret.append({"email" : address_parts[0]})
+                if cls.is_valid_email(address_parts[0].strip()):
+                    ret.append({"email" : address_parts[0].strip()})
                 else:
-                    ret.append({"name" : address_parts[0]})
+                    ret.append({"name" : address_parts[0].strip()})
         
         return ret
         
