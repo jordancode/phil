@@ -69,29 +69,42 @@ class MultiShardQuery:
                     raise e
         
         for shard_id, dict_list in shard_to_dicts.items():
-            #get vals array
-            vals = [ ["%s" for k in d.keys()] for d in dict_list ]
-            #create parameter placeholders
-            params = [ v for d in dict_list for v in d.values()]
-            #get cols
-            cols = dict_list[0].keys()
             
+            #make sure we only have a separate call for each column set 
+            dict_lists_by_cols = {}
             
-            qb = SQLQueryBuilder.insert(table_name).columns(cols).values(vals)
+            for d in dict_list:
+                cols = list(d.keys())
+                cols.sort()
+                col_str = ",".join(cols)
+                if not col_str in dict_lists_by_cols:
+                    dict_lists_by_cols[col_str] = []
+                dict_lists_by_cols[col_str].append(d)
             
-            if cols_to_update:
-                update_list = [ ("`" + c + "`", "VALUES(`" + c+ "`)") for c in cols_to_update ]
-                qb.on_duplicate_key_update(update_list)
-            
-            
-            #do insert
-            shard = MySQL.get_by_shard_id(shard_id, self._pool.get_id())
-            try:
-                count = count + shard.query(qb.build(), params, self._use_multi)
-            except Exception as e:
-                if not self._catch_errors:
-                    raise e
-                count = 0
+            for col_str, dict_list in dict_lists_by_cols.items():
+                #get vals array
+                vals = [ ["%s" for k in d.keys()] for d in dict_list ]
+                
+                #create parameter placeholders
+                params = [ v for d in dict_list for v in d.values()]
+                cols = dict_list[0].keys()
+                
+                
+                qb = SQLQueryBuilder.insert(table_name).columns(cols).values(vals)
+                
+                if cols_to_update:
+                    update_list = [ ("`" + c + "`", "VALUES(`" + c+ "`)") for c in cols_to_update ]
+                    qb.on_duplicate_key_update(update_list)
+                
+                
+                #do insert
+                shard = MySQL.get_by_shard_id(shard_id, self._pool.get_id())
+                try:
+                    count = count + shard.query(qb.build(), params, self._use_multi)
+                except Exception as e:
+                    if not self._catch_errors:
+                        raise e
+                    count = 0
             
         return count
     
