@@ -107,6 +107,7 @@ class EmailUtils:
     def parse_from_field(cls, from_field):
         ret = []
         from_field.replace("'","")
+        from_field.replace('"',"")
         from_arr = from_field.split(",")
         for address in from_arr:
             address_parts = address.split("<")
