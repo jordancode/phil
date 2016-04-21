@@ -17,4 +17,4 @@ REDIS_PORT = connection_config.get("port")
 
 REDIS_DB = dbs_config.get("queue")
 
-QUEUES = ['default']
+QUEUES = ['high','default','low']
