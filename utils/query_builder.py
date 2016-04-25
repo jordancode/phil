@@ -167,6 +167,9 @@ class SQLSelectQuery(WhereQuery, BaseSQLQuery):
         self._parts["columns"] = ",".join(column_list)
         return self
     
+    def group_by(self, column):
+        self._parts["group"] = "GROUP BY " + backtick(column)
+        return self
     
     def lock(self, lock_type = LOCK_FOR_UPDATE):
         assert lock_type in [LOCK_FOR_UPDATE, LOCK_FOR_SHARED_STATE]
@@ -181,7 +184,7 @@ class SQLSelectQuery(WhereQuery, BaseSQLQuery):
         return "SELECT"
     
     def _get_order(self):
-        return ["verb", "columns", "table", "where", "order", "limit", "lock"]
+        return ["verb", "columns", "table", "where", "group", "order", "limit", "lock"]
     
     def _required(self):
         return ["verb", "columns", "table"]
