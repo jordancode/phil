@@ -18,12 +18,8 @@ class Authentication(Entity):
 
         self._validate_provider_id(provider_id)
         self._set_attr("provider_id", provider_id)
+        self._set_secret(secret,secret_hashed)
         
-        if not secret_hashed:
-            self._validate_secret(secret)
-            secret = self._hash_secret(secret)
-            
-        self._set_attr("secret", secret)
         self._set_attr("user_id", user_id)
         
         self._set_attr("expires_ts",expires_ts)
@@ -44,7 +40,13 @@ class Authentication(Entity):
         if len(provider_id) > 255 or not (set(provider_id) <= allowed):
             raise InvalidProviderIdException()
     
-        
+    def _set_secret(self, secret, is_hashed=False):
+        if not is_hashed:
+            self._validate_secret(secret)
+            self._set_attr("secret", self._hash_secret(secret))
+        else:
+            self._set_attr("secret", secret)
+    
     @property
     def user_id(self):
         return self._get_attr("user_id")
@@ -60,8 +62,7 @@ class Authentication(Entity):
     
     @secret.setter
     def secret(self, new_secret):
-        self._validate_secret(new_secret)
-        self._set_attr("secret", self._hash_secret(new_secret))
+        self._set_secret(new_secret, False)
     
     
     @property
@@ -101,9 +102,31 @@ class Authentication(Entity):
         #override if we don't need to encrypt
         return bcrypt.hashpw(secret.encode('utf-8'),bcrypt.gensalt())
     
+    def reauth(self):
+        pass
     
     def disconnect(self):
         #used by child classes to disconnect from 3rd party service
+        try:
+            return self.get_api().revoke_permissions()
+        except Exception:
+            pass
+        
+        return False
+    
+    @classmethod
+    def get_api_class(cls):
+        return None
+        
+    
+    def get_api(self):
+        api_cls = self.get_api_class()
+        if api_cls is not None:
+            return api_cls().get_for_user(self)
+        return None
+    
+    
+    def after_connect(self):
         pass
 
 class AuthException(Exception):

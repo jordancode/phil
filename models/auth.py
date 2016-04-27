@@ -1,12 +1,18 @@
-import app.models.user
 import framework.models.data_access_object
 import framework.models.session
+import logging
+import app.models.user
 
 from framework.models.authentication import Authentication, AuthException
 
-from framework.storage.mysql import MySQL
+from framework.storage.mysql import MySQL, MySQLTransaction
 from framework.utils.class_loader import ClassLoader
 from framework.models.data_access_object import RowDeletedException
+from framework.config.config import Config
+from werkzeug.exceptions import Unauthorized
+import json
+
+
 
 
 class AuthDAO(framework.models.data_access_object.DataAccessObject):
@@ -71,6 +77,7 @@ class AuthDAO(framework.models.data_access_object.DataAccessObject):
 
         return [self._row_to_model(row) for row in rows]
 
+
     def save(self, auth):
         if not auth.is_dirty:
             return False
@@ -119,6 +126,7 @@ class AuthDAO(framework.models.data_access_object.DataAccessObject):
                           created_ts=row['created_ts'])
 
         return auth
+
 
     def _generate_id_from_provider_id(self, provider_id):
         shard_id = MySQL.get_shard_id_for_string(provider_id)
@@ -191,18 +199,120 @@ class AuthService:
         auth = dao.new_auth(auth_class, provider_id, secret, user, expires_ts)
         dao.save(auth)
 
+        auth.after_connect()
+
         session_dao = framework.models.session.SessionDAO()
 
         session = session_dao.new_session(auth, user_agent)
         session_dao.save(session)
 
         return session
+    
+    
+    def connect(self, auth_class, auth_response, current_session = None, user_agent_string = None):
+        
+        """
+        service_type: 1-N the id of the auth service from auth.json
+        credentials: a dictionary containing whatever we get from the api
+        current_session
+        user_agent_string: in case we're creating a new session
+        
+        """
+        
+        #get auth class
+        type_id = AuthDAO()._class_to_type_id(auth_class)
+        auth_config = Config.get("auth",["type_to_class",str(type_id)])
+        
+        #get api class
+        api_cls = auth_class.get_api_class()
+        api = api_cls()
+        
+        credentials = api.get_credentials_from_auth_response(auth_response)
+        user_api = api.get_for_user(credentials)
+        user_data = user_api.get_user_data()
+        
+        #provider id
+        provider_id = user_data["id"]
+        
+        with MySQLTransaction():
+            
+            #if we can log in then we're done here.
+            
+            if auth_config["login_type"]:
+                #--- STEP 2. Try to log in
+                try:
+                    return self.log_in(
+                        auth_class, 
+                        provider_id, 
+                        credentials,  
+                        user_agent_string)
+                    
+                except NoAuthFoundException as e:
+                    pass
+                
+                #--- STEP 3. Create a new user or use logged in one
+                if not current_session or current_session.is_logged_out():
+                    user = self.sign_up(user_data)
+                else:
+                    user = current_session.user
+            
+            elif current_session and not current_session.is_logged_out():
+                user = current_session.user
+            else:
+                raise Unauthorized()
+            
+            #--- STEP 4. Add Google login info to user
+            try:
+                current_session = self.add_auth_to_user(user, 
+                                   auth_class, 
+                                   provider_id, 
+                                   credentials, 
+                                   user_agent_string)
+                
+            except ProviderIdTakenException as e:
+                #either we have a session, and this session already owns this auth
+                #or something went wrong
+                if (user.id != e.auth.user.id):
+                    raise e
+        
+        return current_session
+    
+    
+    def sign_up(self, user_data, require_email = False):
+        
+        #no user with this auth yet, let's create one
+        has_email = ("email" in user_data)
+        
+        if require_email and not has_email:
+            raise MissingUserData(["email"])
+        
+        try:
+            if has_email:
+                user = app.models.user.UserService().new_user(
+                                user_data["name"],
+                                user_data["email"],
+                                True
+                            )
+            else:
+                user = app.models.user.UserService().new_user(user_data["name"])
+            
+        except app.models.user_alias.AliasTakenError as e:
+            logging.getLogger().warn("Email address already in use. Could be a preemptive sign up attack.")
+            user = e.alias.user
+        
+        return user
 
+        
+        
 
+class MissingUserData(AuthException):      
+    def __init__(self, missing_attrs):
+        self.keys = missing_attrs
+        super("Missing user info: " + ",".join(missing_attrs))
+    
 class InvalidCredentialsException(AuthException):
     def __str__(self):
         return "Invalid Credentials"
-
 
 class ProviderIdTakenException(AuthException):
     _found_auth = None
