@@ -10,7 +10,6 @@ from framework.utils.class_loader import ClassLoader
 from framework.models.data_access_object import RowDeletedException
 from framework.config.config import Config
 from werkzeug.exceptions import Unauthorized
-import json
 
 
 
