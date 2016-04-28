@@ -168,6 +168,8 @@ class AuthService:
 
         if not auth.verify_secret(secret, time):
             raise InvalidCredentialsException()
+        
+        auth.after_login()
 
         session_dao = framework.models.session.SessionDAO()
 
@@ -200,6 +202,7 @@ class AuthService:
         dao.save(auth)
 
         auth.after_connect()
+        auth.after_login()
 
         session_dao = framework.models.session.SessionDAO()
 

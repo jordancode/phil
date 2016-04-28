@@ -3,7 +3,6 @@ from _datetime import datetime
 
 import bcrypt
 
-import app.models.user
 from framework.models.entity import Entity
 
 
@@ -67,6 +66,7 @@ class Authentication(Entity):
     
     @property
     def user(self):
+        import app.models.user
         return app.models.user.UserDAO().get(self.user_id)
     
     @property
@@ -122,12 +122,15 @@ class Authentication(Entity):
     def get_api(self):
         api_cls = self.get_api_class()
         if api_cls is not None:
-            return api_cls().get_for_user(self)
+            return api_cls().get_for_user(self.secret)
         return None
     
+    def after_login(self):
+        pass
     
     def after_connect(self):
         pass
+    
 
 class AuthException(Exception):
     pass
