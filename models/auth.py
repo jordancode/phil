@@ -225,16 +225,11 @@ class AuthService:
         type_id = AuthDAO()._class_to_type_id(auth_class)
         auth_config = Config.get("auth",["type_to_class",str(type_id)])
         
-        #get api class
-        api_cls = auth_class.get_api_class()
-        api = api_cls()
-        
-        credentials = api.get_credentials_from_auth_response(auth_response)
-        user_api = api.get_for_user(credentials)
-        user_data = user_api.get_user_data()
+        user_data = auth_class.get_user_data_from_auth_response(auth_response)
         
         #provider id
         provider_id = user_data["id"]
+        secret = user_data["secret"]
         
         with MySQLTransaction():
             
@@ -246,7 +241,7 @@ class AuthService:
                     return self.log_in(
                         auth_class, 
                         provider_id, 
-                        credentials,  
+                        secret,  
                         user_agent_string)
                     
                 except NoAuthFoundException as e:
@@ -268,7 +263,7 @@ class AuthService:
                 current_session = self.add_auth_to_user(user, 
                                    auth_class, 
                                    provider_id, 
-                                   credentials, 
+                                   secret, 
                                    user_agent_string)
                 
             except ProviderIdTakenException as e:
@@ -285,8 +280,16 @@ class AuthService:
         #no user with this auth yet, let's create one
         has_email = ("email" in user_data)
         
+        missing_data = []
+        
         if require_email and not has_email:
-            raise MissingUserData(["email"])
+            missing_data.append("email")
+        
+        if "name" not in user_data:
+            missing_data.append("name")
+        
+        if missing_data:    
+            raise MissingUserData(missing_data)
         
         try:
             if has_email:
@@ -310,7 +313,7 @@ class AuthService:
 class MissingUserData(AuthException):      
     def __init__(self, missing_attrs):
         self.keys = missing_attrs
-        super("Missing user info: " + ",".join(missing_attrs))
+        super().__init__("Missing user info: " + ",".join(missing_attrs))
     
 class InvalidCredentialsException(AuthException):
     def __str__(self):

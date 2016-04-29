@@ -11,6 +11,17 @@ class Authentication(Entity):
       maps user_id's to credentials
     """
     
+    @classmethod
+    def get_api_class(cls):
+        return None
+    
+    @classmethod
+    def get_user_data_from_auth_response(cls, auth_response):
+        """
+         Translates what's provided to the auth controller into credentials
+        """
+        pass
+    
 
     def __init__(self, id, provider_id, secret, user_id, secret_hashed = False, expires_ts = None, created_ts = None):
         super().__init__(id)
@@ -113,11 +124,6 @@ class Authentication(Entity):
             pass
         
         return False
-    
-    @classmethod
-    def get_api_class(cls):
-        return None
-        
     
     def get_api(self):
         api_cls = self.get_api_class()
