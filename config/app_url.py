@@ -2,16 +2,21 @@ from framework.config.config import Config
 class AppUrl:
     
     @staticmethod
-    def get(subdomain_type = None, include_protocol = True):
-        if subdomain_type is None:
-            subdomain_type = "web"
+    def get( subdomain_type = "web", host_type = "main", include_protocol = True):
         
-        proto = Config.get("app", "default_protocol")
-        subdomain = Config.get("app", ["subdomains", subdomain_type])
-        host = Config.get("app", "server_name")
+        config = Config.get("app", ["hosts", host_type]) 
+        
+        proto = config.get("default_protocol")
+        subdomain = config.get("subdomains").get(subdomain_type)
+        host = config.get("server_name")
+        
+        if subdomain:
+            full_host =  subdomain + "." + host
+        else:
+            full_host = host
         
         if include_protocol:
-            return proto + "://" + subdomain + "." + host
+            return proto + "://" + full_host
         else:
-            return subdomain + "." + host
+            return full_host
         

@@ -6,6 +6,7 @@ from werkzeug.routing import Map, Rule
 
 from framework.config.config import Config
 from framework.utils.type import Type
+from framework.config.app_url import AppUrl
 
 
 class Routes():
@@ -44,26 +45,29 @@ class Routes():
         
         ret = []
         
-        for subdomain_type in routes_dict:
-            subdomain_routes = routes_dict[subdomain_type]
-            subdomain = Config.get("app", ["subdomains", subdomain_type])
-            
-            for route in subdomain_routes:
-                path = route['route']
+        for host_type in routes_dict:
+            routes_for_host = routes_dict[host_type]
+            for subdomain in routes_for_host:
                 
-                #cleanup route data that won't go to Rul
+                subdomain_routes = routes_for_host.get(subdomain)
+                host = AppUrl.get(subdomain, host_type, include_protocol=False)
                 
-                del route['route']
-                
-                rule = DocRule(
-                            path,
-                            subdomain=subdomain,
-                            **route
-                            )
-                            
-                ret.append(rule)
+                for route in subdomain_routes:
+                    path = route['route']
+                    
+                    #cleanup route data that won't go to Rul
+                    
+                    del route['route']
+                    
+                    rule = DocRule(
+                                path,
+                                host=host,
+                                **route
+                                )
+                                
+                    ret.append(rule)
         
-        return Map(ret, strict_slashes=False)
+        return Map(ret,strict_slashes=False,host_matching=True)
 
 class DocRule(Rule):
     

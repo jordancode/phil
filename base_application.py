@@ -47,7 +47,7 @@ class BaseApplication():
         return response
     
     def get_server_name(self):
-        return "localhost"
+        return None
     
     def pre_hook(self,request):
         pass

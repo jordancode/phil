@@ -10,6 +10,7 @@ from werkzeug.wrappers import (BaseResponse,ETagResponseMixin,
 from framework.config.config import Config
 from framework.models.entity import Entity
 from app.utils.constants import ROOT_PATH
+from framework.config.app_url import AppUrl
 
 
 class TemplateResponse(BaseResponse,ETagResponseMixin,
@@ -55,9 +56,9 @@ class TemplateResponse(BaseResponse,ETagResponseMixin,
         if not "config_" in ret:
             app_config = Config.get("app")
             
-            app_config["www_url"] = app_config["default_protocol"] + "://" + app_config["subdomains"]["web"] + "." + app_config["server_name"]
-            app_config["api_url"] = app_config["default_protocol"] + "://" + app_config["subdomains"]["api"] + "." + app_config["server_name"]
-            app_config["assets_url"] = app_config["default_protocol"] + "://" + app_config["subdomains"]["assets"] + "." + app_config["server_name"]
+            app_config["www_url"] = AppUrl.get("web")
+            app_config["api_url"] = AppUrl.get("api")
+            app_config["assets_url"] = AppUrl.get("assets")
             
             ret['config_'] = {
                 "app" : app_config,

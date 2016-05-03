@@ -17,7 +17,7 @@ class CookieSessionStore(BaseSessionStore):
         return app_name + "_s_t"   
     
     def _get_cookie_domain(self):
-        server_name = Config.get("app","server_name")
+        server_name = Config.get("app",["hosts", "main", "server_name"])
         return "." + server_name
     
     def set_session(self, response, session):
