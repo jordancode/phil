@@ -2,9 +2,12 @@ import framework.models.session
 from framework.config.config import Config
 from framework.http.base_session_store import BaseSessionStore
 import logging
+import datetime
 
 
 class CookieSessionStore(BaseSessionStore):
+    
+    COOKIE_MAX_AGE=630720000
     
     def _get_cookie_name(self):
         app_name = Config.get("app","app_key")
@@ -22,8 +25,18 @@ class CookieSessionStore(BaseSessionStore):
     
     def set_session(self, response, session):
         
-        response.set_cookie(self._get_cookie_name(), str(session.id), None, session.log_out_ts, '/', self._get_cookie_domain())
-        response.set_cookie(self._get_token_cookie_name(), session.token, None, session.log_out_ts, '/', self._get_cookie_domain())
+        max_expires_ts = datetime.datetime.now() + datetime.timedelta(seconds=self.COOKIE_MAX_AGE)
+        if not session.log_out_ts:
+            log_out_ts = max_expires_ts
+        else:
+            log_out_ts = min(
+                session.log_out_ts, 
+                max_expires_ts
+            )
+        
+        
+        response.set_cookie(self._get_cookie_name(), str(session.id), self.COOKIE_MAX_AGE, log_out_ts, '/', self._get_cookie_domain())
+        response.set_cookie(self._get_token_cookie_name(), session.token, self.COOKIE_MAX_AGE, log_out_ts, '/', self._get_cookie_domain())
         
         #also set cookies without a domain for iOS
         #response.set_cookie(self._get_cookie_name(), str(session.id), None, session.log_out_ts, '/')
