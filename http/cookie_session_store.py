@@ -24,7 +24,10 @@ class CookieSessionStore(BaseSessionStore):
         
         response.set_cookie(self._get_cookie_name(), str(session.id), None, session.log_out_ts, '/', self._get_cookie_domain())
         response.set_cookie(self._get_token_cookie_name(), session.token, None, session.log_out_ts, '/', self._get_cookie_domain())
-    
+        
+        #also set cookies without a domain for iOS
+        response.set_cookie(self._get_cookie_name(), str(session.id), None, session.log_out_ts, '/')
+        response.set_cookie(self._get_token_cookie_name(), session.token, None, session.log_out_ts, '/')
     
     def get_session(self, request):
                 
@@ -45,4 +48,8 @@ class CookieSessionStore(BaseSessionStore):
         
         response.delete_cookie(self._get_cookie_name(),'/', self._get_cookie_domain())
         response.delete_cookie(self._get_token_cookie_name(),'/', self._get_cookie_domain())
+        
+        #also set cookies without a domain for iOS
+        response.delete_cookie(self._get_cookie_name(),'/')
+        response.delete_cookie(self._get_token_cookie_name(),'/')
         
