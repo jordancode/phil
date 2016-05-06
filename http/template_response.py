@@ -59,12 +59,14 @@ class TemplateResponse(BaseResponse,ETagResponseMixin,
             app_config["www_url"] = AppUrl.get("web")
             app_config["api_url"] = AppUrl.get("api")
             app_config["assets_url"] = AppUrl.get("assets")
+            app_config["admin_url"] = AppUrl.get("admin")
             
             ret['config_'] = {
                 "app" : app_config,
                 "www_url" : app_config["www_url"],
                 "api_url" : app_config["api_url"],
-                "assets_url" : app_config["assets_url"], 
+                "assets_url" : app_config["assets_url"],
+                "admin_url" : app_config["admin_url"],
                 "app_json" : json.dumps(app_config)
              }
             
