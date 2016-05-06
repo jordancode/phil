@@ -1,5 +1,6 @@
 import base64
 import datetime
+import inspect
 from abc import ABCMeta
 
 from framework.utils.date_utils import DateUtils
@@ -42,7 +43,10 @@ class Serializeable(metaclass=ABCMeta):
             if isinstance(optional_keys, list):
                 return optional_keys
             else:
-                return optional_keys[cls.__name__]
+                all_classes = inspect.getmro(cls)
+                for parent_cls in all_classes:
+                    if parent_cls.__name__ in optional_keys:
+                        return optional_keys[parent_cls.__name__]
 
         except (TypeError, KeyError):
             pass
