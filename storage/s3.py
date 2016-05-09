@@ -4,12 +4,16 @@ from framework.config.config import Config
 from tinys3.request_factory import GetRequest
 import pprint
 import logging
+import copy
 
 
 class S3(tinys3.Connection):
     
     def __init__(self):
-        config = Config.get("s3")
+        config = copy.deepcopy(Config.get("s3"))
+        if "temp_bucket" in config:
+            del config["temp_bucket"]
+        
         super().__init__(**config)
         
         
