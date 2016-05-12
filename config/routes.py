@@ -8,6 +8,7 @@ from framework.config.config import Config
 from framework.utils.type import Type
 from framework.config.app_url import AppUrl
 
+BATCH_REQUEST_KEY = "BATCH_REQUEST"
 
 class Routes():
     
@@ -41,8 +42,6 @@ class Routes():
             Translates the routes dictionary configuration to a Map object
         """
         routes_dict = copy.deepcopy(self._get_routes_dict())
-        
-        
         ret = []
         
         for host_type in routes_dict:
@@ -76,10 +75,11 @@ class DocRule(Rule):
     return_data = None
     not_implemented= False
     
-    def __init__(self, *args, comment = None, parameters = None, **kargs):
+    def __init__(self, *args, comment = None, parameters = None, returns = None, optional_keys=None, **kargs):
         super().__init__(*args, **kargs)
         self.parameters = parameters or {}
         self.comment = comment
+        self.return_data =  Type.serialize(returns, optional_keys)
     
     def set_parameters(self, params_dict ):
         self.parameters = params_dict
@@ -108,6 +108,10 @@ class DocRule(Rule):
     
     def get_method(self, request,session_store):
         endpoint = self.endpoint
+        
+        if endpoint == BATCH_REQUEST_KEY:
+            return None
+        
         module_name, method = endpoint.rsplit(".",1)
         
         class_name = module_name.split(".")[-1]

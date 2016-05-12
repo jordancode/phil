@@ -31,7 +31,6 @@ class MethodOverrideRequest(Request):
     
     def __init__(self, environ, populate_request = True, shallow=False):
         super().__init__(environ, populate_request, shallow)
-        self._override_method(environ)
         
     
     def get_value(self, key, default_value = None, required=False):     
@@ -115,7 +114,7 @@ class MethodOverrideRequest(Request):
                 base = self._get_base_type(type)
                 return self._get_list_param(dictionary,key,base) 
                         
-            if self._is_dict_type(type):
+            elif self._is_dict_type(type):
                 base = self._get_base_type(type)
                 return self._get_dict_param(dictionary,key,base)
             else:
@@ -209,7 +208,8 @@ class MethodOverrideRequest(Request):
         
         return type[-2:] == "{}"
     
-    def _override_method(self, environ):
+    def override_method(self):
+        environ = self.environ
         
         method = environ['REQUEST_METHOD']
         if KEY in self.values:

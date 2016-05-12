@@ -17,4 +17,3 @@ class JSONHTTPException(HTTPException):
         resp.set_error(self)
         
         return resp
-        

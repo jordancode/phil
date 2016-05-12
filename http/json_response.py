@@ -49,16 +49,17 @@ class JSONResponse(BaseResponse,ETagResponseMixin,
     
     def set_optional_keys(self, optional_keys):
         self._optional_keys = optional_keys
-    
-    def _update_response(self):
-        response = None
         
+    
+    def _add_in_extra_keys(self):
         self._data_dict["success"] = self._success
         self._data_dict["now_ts"] = DateUtils.datetime_to_unix()
-        
         self._data_dict["v"] = SERVER_VERSION
         self._data_dict["min_v"] = MIN_SUPPORTED_CLIENTS
         
+    
+    def _update_response(self):
+        response = None
         
         if self._data_dict is not None:
             response = JSONUtils.dumps(self._data_dict, optional_keys=self._optional_keys)
@@ -81,9 +82,6 @@ class JSONResponse(BaseResponse,ETagResponseMixin,
                 self.status_code = 400
                 
             self.set_key("error", str(error))
-            
-            
-            
             
         return self
         
@@ -117,6 +115,7 @@ class JSONResponse(BaseResponse,ETagResponseMixin,
         return self
         
     def get_wsgi_response(self, environ):
+        self._add_in_extra_keys()
         self._update_response()
         
         return super().get_wsgi_response(environ)
