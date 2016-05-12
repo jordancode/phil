@@ -9,8 +9,11 @@ import copy
 
 class S3(tinys3.Connection):
     
-    def __init__(self):
+    def __init__(self, temp_bucket=False):
         config = copy.deepcopy(Config.get("s3"))
+        if temp_bucket:
+            config["default_bucket"] = config["temp_bucket"]
+        
         if "temp_bucket" in config:
             del config["temp_bucket"]
         
