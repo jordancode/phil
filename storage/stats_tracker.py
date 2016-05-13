@@ -17,8 +17,7 @@ class StatsTracker(TCPStatsClient):
         try:
             super()._send(data)
         except Exception as e:
-            logging.getLogger().warn("Stat failed")
-            logging.getLogger().exception(e)
+            logging.getLogger().warn("Stats tracking failed, connection error")
             self.close()
     
     def track(self, event):
