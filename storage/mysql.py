@@ -6,8 +6,9 @@ import logging
 from framework.config.config import Config
 import mysql.connector
 from framework.utils.query_tracker import QueryTracker
-import pprint
 from mysql.connector.errors import DatabaseError
+from setuptools.ssl_support import is_available
+from mysql.connector.pooling import CONNECTION_POOL_LOCK
 
 
 class MySQL:
@@ -177,10 +178,10 @@ class MySQLShard:
         self._side_num = side_num
     
     def _get_connection(self):
-        return MySQL.get_conn_mgr().get_connection(self._get_host(), self._get_port())
+        return MySQL.get_conn_mgr().get_connection(self._get_host(), self._get_port(), self.get_name())
     
-    def _has_connection(self):
-        return MySQL.get_conn_mgr().get_connection(self._get_host(), self._get_port())
+    def _return_connection(self, conn):
+        MySQL.get_conn_mgr().return_connection(conn)
     
     def _get_side_num(self):
         config = self._pool.get_config_for_shard(self._shard_id)
@@ -208,15 +209,23 @@ class MySQLShard:
     
     
     def query(self, query, params = None, use_multi = False):
-        query_obj = {}
+        
+        query_obj = QueryTracker.push(self.get_name(), query, params)
+        connection=None
+        
         try:
-            cursor = self._get_cursor()
-            
-            query_obj = QueryTracker.push(self.get_name(), query, params)
-            
-            #use the right shard always
-            cursor.execute("use " + self.get_name() + "");
-            
+            connection = self._get_connection()
+            cursor = connection.cursor(dictionary=True)
+        except Exception as e:
+            if connection:
+                self._return_connection(connection)
+                
+            query_obj["error"] = repr(e)
+            logging.getLogger().error("MySQL error: " + repr(e))
+            raise e
+        
+        
+        try:
             results = cursor.execute(query, params, multi=use_multi)
             ret = []
             
@@ -234,12 +243,16 @@ class MySQLShard:
             
             query_obj["result"] = ret
             
-            cursor.close()
-            
         except Exception as e:
             query_obj["error"] = repr(e)
             logging.getLogger().error("MySQL error: " + repr(e))
             raise e
+        
+        finally:
+            cursor.close()
+            if connection:
+                self._return_connection(connection)
+        
         
         return ret
     
@@ -252,36 +265,15 @@ class MySQLShard:
         else:
             ret = cursor.rowcount
             
-        return ret
-    
-    
-    def multi_query(self,query, params_arr=None):
-        
-        ret = []
-        cursor = self._get_cursor()
-        
-        cursor.executemany(query, params_arr)
-        
-        if cursor.with_rows:
-            ret.append(cursor.fetchall())
-        else:
-            ret.append(cursor.rowcount)  
-            
-        cursor.close()  
-        
-        return ret                             
+        return ret                       
 
     
     def get_pool(self):
-        return self._pool    
+        return self._pool
         
     
     def get_name(self):
         return self._pool.get_name() + "_" + str(self._shard_id)
-
-        
-    def _get_cursor(self):
-        return self._get_connection().cursor(dictionary=True)
 
 
 
@@ -290,128 +282,109 @@ class MySQLShard:
 
 class MySQLConnectionManager:
     
-    _conns = None
+    _conn_pools = None
     _config = None
-    _stoc = False
+    _stoc = False 
     
     def __init__(self, config):
         self._config = config
-        
 
-    def _get_server_key(self, host, port):
-        return host + ":" + str(port)
-    
-
-    def get_connection(self, host, port, verify_connection = True):
-        if self._conns is None:
-            self._conns = {}
+    def get_connection(self, host, port, shard_name):
+        with CONNECTION_POOL_LOCK:
+            conn_pool = self.get_pool(host, port)
+            
+            conn = conn_pool.get_connection(shard_name)
+            self._update_transaction_state(conn)
+            
+            return conn
         
-        key = self._get_server_key(host, port)
-        
-        if verify_connection and key in self._conns:
-            if not self._verify(self._conns[key]):
-                del(self._conns[key])
-        
-        
-        if not key in self._conns:
-            conn = self._connect(host, port)
-            self._conns[key] = conn
-        
-        return self._conns[key]
-
-    def has_connection(self, host, port): 
-        key = self._get_server_key(host, port)
-        return self._conns is not None and key in self._conns
-    
-    def _connect(self, host, port):
-        conn = mysql.connector.connect(
-                user=self._config["user"], 
-                password=self._config["pass"],
-                host = host,
-                port = port
-            )
-        
-        if self.start_transaction_on_connect:
-            conn.start_transaction()
-            conn.autocommit = False
-        else:
-            conn.autocommit = True
-        
-        return conn
-    
-    
-    
-    
-    def _verify(self, connection):
-        try:
-            cursor = connection.cursor()
-            cursor.execute("SELECT 1")
-            cursor.fetchall()
+    def return_connection(self, conn):
+        with CONNECTION_POOL_LOCK:
+            pool = self.get_pool(conn.server_host, conn.server_port)
+            pool.return_connection(conn)
             return True
-        except mysql.connector.Error:
-            return False
+
+    def has_connection(self, host, port):
+        with CONNECTION_POOL_LOCK: 
+            key = self._get_server_key(host, port)
+            return self._conn_pools is not None and key in self._conn_pools
+    
+    
+    def get_pool(self, host, port):
+        with CONNECTION_POOL_LOCK:
+            if self._conn_pools is None:
+                self._conn_pools = {}
+            
+            key = self._get_server_key(host, port)
+            
+            if not key in self._conn_pools:
+                self._conn_pools[key] = MySQLConnectionPool(host, port, self._config)
+                
+            return self._conn_pools[key]
         
     
     def close(self, host, port ):
-        if not self.has_connection(host,port):
-            return
-        
-        key = self._get_server_key(host, port)
-        conn = self._conns[key] 
-        del(self._conns[key])
-        conn.close()
+        with CONNECTION_POOL_LOCK:
+            pool = self.get_pool(host, port)
+            pool.close_all()
         
     
     def close_all(self):
-        logging.getLogger().warn("----------------------------------------------- CLOSE ALL")
-        
-        if self._conns is None:
-            return
-        
-        tmp = self._conns
-        self._conns = None
-        
-        for key, conn in tmp.items():
-            logging.getLogger().warn("Close Connection: " + key)
-            if conn.in_transaction:
-                logging.getLogger().warn("FORCE COMMIT: " + key)
-                conn.commit()
-            conn.close()
-        tmp.clear()
+        with CONNECTION_POOL_LOCK:
+            logging.getLogger().warn("----------------------------------------------- CLOSE ALL")
+            
+            if self._conn_pools is None:
+                return
+            
+            tmp = self._conn_pools
+            self._conn_pools = None
+            
+            for key, pool in tmp.items():
+                pool.close_all()
+                logging.getLogger().warn("Close Connection: " + key)
+                
+            tmp.clear()
 
     
     def start_transaction(self):
         logging.getLogger().warn("----- START TRANSACTION -----")
         self.start_transaction_on_connect = True
-        
-        if self._conns is not None:
-            for conn in self._conns.values():
-                if not conn.in_transaction: 
-                    conn.start_transaction()
-                    conn.autocommit = False
             
     
     def commit(self):
-        logging.getLogger().warn("----- COMMIT -----")
-        self.start_transaction_on_connect = False
-        
-        if self._conns is not None:
-            for conn in self._conns.values():
-                if conn.in_transaction:
-                    conn.commit()
-                    conn.autocommit = True
+        with CONNECTION_POOL_LOCK:
+            logging.getLogger().warn("----- COMMIT -----")
+            self.start_transaction_on_connect = False
+            
+            if self._conn_pools is not None:
+                for conn in self.get_all_connections():
+                    if conn.in_transaction:
+                        conn.commit()
+                        conn.autocommit = True
     
     
     def rollback(self):
-        logging.getLogger().warn("----- ROLLBACK -----")
-        if self._conns is not None:
+        with CONNECTION_POOL_LOCK:
+            logging.getLogger().warn("----- ROLLBACK -----")
+            if self._conn_pools is not None:
+                
+                self.start_transaction_on_connect = False
+                for conn in self.get_all_connections():
+                    if conn.in_transaction:
+                        conn.rollback()
+                        conn.autocommit = True
+    
+    
+    def get_all_connections(self):
+        with CONNECTION_POOL_LOCK:
+            ret = []
+            if not self._conn_pools:
+                return ret
             
-            self.start_transaction_on_connect = False
-            for conn in self._conns.values():
-                if conn.in_transaction:
-                    conn.rollback()
-                    conn.autocommit = True
-                    
+            for pool in self._conn_pools.values():
+                ret = ret + pool.get_all_connections()
+            return ret
+                     
     @property
     def start_transaction_on_connect(self):
         return self._stoc
@@ -421,11 +394,22 @@ class MySQLConnectionManager:
     @start_transaction_on_connect.setter
     def start_transaction_on_connect(self, boolean):
         self._stoc = boolean
+            
 
+    def _get_server_key(self, host, port):
+        return host + ":" + str(port)
+    
+    
+    def _update_transaction_state(self, conn):
+        if self.start_transaction_on_connect:
+            if not conn.in_transaction: 
+                conn.start_transaction()
+                conn.autocommit = False
+        else:
+            conn.autocommit=True
 
 
 class MySQLTransaction:
-    
     _conn_mgr = None
     
     def __init__(self, conn_mgr = None):
@@ -445,6 +429,145 @@ class MySQLTransaction:
         
         return False
 
+
+
+class MySQLConnectionPool():
+    
+    def __init__(self, host, port, config):
+        self._host = host
+        self._port = port
+        self._config = config
+        self._max_conns = config['connections_per_host']
+        self._connections = []
+        
+        #maps connection ids to data about the connection
+        self._in_use_conns = {}
+        self._current_shards = {}
+        
+    
+    def get_connection(self, shard_name = None):
+        
+        is_new=False
+        conn = None
+        if self._has_free_connection():
+            conn = self._get_free_connection(shard_name)
+        else:
+            if len(self._connections) >= self._max_conns: 
+                raise NoMoreConnectionsException()
+            conn = self._init_connection()
+            is_new = True
+        
+        self._in_use_conns[conn.connection_id] = True
+        if is_new:
+            self._connections.append(conn)
+        else:
+            self._verify_connection(conn)
+        
+        if shard_name:
+            self._set_shard(conn, shard_name)
+        
+        return conn
+    
+    
+
+    
+    def return_connection(self, conn):
+        self._in_use_conns[conn.connection_id] = False
+    
+    
+    def drop_connection(self, conn):
+        if conn in self._connections:
+            index = self._connections.index(conn)
+            self._connections = self._connections[:index]+self._connections[index:]
+        
+        del self._in_use_conns[conn.connection_id]
+        del self._current_shards[conn.connection_id]
+        
+    
+    def get_all_connections(self):
+        return self._connections
+    
+    def close_all(self):
+        temp = self._connections
+        self._connections = []
+        self._in_use_conns = {}
+        self._current_shards = {}
+        
+        for conn in temp:
+            if conn.in_transaction:
+                logging.getLogger().warn("FORCE COMMIT")
+                conn.commit()
+            conn.close()
+        
+    
+    def _has_free_connection(self):
+        for b in self._in_use_conns.values():
+            if not b:
+                return True
+        return False    
+    
+    def _get_free_connection(self, shard_name = None):
+        
+        if shard_name:
+            conn = self._get_free_connection_for_shard(shard_name)
+            if conn:
+                return conn        
+        
+        #no connection found for this shard, return any free one
+        for conn_id, in_use in self._in_use_conns.items():
+            if not in_use:
+                return self._get_connection_by_id(conn_id)
+        
+        raise NoMoreConnectionsException()
+    
+    def _verify_connection(self, connection):
+        if not connection.is_connected():
+            connection.reconnect()
+    
+    def _get_free_connection_for_shard(self, shard_name):
+        flipped_map = {}
+        for conn_id, shard in self._current_shards.items():
+            if shard not in flipped_map:
+                flipped_map[shard] = []
+            flipped_map[shard].append(conn_id)
+        
+            if shard_name in flipped_map:
+                for conn_id_by_shard in flipped_map[shard_name]:
+                    if not self._in_use_conns[conn_id_by_shard]:
+                        #found an open connection already pointing to this shard!
+                        return self._get_connection_by_id(conn_id_by_shard)
+        
+        return None
+    
+    
+    def _get_connection_by_id(self, conn_id):
+        for conn in self._connections:
+            if conn.connection_id == conn_id:
+                return conn
+        
+        return None
+        
+    
+    def _init_connection(self):
+        conn = mysql.connector.connect(
+                user=self._config["user"], 
+                password=self._config["pass"],
+                host = self._host,
+                port = self._port)
+        return conn
+    
+    
+    def _set_shard(self, conn, shard_name):
+        if( not conn.connection_id in self._current_shards 
+            or self._current_shards[conn.connection_id] != shard_name ):
+            conn.cmd_query("use " + shard_name)
+            self._current_shards[conn.connection_id] = shard_name
+        
+
+
+class NoMoreConnectionsException(Exception):
+    def __init__(self):
+        super().__init__("No more connections, already at maximum.")
 
 
 class ShardIdOutOfRangeError(BadIdError):    

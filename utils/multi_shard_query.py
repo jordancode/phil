@@ -6,7 +6,8 @@ from framework.storage.mysql import MySQL, MySQLPool
 from framework.utils.id import Id
 from framework.utils.query_builder import SQLQueryBuilder
 
-from multiprocessing import Pool, Process, Queue
+from multiprocessing import Pool, Manager
+import pprint
 
 class MultiShardQuery:
     _DEFAULT_NUM_THREADS = 1
@@ -26,109 +27,6 @@ class MultiShardQuery:
 
         self._use_multi = bool(use_multi)
         self._catch_errors = bool(catch_errors)
-
-
-    def pool_splitter(self, pool_range):
-
-        logging.getLogger().debug("wwwwwww"  + str(pool_range))
-
-        return self.multi_shard_query_by_shard_id(pool_range, query=self.current_query)
-
-
-    def log_result(self, result):
-        logging.getLogger().debug("wwwwwww"  + str(len(result)) + str(result))
-        self.result_list+=result
-
-    def all_shard_query_multi(self, query, params = None):
-
-
-        #result_queue = multiprocessing.Queue()
-
-        self.current_query = query
-
-        num = self._pool.get_num_shards()-1
-        proc = 4 #how much to split it by
-
-        ranges = []
-
-
-        self.result_list = []
-
-        for i in range(proc):
-
-            p = Pool(2)
-
-            ran = range(i*math.floor(num/proc), (i+1)*math.floor(num/proc)-1)
-
-
-            p.apply_async(self.pool_splitter, args = (ran, ), callback = self.log_result)
-
-
-            p.close()
-            p.join()
-
-
-
-
-        return self.result_list
-
-
-
-        ### METHOD TWO PROCESS QUEUE
-        # http://stackoverflow.com/questions/8329974/can-i-get-a-return-value-from-multiprocessing-process
-        # result_queue  = Queue()
-        # ran= range(self._pool.get_num_shards())[:500]
-        # ran2= range(self._pool.get_num_shards())[500:]
-        #
-        # return self.pool_splitter(result_queue, ran,)
-        #
-        # jobs = []
-        #
-        # j1 = Process( target=self.pool_splitter, args=(result_queue, ran,))
-        #
-        # #j2 = Process( target=self.pool_splitter, args=(result_queue, ran2,))
-        # jobs.append(j1)
-        # jobs.append(j2)
-        #
-        #
-        # for job in jobs: job.start()
-        # for job in jobs: job.join()
-        #
-        # results = [result_queue.get() for job in jobs]
-        #
-        #
-        # return (results)
-
-
-
-
-        #
-        # p.apply_async(self.pool_splitter, args = (ran, ), callback = self.log_result)
-        #
-
-
-
-        # return p.map(self.pool_splitter, [range(self._pool.get_num_shards())])
-
-        #
-        #
-        #
-        # # start 4 worker processes
-        # #TODO SPLIT UP SHARDS
-        # with Pool(processes=6) as pool:
-        #
-        #     #return pool.map(self.multi_shard_query_by_shard_id, range(self._pool.get_num_shards())[500:], query, params)
-        #
-        #
-        #     res = pool.apply_async(self.multi_shard_query_by_shard_id, (range(self._pool.get_num_shards())[500:], query, params))
-        #     # res2 = pool.apply_async(self.multi_shard_query_by_shard_id, (range(self._pool.get_num_shards())[:500], query, params))
-        #
-        #     #return res.get(timeout=6 )
-        #
-        #     #result.append(res.get(timeout=4))
-        #     #result.append(res2.get(timeout=4))
-        #
-        #     return res.get(timeout=4)
 
 
     def all_shard_query(self, query, params = None):
@@ -217,14 +115,13 @@ class MultiShardQuery:
         """
         qr = QueryRunner(self._pool, query, params, self._use_multi, self._catch_errors)
 
-        res = [qr.run_one_query(i) for i in shard_id_list]
+        if self._num_threads <= 1:
+            res = [qr.run_one_query(i) for i in shard_id_list]
+        else:
+            with Pool(self._num_threads) as p:
+                res = p.map(qr.run_one_query, shard_id_list)
 
-
-        # if self._num_threads <= 1:
-        #
-        # else:
-        #     with Pool(self._num_threads) as p:
-        #         res = p.map(qr.run_one_query, shard_id_list)
+        pprint.pprint(res)
 
         return self._prepare_result(res)
 
@@ -259,7 +156,6 @@ class MultiShardQuery:
             with Pool(self._num_threads) as p:
                 res = p.map(qr.run_one_query, shard_id_to_in_list.keys())
 
-
         return self._prepare_result(res)
 
     def _prepare_result(self, res):
@@ -273,7 +169,9 @@ class MultiShardQuery:
 class BaseQueryRunner():
 
     def __init__(self, pool, query_str, use_multi, catch_errors ):
-        self.pool = pool
+        self.ns = Manager().Namespace()
+        
+        self.ns.pool = pool
         self.query_str = query_str
         self.use_multi = use_multi
         self.catch_errors = catch_errors
@@ -285,11 +183,13 @@ class BaseQueryRunner():
 class QueryRunner(BaseQueryRunner):
 
     def __init__(self, pool, query_str, params, use_multi, catch_errors):
-        self.params = params
         super().__init__(pool, query_str, use_multi, catch_errors)
+        self.params = params
 
     def run_one_query(self,shard_id):
-        shard = self.pool.get_shard(shard_id)
+        pool = self.ns.pool
+        
+        shard = pool.get_shard(shard_id)
         try:
             query_res = shard.query(self.query_str, self.params, self.use_multi)
         except Exception as e:
@@ -302,24 +202,30 @@ class QueryRunner(BaseQueryRunner):
 class InListQueryRunner(BaseQueryRunner):
 
     def __init__(self,  pool, query_str, other_params, shard_id_to_in_list, use_multi, catch_errors):
+        super().__init__(pool, query_str, use_multi, catch_errors)
+        
         self.other_params = other_params
         self.shard_id_to_in_list = shard_id_to_in_list
 
-        super().__init__(pool, query_str, use_multi, catch_errors)
+        
 
     def run_one_query(self,shard_id):
         if not shard_id in self.shard_id_to_in_list:
             return []
+        
+        pool = self.ns.pool
 
         in_list = self.shard_id_to_in_list[shard_id]
         qry = self.query_str.replace("%l", "( " + ", ".join(map(lambda x :"%s", in_list)) + " )",1)
 
-        shard = self.pool.get_shard(shard_id)
+        shard = pool.get_shard(shard_id)
         try:
             query_res = shard.query(qry, self.other_params + tuple(in_list), self.use_multi)
         except Exception as e:
             if not self.catch_errors:
                 raise e
             query_res = []
-
+        
+        self.ns.pool = pool
+        
         return query_res

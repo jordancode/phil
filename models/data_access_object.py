@@ -32,14 +32,14 @@ class DataAccessObject(metaclass=ABCMeta):
         return id in self._model_cache
 
     def _model_cache_get(self,id):
-        if id in self._model_cache:
-            logging.getLogger().debug("----- CACHE HIT! --- " + self._model_class.__name__ + " " + str(id) )
+        #if id in self._model_cache:
+        #    logging.getLogger().debug("----- CACHE HIT! --- " + self._model_class.__name__ + " " + str(id) )
         
         return self._model_cache[id]
     
     def _model_cache_set(self,model):
         assert isinstance(model, self._model_class)
-        logging.getLogger().debug("----- CACHE SET --- " + self._model_class.__name__ + " " + str(model.id) )
+        #logging.getLogger().debug("----- CACHE SET --- " + self._model_class.__name__ + " " + str(model.id) )
         
         self._model_cache[model.id] = model
     

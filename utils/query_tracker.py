@@ -1,11 +1,15 @@
 from datetime import datetime
+import logging
+import pprint
 
 class QueryTracker():
     
     _stack = []
+    _on = False
     
     @classmethod
     def push(cls, shard_name, query, parameters, result = None, error = None):
+        
         q_data ={
              "shard_name" : shard_name, 
              "query" : query, 
@@ -13,11 +17,22 @@ class QueryTracker():
              "result" : result, 
              "ts" : datetime.now()
             }
-        cls._stack.append(q_data)
+        
+        if cls._on:
+            cls._stack.append(q_data)
+            logging.getLogger().debug(pprint.pformat(q_data))
         
         return q_data
+    
+    @classmethod
+    def enable(cls):
+        cls._on = True
+    
+    @classmethod
+    def is_enabled(cls):
+        return cls._on
         
-        
+    
     @classmethod
     def get_query_history(cls):
         return cls._stack
@@ -25,3 +40,4 @@ class QueryTracker():
     @classmethod
     def clear(cls):
         cls._stack = []
+        cls._on = False
