@@ -95,6 +95,8 @@ class AuthDAO(framework.models.data_access_object.DataAccessObject):
     def save_list(self, auth_list):
         for auth in auth_list:
             self.save(auth)
+
+        
     
     def _model_to_row(self, model):
         dict = super()._model_to_row(model)
@@ -308,6 +310,18 @@ class AuthService:
         return user
 
         
+    def get_auth_token(self, user_id):
+        from framework.models.token_auth import TokenAuth
+        
+        token_auth_list = AuthDAO().get_auth_for_user(user_id, TokenAuth)
+        if not len(token_auth_list):
+            auth = TokenAuth.new_for_user(user_id)
+            AuthDAO().save(auth)
+        else:
+            auth = token_auth_list[0]
+        
+        return auth.get_token()
+              
         
 
 class MissingUserData(AuthException):      
