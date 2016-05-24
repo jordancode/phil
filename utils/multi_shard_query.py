@@ -169,9 +169,8 @@ class MultiShardQuery:
 class BaseQueryRunner():
 
     def __init__(self, pool, query_str, use_multi, catch_errors ):
-        self.ns = Manager().Namespace()
         
-        self.ns.pool = pool
+        self.pool = pool
         self.query_str = query_str
         self.use_multi = use_multi
         self.catch_errors = catch_errors
@@ -187,7 +186,7 @@ class QueryRunner(BaseQueryRunner):
         self.params = params
 
     def run_one_query(self,shard_id):
-        pool = self.ns.pool
+        pool = self.pool
         
         shard = pool.get_shard(shard_id)
         try:
@@ -213,7 +212,7 @@ class InListQueryRunner(BaseQueryRunner):
         if not shard_id in self.shard_id_to_in_list:
             return []
         
-        pool = self.ns.pool
+        pool = self.pool
 
         in_list = self.shard_id_to_in_list[shard_id]
         qry = self.query_str.replace("%l", "( " + ", ".join(map(lambda x :"%s", in_list)) + " )",1)
@@ -226,6 +225,6 @@ class InListQueryRunner(BaseQueryRunner):
                 raise e
             query_res = []
         
-        self.ns.pool = pool
+        self.pool = pool
         
         return query_res
