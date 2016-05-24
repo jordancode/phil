@@ -336,7 +336,7 @@ class MissingUserData(AuthException):
         super().__init__("Missing user info: " + ",".join(missing_attrs))
         
     def get_friendly_message(self):
-        return "Please provide " + ListUtils.to_human_string(self.keys)
+        return "Please provide your " + ListUtils.to_human_string(self.keys)
     
 class InvalidCredentialsException(AuthException):
     def __str__(self):
