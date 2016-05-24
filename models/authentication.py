@@ -139,14 +139,21 @@ class Authentication(Entity):
     
 
 class AuthException(Exception):
-    pass
+    def get_friendly_message(self):
+        return "An error occurred."
 
 class InvalidSecretException(AuthException):
   
     def __str__(self):
         return "Secret is in an invalid format"
+    
+    def get_friendly_message(self):
+        return "Passwords must be at least 6 characters long."
   
 class InvalidProviderIdException(AuthException):
   
     def __str__(self):
-        return "Provider Id is in an invalid format"    
+        return "Provider Id is in an invalid format"
+    
+    def get_friendly_message(self):
+        return "Please enter a valid email address."

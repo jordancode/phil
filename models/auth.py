@@ -10,6 +10,7 @@ from framework.utils.class_loader import ClassLoader
 from framework.models.data_access_object import RowDeletedException
 from framework.config.config import Config
 from werkzeug.exceptions import Unauthorized
+from framework.utils.list_utils import ListUtils
 
 
 
@@ -143,7 +144,9 @@ class AuthDAO(framework.models.data_access_object.DataAccessObject):
 class UserAuthMismatchError(AuthException):
     def __str__(self):
         return "auth id does not belong to provided user object"
-
+    
+    def get_friendly_message(self):
+        return "This email already belongs to someone else."
 
 class NoAuthFoundException(AuthException):
     _provider_id = None
@@ -153,6 +156,9 @@ class NoAuthFoundException(AuthException):
 
     def __str__(self):
         return "auth row for " + str(self._provider_id) + " does not exist"
+    
+    def get_friendly_message(self):
+        return "No one has signed up with this email yet."
 
 
 class AuthService:
@@ -328,10 +334,16 @@ class MissingUserData(AuthException):
     def __init__(self, missing_attrs):
         self.keys = missing_attrs
         super().__init__("Missing user info: " + ",".join(missing_attrs))
+        
+    def get_friendly_message(self):
+        return "Please provide " + ListUtils.to_human_string(self.keys)
     
 class InvalidCredentialsException(AuthException):
     def __str__(self):
         return "Invalid Credentials"
+    
+    def get_friendly_message(self):
+        return "The password you entered is incorrect"
 
 class ProviderIdTakenException(AuthException):
     _found_auth = None
@@ -341,6 +353,9 @@ class ProviderIdTakenException(AuthException):
 
     def __str__(self):
         return self._found_auth.provider_id + " is already taken"
+    
+    def get_friendly_message(self):
+        return self.__str__()
 
     @property
     def auth(self):

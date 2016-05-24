@@ -69,7 +69,7 @@ class JSONResponse(BaseResponse,ETagResponseMixin,
     
     
         
-    def set_error(self, error = None):
+    def set_error(self, error = None, friendly_message = None):
         self._success = False
         if error:
             if hasattr(error, "description"):
@@ -81,7 +81,13 @@ class JSONResponse(BaseResponse,ETagResponseMixin,
             elif self.status_code == 200:
                 self.status_code = 400
                 
-            self.set_key("error", str(error))
+            self.set_key("error", error)
+            
+            if friendly_message:
+                self.set_key("display_error_message",friendly_message)
+            elif hasattr(error, "get_friendly_message"):
+                self.set_key("display_error_message",error.get_friendly_message())
+        
             
         return self
         
