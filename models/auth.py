@@ -253,7 +253,8 @@ class AuthService:
                         user_agent_string)
                     
                 except NoAuthFoundException as e:
-                    pass
+                    if user_data.get("skip_signup"):
+                        raise e
                 
                 #--- STEP 3. Create a new user or use logged in one
                 if not current_session or current_session.is_logged_out():
@@ -290,9 +291,6 @@ class AuthService:
         
         missing_data = []
         
-        if require_email and not has_email:
-            missing_data.append("email")
-        
         if "name" not in user_data:
             missing_data.append("name")
         
@@ -327,8 +325,7 @@ class AuthService:
             auth = token_auth_list[0]
         
         return auth.get_token()
-              
-        
+
 
 class MissingUserData(AuthException):      
     def __init__(self, missing_attrs):
