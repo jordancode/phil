@@ -29,8 +29,8 @@ class BaseController:
     
     def _is_logged_in(self):
         try:
-            self._get_session()
-            return True  
+            s = self._get_session()
+            return not s.is_logged_out()  
         except framework.models.session.SessionException:
             return False
     
