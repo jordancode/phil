@@ -553,7 +553,10 @@ class MySQLConnectionPool():
                 user=self._config["user"], 
                 password=self._config["pass"],
                 host = self._host,
-                port = self._port)
+                port = self._port,
+                collation = self._config.get("collation"),
+                charset = self._config.get("charset"),
+                )
         return conn
     
     
