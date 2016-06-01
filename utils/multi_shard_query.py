@@ -121,8 +121,6 @@ class MultiShardQuery:
             with Pool(self._num_threads) as p:
                 res = p.map(qr.run_one_query, shard_id_list)
 
-        pprint.pprint(res)
-
         return self._prepare_result(res)
 
 
