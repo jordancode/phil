@@ -116,6 +116,9 @@ class BaseApplication():
                 response.set_key("traceback", traceback.format_exception(
                         exc_type, exc_value, exc_traceback
                     ))
+            else:
+                response.set_error("An error occurred")
+                
         return response
     
     def log_error(self, request, e):

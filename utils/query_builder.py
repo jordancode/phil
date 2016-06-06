@@ -58,10 +58,10 @@ class WhereClause(metaclass=ABCMeta):
     
     def _build_node(self, node):
         if isinstance(node, WhereClause):
-            return node.build()
+            return paren(node.build())
         else:
             if self._backtick:
-                return backtick(str(node[0])) + " " + str(node[1]) + " " + str(node[2])
+                return do_backtick(str(node[0])) + " " + str(node[1]) + " " + str(node[2])
             else:
                 return str(node[0]) + " " + str(node[1]) + " " + str(node[2])
      
@@ -82,12 +82,14 @@ class Or(WhereClause):
 class BaseSQLQuery(metaclass=ABCMeta):
     
     _parts = None
+    _backtick=None
     
-    def __init__(self, table_name):
+    def __init__(self, table_name, backtick=True):
         self._parts = {
                "verb" : self._get_verb(),
                "table" : self._get_table_clause(table_name)
             }
+        self._backtick = backtick
     
     def _get_verb(self):
         return None
@@ -104,7 +106,7 @@ class BaseSQLQuery(metaclass=ABCMeta):
     def _validate_required(self):
         for part in self._required():
             if part not in self._parts or not self._parts[part]:
-                raise BadQueryError()
+                raise BadQueryError(part)
     
     def build(self):
         self._validate_required()
@@ -159,8 +161,8 @@ class IgnorableQuery(BaseSQLQuery,metaclass=ABCMeta):
 
 class SQLSelectQuery(WhereQuery, BaseSQLQuery):
         
-    def __init__(self, table_name):
-        super().__init__(table_name)
+    def __init__(self, table_name,backtick=True):
+        super().__init__(table_name,backtick)
         self._parts["columns"] = "*" #use * as default for column list
         
     def columns(self, column_list):
@@ -168,7 +170,11 @@ class SQLSelectQuery(WhereQuery, BaseSQLQuery):
         return self
     
     def group_by(self, column):
-        self._parts["group"] = "GROUP BY " + backtick(column)
+        if self._backtick:
+            self._parts["group"] = "GROUP BY " + do_backtick(column)
+        else:
+            self._parts["group"] = "GROUP BY " + column
+            
         return self
     
     def lock(self, lock_type = LOCK_FOR_UPDATE):
@@ -178,7 +184,9 @@ class SQLSelectQuery(WhereQuery, BaseSQLQuery):
         return self 
     
     def _get_table_clause(self, table_name):
-        return "FROM " + backtick(table_name)
+        if self._backtick:
+            return "FROM " + do_backtick(table_name)
+        return "FROM " + table_name
     
     def _get_verb(self):
         return "SELECT"
@@ -191,11 +199,11 @@ class SQLSelectQuery(WhereQuery, BaseSQLQuery):
 
    
 class SQLInsertQuery(IgnorableQuery, BaseSQLQuery):
-    def __init__(self, table_name):
-        super().__init__(table_name)
+    def __init__(self, table_name,backtick=True):
+        super().__init__(table_name,backtick)
             
     def columns(self, col_array):
-        self._parts["table_def"] = paren(",".join(backtick(c) for c in col_array) )
+        self._parts["table_def"] = paren(",".join(do_backtick(c) for c in col_array) )
         return self
     
     def values(self, values_arr):
@@ -214,7 +222,7 @@ class SQLInsertQuery(IgnorableQuery, BaseSQLQuery):
     
     def on_duplicate_key_update(self, col_to_value_array):
         self._parts["dupe"] = ("ON DUPLICATE KEY UPDATE " + 
-            ", ".join(backtick(col) + "=" + val for (col,val) in col_to_value_array))
+            ", ".join(do_backtick(col) + "=" + val for (col,val) in col_to_value_array))
         return self
     
     def select(self, select_query_string):
@@ -222,7 +230,9 @@ class SQLInsertQuery(IgnorableQuery, BaseSQLQuery):
         return self
         
     def _get_table_clause(self, table_name):
-        return "INTO " + backtick(table_name)
+        if self._backtick:
+            return "INTO " + do_backtick(table_name)
+        return "INTO " + table_name
     
     def _get_verb(self):
         return "INSERT"
@@ -235,12 +245,16 @@ class SQLInsertQuery(IgnorableQuery, BaseSQLQuery):
 
 
 class SQLUpdateQuery(WhereQuery,IgnorableQuery,BaseSQLQuery):
-    def __init__(self, table_name):
-        super().__init__(table_name)
+    def __init__(self, table_name,backtick=True):
+        super().__init__(table_name,backtick)
     
     def set(self, col_to_value_array):
-        self._parts["set"] = ("SET " + 
-            ", ".join(backtick(col) + "=" + val for (col,val) in col_to_value_array))
+        if self._backtick:
+            self._parts["set"] = ("SET " + 
+                ", ".join(do_backtick(col) + "=" + val for (col,val) in col_to_value_array))
+        else:
+            self._parts["set"] = ("SET " + 
+                ", ".join(col + "=" + val for (col,val) in col_to_value_array))
         return self
     
     
@@ -248,7 +262,10 @@ class SQLUpdateQuery(WhereQuery,IgnorableQuery,BaseSQLQuery):
         return "UPDATE"
     
     def _get_table_clause(self, table_name):
-        return backtick(table_name)
+        if self._backtick:
+            return do_backtick(table_name)
+        
+        return table_name
     
     def _get_order(self):
         return ["verb", "ignore", "table", "set", "where", "order", "limit"]
@@ -259,14 +276,17 @@ class SQLUpdateQuery(WhereQuery,IgnorableQuery,BaseSQLQuery):
 
 class SQLDeleteQuery(WhereQuery,IgnorableQuery,BaseSQLQuery):
     
-    def __init__(self, table_name):
-        super().__init__(table_name)
+    def __init__(self, table_name,backtick=True):
+        super().__init__(table_name,backtick)
     
     def _get_verb(self):
         return "DELETE"
     
     def _get_table_clause(self, table_name):
-        return "FROM " + backtick(table_name)
+        if self._backtick:
+            return "FROM " + do_backtick(table_name)
+        else:
+            return "FROM " + table_name
     
     def _get_order(self):
         return ["verb", "ignore", "table", "where", "order", "limit"]
@@ -275,31 +295,31 @@ class SQLDeleteQuery(WhereQuery,IgnorableQuery,BaseSQLQuery):
         return ["verb", "table"]
 
 class BadQueryError(Exception):
-    def __init__(self):
-        super().__init__("Query could not be built")
+    def __init__(self,missing):
+        super().__init__("Query could not be built missing: " + missing)
 
 
 class SQLQueryBuilder:
     
     @staticmethod
-    def select(table_name) -> SQLSelectQuery:
-        return SQLSelectQuery(table_name)
+    def select(table_name,backtick=True) -> SQLSelectQuery:
+        return SQLSelectQuery(table_name,backtick)
     
     @staticmethod
-    def insert(table_name) -> SQLInsertQuery:
-        return SQLInsertQuery(table_name)
+    def insert(table_name,backtick=True) -> SQLInsertQuery:
+        return SQLInsertQuery(table_name,backtick)
     
     @staticmethod
-    def update(table_name) -> SQLUpdateQuery:
-        return SQLUpdateQuery(table_name)
+    def update(table_name,backtick=True) -> SQLUpdateQuery:
+        return SQLUpdateQuery(table_name,backtick)
     
     @staticmethod
-    def delete(table_name) -> SQLDeleteQuery:
-        return SQLDeleteQuery(table_name)
+    def delete(table_name,backtick=True) -> SQLDeleteQuery:
+        return SQLDeleteQuery(table_name,backtick)
     
 
 
-def backtick(col):
+def do_backtick(col):
     if not col[0] == "`":
         col = "`" + col
     if not col[-1] == "`":
