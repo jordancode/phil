@@ -1,12 +1,21 @@
-from redlock import RedLock
-
 from framework.storage.redis import Redis
+from redlock.lock import RedLockFactory
 
-TTL = 30000
-NUM_RETRIES = 30
+TTL = 300000
+NUM_RETRIES = 300
 RETRY_DELAY = 1000
 
 class Lock:
+    
+    _factory=None
+    
+    
+    @classmethod
+    def get_factory(cls):
+        if not cls._factory:
+            cls._factory = RedLockFactory([Redis.get_instance("main")])
+        return cls._factory
+    
     
     @classmethod
     def get(cls, 
@@ -15,14 +24,10 @@ class Lock:
             retry_delay=RETRY_DELAY,
             ttl=TTL):
         
-        
-        return RedLock(
-                resource=lock_name, 
-                connection_details=[Redis.get_instance("main")],
-                retry_times=retry_times,
-                retry_delay=retry_delay,
-                ttl=ttl
-            ) 
+        return cls.get_factory().create_lock(lock_name, 
+            retry_times=RETRY_DELAY,
+            retry_delay=RETRY_DELAY,
+            ttl=TTL)
 
 def withlock(lock_name, retry_times=NUM_RETRIES,retry_delay=RETRY_DELAY,ttl=TTL):
     """

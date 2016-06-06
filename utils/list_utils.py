@@ -27,5 +27,9 @@ class ListUtils:
             
         return last_el
         
-        
+    
+    @staticmethod
+    def array_chunk(list_, chunk_size):
+        #does PHP array_chunk
+        return [list_[i : i + chunk_size] for i in range(0, len(list_), chunk_size)]
             
