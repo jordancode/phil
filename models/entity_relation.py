@@ -229,10 +229,10 @@ class EntityRelationDAO(framework.models.data_access_object.DataAccessObject):
             pass
         
         
-        self.save(model)
+        ret = self.save(model)
         self.remove_from_cache(self._get_cache_id(model.id1, model.id2))
 
-        return True
+        return ret
 
     def _delete_list_by_primary_id(self, id1):
         models = self._get_list_primary(id1, None, None, None)
