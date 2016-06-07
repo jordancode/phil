@@ -64,6 +64,9 @@ class Entity(Serializeable):
             current_val = self._get_attr(key)
             if not key in self._stored_state or self._stored_state[key] != current_val:
                 dirty_keys[key] = current_val
+        
+        if self.deleted:
+            dirty_keys["deleted"]=True
 
         return dirty_keys
 
