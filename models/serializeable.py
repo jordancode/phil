@@ -5,6 +5,7 @@ from abc import ABCMeta
 
 from framework.utils.date_utils import DateUtils
 from framework.utils.id import Id
+import copy
 
 
 class Serializeable(metaclass=ABCMeta):
@@ -84,7 +85,7 @@ class Serializeable(metaclass=ABCMeta):
                 value = self._get_attr(key)
 
             try:
-                dict = value._recursive_to_dict(seen_refs, stringify_ids, optional_keys)
+                dict = value._recursive_to_dict(copy.copy(seen_refs), stringify_ids, optional_keys)
                 state[key] = dict
             except AttributeError:
                 new_value = value
