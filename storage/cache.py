@@ -52,19 +52,23 @@ class Cache:
 
         if value is None:
             return None
+        
+        return value
 
-
-        return pickle.loads(value)
+        #return pickle.loads(value)
 
 
     #set one key, can use for custom key
     def set(self, key, value):
+        if value is None:
+            return 
+        
         key=str(key)
 
         logging.getLogger().debug("CACHE-SET VALUE:")
         logging.getLogger().debug(pprint.pformat(value))
 
-        value = pickle.dumps(value)
+        #value = pickle.dumps(value)
 
         self.mc.set(key, value)
 
