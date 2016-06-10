@@ -1,39 +1,102 @@
-from memcache import Client
+import pickle
 
+from memcache import Client
+import logging
+import json
+import pprint
+
+
+import json
+import logging
+
+import memcache
+from framework.utils.json_utils import JSONUtils
+import json
 from framework.config.config import Config
+from framework.utils.model_cache import ModelCache
 
 
 class Cache:
-    
+
+
+    def __init__(self):
+
+        servers = map(
+            lambda c:(c['host'] + ":" + str(c['port']), c['weight']),
+            Config.get("memcache", "servers")
+        )
+
+        self.mc = memcache.Client(servers, debug=0)
+
     _instance = None
     _client = None
-    
-    @classmethod
-    def get_instance(cls):
-        if not cls._instance:
-            servers = []
-            servers = map(
-                  lambda c:(c['host'] + ":" + str(c['port']), c['weight']),
-                  Config.get("memcache", "servers")
-              )
-            
-            cls._instance = cls(servers)
-            
-        return cls._instance
-    
-    def __init__(self, servers, args = None):
-        
-        if args is not None:
-            self._client = Client(servers, **args)
-        else:
-            self._client = Client(servers)
-            
-    
+
+
+
+    #check if in cache then return value, else None
     def get(self, key):
-        return False
-    
-    def set(self,key,value, expire = None):
-        return None
-    
-    def expire(self,key, expire):
-        return False
+
+        key=str(key)
+
+        #check if in request memory
+        # if ModelCache().get_for_model(key):
+        #     return ModelCache().get_for_model(key)
+
+
+        logging.getLogger().debug("qqqqqqqqqqqq", key)
+
+        value = self.mc.get(key)
+
+
+        logging.getLogger().debug("qqqqqqqqqqq", value)
+
+        if value is None:
+            return None
+
+
+        return pickle.loads(value)
+
+
+    #set one key, can use for custom key
+    def set(self, key, value):
+        key=str(key)
+
+
+        logging.getLogger().debug("CACHE", value)
+
+        value = pickle.dumps(value)
+
+
+        self.mc.set(key, value)
+
+
+    def expire(self, key):
+
+        self.mc.delete(key)
+
+
+
+    #check if in cache then return value, else None
+    def get_multi(self, keys):
+
+        values = self.mc.get_multi(keys)
+
+        if values is None:
+            return None
+
+        # logging.getLogger().debug("wwwwww"+json.dumps(value))
+
+        output=[json.loads(values[i]) for i in values]
+
+        return output
+
+
+    def set_multi(self, key_obj):
+        # {'key1' : 'val1', 'key2' : 'val2'}
+
+        self.mc.set_multi(key_obj)
+
+
+    def expire_multi(self, keys):
+
+        self.mc.delete_multi(keys)

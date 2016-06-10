@@ -1,9 +1,14 @@
 import copy
 import datetime
+import json
+import logging
+import pickle
 import pprint
 
 import framework.models.data_access_object
 from framework.models.serializeable import Serializeable
+from framework.storage.cache import Cache
+from framework.utils.json_utils import JSONUtils
 from framework.utils.multi_shard_query import MultiShardQuery
 from framework.utils.type import Type
 
@@ -125,18 +130,28 @@ class EntityDAO(framework.models.data_access_object.DataAccessObject):
         self._table = table_name
 
     def get(self, id):
-        if self._model_in_cache(id):
-            return self._model_cache_get(id)
 
-        rows = self._primary_get(id)
+
+        logging.getLogger().debug("qqqqqqqqqqqq" + pprint.pformat(id))
+
+        cached = Cache().get(id)
+        if cached:
+            rows = cached
+        else:
+            rows = self._primary_get(id)
 
         if not len(rows):
             raise framework.models.data_access_object.RowNotFoundException()
 
+
+        # self._model_cache_set(model)
+        #ADD THIS ID:rows to cache
+
+        Cache().set(id, rows)
+
         model = self._row_to_model(rows[0])
         model.update_stored_state()
 
-        self._model_cache_set(model)
 
         return model
 
@@ -147,10 +162,15 @@ class EntityDAO(framework.models.data_access_object.DataAccessObject):
         ret = []
         ids_to_find = []
 
+
+        #some ids may be in cache already
+        # ret = Cache().get_multi(id_list)
+
+
+
+        #make a list of uncached id's we still need tofetch
         for id in id_list:
-            if self._model_in_cache(id):
-                ret.append(self._model_cache_get(id))
-            else:
+            if not id in ret:
                 ids_to_find.append(id)
 
         if len(ids_to_find):
@@ -170,6 +190,7 @@ class EntityDAO(framework.models.data_access_object.DataAccessObject):
         list_map = {id: index for index, id in enumerate(id_list)}
         ret = sorted(ret, key=lambda row: list_map.get(row.id))
 
+
         return ret
 
     def _primary_get_list(self, id_list):
@@ -184,14 +205,10 @@ class EntityDAO(framework.models.data_access_object.DataAccessObject):
         # otherwise, use save() to save one at a time
         models_to_save = []
 
+
         for model in models:
             if not model.is_dirty:
                 continue
-
-            if model.deleted:
-                self.remove_from_cache(model.id)
-            else:
-                self._model_cache_set(model)
 
             models_to_save.append(model)
             model.update_stored_state()
@@ -204,6 +221,14 @@ class EntityDAO(framework.models.data_access_object.DataAccessObject):
 
         dicts = [self._model_to_row(model) for model in models]
         d = dicts[0]
+
+
+
+        logging.getLogger().debug(d)
+
+        #save mult to db
+        # Cache().set_multi(d)
+
 
         return MultiShardQuery(self._pool()).multi_shard_insert(
             table,
@@ -222,7 +247,9 @@ class EntityDAO(framework.models.data_access_object.DataAccessObject):
         return [k for k in all_columns if (k != "id" and k != "created_ts")]
 
     def delete(self, id):
-        self.remove_from_cache(id)
+        # self.remove_from_cache(id)
+        #invalidat cache for this key
+        # Cache().expire(id)
 
         return self._save(self._table, {"id": id, "deleted": 1, "modified_ts": datetime.datetime.now()},
                           ["deleted", "modified_ts"], id)
