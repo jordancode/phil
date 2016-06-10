@@ -26,7 +26,7 @@ class Cache:
             Config.get("memcache", "servers")
         )
 
-        self.mc = memcache.Client(servers, debug=0)
+        self.mc = memcache.Client(servers, debug=1)
 
     _instance = None
     _client = None
@@ -35,7 +35,6 @@ class Cache:
 
     #check if in cache then return value, else None
     def get(self, key):
-
         key=str(key)
 
         #check if in request memory
@@ -43,12 +42,13 @@ class Cache:
         #     return ModelCache().get_for_model(key)
 
 
-        logging.getLogger().debug("qqqqqqqqqqqq", key)
+        logging.getLogger().debug("CACHE-GET KEY:" + key)
 
         value = self.mc.get(key)
 
 
-        logging.getLogger().debug("qqqqqqqqqqq", value)
+        logging.getLogger().debug("CACHE-GET VALUE:")
+        logging.getLogger().debug(pprint.pformat(value))
 
         if value is None:
             return None
@@ -61,11 +61,10 @@ class Cache:
     def set(self, key, value):
         key=str(key)
 
-
-        logging.getLogger().debug("CACHE", value)
+        logging.getLogger().debug("CACHE-SET VALUE:")
+        logging.getLogger().debug(pprint.pformat(value))
 
         value = pickle.dumps(value)
-
 
         self.mc.set(key, value)
 
@@ -80,11 +79,8 @@ class Cache:
     def get_multi(self, keys):
 
         values = self.mc.get_multi(keys)
-
         if values is None:
             return None
-
-        # logging.getLogger().debug("wwwwww"+json.dumps(value))
 
         output=[json.loads(values[i]) for i in values]
 

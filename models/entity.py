@@ -130,11 +130,9 @@ class EntityDAO(framework.models.data_access_object.DataAccessObject):
         self._table = table_name
 
     def get(self, id):
-
-
-        logging.getLogger().debug("qqqqqqqqqqqq" + pprint.pformat(id))
-
-        cached = Cache().get(id)
+        
+        cached=Cache().get(self._get_model_class_name() + str(id))
+        
         if cached:
             rows = cached
         else:
@@ -147,7 +145,7 @@ class EntityDAO(framework.models.data_access_object.DataAccessObject):
         # self._model_cache_set(model)
         #ADD THIS ID:rows to cache
 
-        Cache().set(id, rows)
+        Cache().set(self._get_model_class_name() + str(id), rows)
 
         model = self._row_to_model(rows[0])
         model.update_stored_state()

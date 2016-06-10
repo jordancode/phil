@@ -22,10 +22,14 @@ class DataAccessObject(metaclass=ABCMeta):
     
     def __init__(self, model_class):
         self._model_class = model_class
-        self._model_cache = ModelCache.get_for_model(model_class.__name__)
+        self._model_cache = ModelCache.get_for_model(self._get_model_class_name())
         
     def _pool(self):
         return MySQLPool.MAIN
+    
+    
+    def _get_model_class_name(self):
+        return self._model_class.__name__
         
         
     def _model_in_cache(self,id):
