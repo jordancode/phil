@@ -142,9 +142,7 @@ class EntityDAO(framework.models.data_access_object.DataAccessObject):
             raise framework.models.data_access_object.RowNotFoundException()
 
 
-        # self._model_cache_set(model)
         #ADD THIS ID:rows to cache
-
         Cache().set(self._get_model_class_name() + str(id), rows)
 
         model = self._row_to_model(rows[0])
@@ -162,14 +160,13 @@ class EntityDAO(framework.models.data_access_object.DataAccessObject):
 
 
         #some ids may be in cache already
-        # ret = Cache().get_multi(id_list)
-
+        # ret_cache = Cache().get_multi(id_list)
 
 
         #make a list of uncached id's we still need tofetch
         for id in id_list:
-            if not id in ret:
                 ids_to_find.append(id)
+
 
         if len(ids_to_find):
             rows = self._primary_get_list(ids_to_find)
@@ -221,11 +218,13 @@ class EntityDAO(framework.models.data_access_object.DataAccessObject):
         d = dicts[0]
 
 
-
-        logging.getLogger().debug(d)
+        # for cache coonvert to {id:val.. } format
+        dicts_cache = {}
+        for i in dicts:
+            dicts_cache[i['id']] = i
 
         #save mult to db
-        # Cache().set_multi(d)
+        Cache().set_multi(dicts_cache)
 
 
         return MultiShardQuery(self._pool()).multi_shard_insert(
@@ -247,7 +246,7 @@ class EntityDAO(framework.models.data_access_object.DataAccessObject):
     def delete(self, id):
         # self.remove_from_cache(id)
         #invalidat cache for this key
-        # Cache().expire(id)
+        Cache().expire(id)
 
         return self._save(self._table, {"id": id, "deleted": 1, "modified_ts": datetime.datetime.now()},
                           ["deleted", "modified_ts"], id)

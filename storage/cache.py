@@ -38,24 +38,18 @@ class Cache:
         key=str(key)
 
         #check if in request memory
-        # if ModelCache().get_for_model(key):
-        #     return ModelCache().get_for_model(key)
-
-
-        logging.getLogger().debug("CACHE-GET KEY:" + key)
+        if ModelCache().get_for_model(key):
+            return ModelCache().get_for_model(key)
 
         value = self.mc.get(key)
 
 
-        logging.getLogger().debug("CACHE-GET VALUE:")
-        logging.getLogger().debug(pprint.pformat(value))
 
         if value is None:
             return None
         
         return value
 
-        #return pickle.loads(value)
 
 
     #set one key, can use for custom key
@@ -65,17 +59,13 @@ class Cache:
         
         key=str(key)
 
-        logging.getLogger().debug("CACHE-SET VALUE:")
-        logging.getLogger().debug(pprint.pformat(value))
-
-        #value = pickle.dumps(value)
 
         self.mc.set(key, value)
 
 
     def expire(self, key):
 
-        self.mc.delete(key)
+        self.mc.delete(str(key))
 
 
 
@@ -84,11 +74,9 @@ class Cache:
 
         values = self.mc.get_multi(keys)
         if values is None:
-            return None
+            return []
 
-        output=[json.loads(values[i]) for i in values]
-
-        return output
+        return values
 
 
     def set_multi(self, key_obj):
