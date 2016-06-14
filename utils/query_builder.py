@@ -58,7 +58,7 @@ class WhereClause(metaclass=ABCMeta):
     
     def _build_node(self, node):
         if isinstance(node, WhereClause):
-            return paren(node.build())
+            return paren(node.build(),True)
         else:
             if self._backtick:
                 return do_backtick(str(node[0])) + " " + str(node[1]) + " " + str(node[2])
@@ -327,10 +327,13 @@ def do_backtick(col):
         
     return col
 
-def paren(col):
-    if not col[0] == "(":
-        col = "(" + col
-    if not col[-1] == ")":
-        col = col + ")"
+def paren(col, force=False):
+    if force:
+        col = "("+col+")"
+    else:
+        if not col[0] == "(":
+            col = "(" + col
+        if not col[-1] == ")":
+            col = col + ")"
         
     return col
