@@ -328,6 +328,9 @@ def do_backtick(col):
     return col
 
 def paren(col):
-    col = "(" + col  + ")"
+    if not col[0] == "(":
+        col = "(" + col
+    if not col[-1] == ")":
+        col = col + ")"
         
     return col
