@@ -3,7 +3,6 @@ from abc import ABCMeta
 
 from framework.storage.mysql import MySQL, MySQLPool
 from framework.utils.id import BadIdError
-from framework.utils.model_cache import ModelCache
 from framework.utils.sql_utils import SQLUtils
 
 
@@ -22,8 +21,7 @@ class DataAccessObject(metaclass=ABCMeta):
     
     def __init__(self, model_class):
         self._model_class = model_class
-        self._model_cache = ModelCache.get_for_model(self._get_model_class_name())
-        
+
     def _pool(self):
         return MySQLPool.MAIN
     
@@ -33,19 +31,22 @@ class DataAccessObject(metaclass=ABCMeta):
         
         
     def _model_in_cache(self,id):
-        return id in self._model_cache
+        # return id in self._model_cache
+        pass
 
     def _model_cache_get(self,id):
+        pass
         #if id in self._model_cache:
         #    logging.getLogger().debug("----- CACHE HIT! --- " + self._model_class.__name__ + " " + str(id) )
         
-        return self._model_cache[id]
+        # return self._model_cache[id]
     
     def _model_cache_set(self,model):
-        assert isinstance(model, self._model_class)
+        pass
+        # assert isinstance(model, self._model_class)
         #logging.getLogger().debug("----- CACHE SET --- " + self._model_class.__name__ + " " + str(model.id) )
         
-        self._model_cache[model.id] = model
+        # self._model_cache[model.id] = model
     
     
     def next_id(self, id_like = None):
@@ -56,8 +57,8 @@ class DataAccessObject(metaclass=ABCMeta):
         
     
     def remove_from_cache(self, id):
-        del self._model_cache[id]
-        
+        # del self._model_cache[id]
+        pass
     
     #this is a property so it can be overriden
     @property
@@ -148,6 +149,7 @@ class DataAccessObject(metaclass=ABCMeta):
 
 
     def _model_to_row(self, model):
+
         d = model.to_dict()
         if "object" in d:
             del(d["object"])

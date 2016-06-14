@@ -9,6 +9,7 @@ import framework.models.data_access_object
 from framework.models.serializeable import Serializeable
 from framework.storage.cache import Cache
 from framework.utils.json_utils import JSONUtils
+from framework.utils.model_cache import ModelCache
 from framework.utils.multi_shard_query import MultiShardQuery
 from framework.utils.type import Type
 
@@ -131,19 +132,28 @@ class EntityDAO(framework.models.data_access_object.DataAccessObject):
 
     def get(self, id):
         
-        cached=Cache().get(self._get_model_class_name() + str(id))
-        
+        cached = ModelCache.get(self._get_model_class_name(), str(id))
+
+        cached = 0
+
+        # logging.getLogger().debug("xxxxx")
+        # logging.getLogger().debug( type(cached['full_name']) )
+
         if cached:
-            rows = cached
+            rows = [cached]
         else:
             rows = self._primary_get(id)
 
-        if not len(rows):
-            raise framework.models.data_access_object.RowNotFoundException()
+
+            if not len(rows):
+                raise framework.models.data_access_object.RowNotFoundException()
 
 
-        #ADD THIS ID:rows to cache
-        Cache().set(self._get_model_class_name() + str(id), rows)
+                #ADD THIS ID:rows to cache
+
+        ModelCache.set(self._get_model_class_name(), str(id), rows[0])
+
+
 
         model = self._row_to_model(rows[0])
         model.update_stored_state()
@@ -159,13 +169,19 @@ class EntityDAO(framework.models.data_access_object.DataAccessObject):
         ids_to_find = []
 
 
-        #some ids may be in cache already
-        # ret_cache = Cache().get_multi(id_list)
-
+        #CACHE GET
+        classname = self._get_model_class_name()
+        ret_cache = ModelCache.get_multi(classname, id_list)
 
         #make a list of uncached id's we still need tofetch
         for id in id_list:
+            # if classname+str(id) in ret_cache:
+            #     ret.append(ret_cache[classname+str(id)])
+            # else:
                 ids_to_find.append(id)
+
+
+
 
 
         if len(ids_to_find):
@@ -174,16 +190,23 @@ class EntityDAO(framework.models.data_access_object.DataAccessObject):
             if not self.return_deleted:
                 rows = self._filter_deleted(rows)
 
+            rows_for_cache = {}
+
             for row in rows:
                 model = self._row_to_model(row)
                 model.update_stored_state()
 
-                self._model_cache_set(model)
+                #CACHE SET EACH MODEL
+                rows_for_cache[classname+str(model.id)] = row
+
                 ret.append(model)
+
+            ModelCache.set_multi(rows_for_cache)
 
         # sort list by original order since it gets messed up with cache and shards
         list_map = {id: index for index, id in enumerate(id_list)}
-        ret = sorted(ret, key=lambda row: list_map.get(row.id))
+
+        ret = sorted(ret, key=lambda row: list_map.get(row.id))  #should be .id
 
 
         return ret
@@ -199,7 +222,6 @@ class EntityDAO(framework.models.data_access_object.DataAccessObject):
         # saves a list of models with the assumption that they all belong on the same shard
         # otherwise, use save() to save one at a time
         models_to_save = []
-
 
         for model in models:
             if not model.is_dirty:
@@ -218,13 +240,13 @@ class EntityDAO(framework.models.data_access_object.DataAccessObject):
         d = dicts[0]
 
 
-        # for cache coonvert to {id:val.. } format
+        # CACHE convert to {namespaceid:val.. } format
+        classname = self._get_model_class_name()
         dicts_cache = {}
         for i in dicts:
-            dicts_cache[i['id']] = i
+            dicts_cache[classname+str(i['id'])] = i
 
-        #save mult to db
-        Cache().set_multi(dicts_cache)
+        ModelCache.set_multi(dicts_cache)
 
 
         return MultiShardQuery(self._pool()).multi_shard_insert(
@@ -244,9 +266,8 @@ class EntityDAO(framework.models.data_access_object.DataAccessObject):
         return [k for k in all_columns if (k != "id" and k != "created_ts")]
 
     def delete(self, id):
-        # self.remove_from_cache(id)
-        #invalidat cache for this key
-        Cache().expire(id)
+        #CACHE
+        ModelCache.expire(self._get_model_class_name(), id)
 
         return self._save(self._table, {"id": id, "deleted": 1, "modified_ts": datetime.datetime.now()},
                           ["deleted", "modified_ts"], id)

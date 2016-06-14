@@ -13,11 +13,9 @@ import memcache
 from framework.utils.json_utils import JSONUtils
 import json
 from framework.config.config import Config
-from framework.utils.model_cache import ModelCache
 
 
 class Cache:
-
 
     def __init__(self):
 
@@ -26,7 +24,7 @@ class Cache:
             Config.get("memcache", "servers")
         )
 
-        self.mc = memcache.Client(servers, debug=1)
+        self.mc = memcache.Client(servers, debug=1, pickleProtocol=2)
 
     _instance = None
     _client = None
@@ -37,11 +35,10 @@ class Cache:
     def get(self, key):
         key=str(key)
 
-        #check if in request memory
-        if ModelCache().get_for_model(key):
-            return ModelCache().get_for_model(key)
-
         value = self.mc.get(key)
+
+
+        logging.getLogger().debug( "qqqqq_GET"+  pprint.pformat(value)  )
 
 
 
@@ -56,8 +53,10 @@ class Cache:
     def set(self, key, value):
         if value is None:
             return 
-        
-        key=str(key)
+
+
+        logging.getLogger().debug( "_SET"+  pprint.pformat(value)  )
+
 
 
         self.mc.set(key, value)
@@ -68,8 +67,9 @@ class Cache:
         self.mc.delete(str(key))
 
 
-
     #check if in cache then return value, else None
+    # TAKES [key1, key2]
+    # RETURN {'key1' : 'val1', 'key2' : 'val2'}
     def get_multi(self, keys):
 
         values = self.mc.get_multi(keys)
@@ -79,12 +79,8 @@ class Cache:
         return values
 
 
+
+    # TAKES {'key1' : 'val1', 'key2' : 'val2'}
     def set_multi(self, key_obj):
-        # {'key1' : 'val1', 'key2' : 'val2'}
 
         self.mc.set_multi(key_obj)
-
-
-    def expire_multi(self, keys):
-
-        self.mc.delete_multi(keys)
