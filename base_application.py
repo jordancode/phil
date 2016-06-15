@@ -15,6 +15,7 @@ from framework.config.routes import BATCH_REQUEST_KEY
 
 class BaseApplication():
     
+    _rule=None
     
     def __init__(self, routes):
         self._routes = routes
@@ -25,6 +26,8 @@ class BaseApplication():
             rule, args = adapter.match(return_rule=True)
             if rule is None:
                 raise NotFound()
+            
+            self._rule = rule
             
             request.rule = rule
             response = self.call_controller(request, rule, args)
