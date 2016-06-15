@@ -31,6 +31,6 @@ class StatsTracker(TCPStatsClient):
     def verify_checksum(self, event, count, sample, checksum):
         key = (str(event) + ":" + str(count) + ":" + str(sample)).encode("utf-8")
         
-        return hashlib.md5(key).hexdigest() == checksum
+        return hashlib.md5(key).hexdigest().lower() == checksum.lower()
         
         
