@@ -113,15 +113,23 @@ class EmailUtils:
             address_parts = address.split("<")
             
             if len(address_parts) == 2:
-                ret.append({
-                    "name" : address_parts[0].strip(), 
-                    "email" : address_parts[1].split(">")[0].strip()
-                })
+                name = address_parts[0].strip()
+                email = address_parts[1].split(">")[0].strip()
+                o = {}
+                if name:
+                    o["name"]=name
+                if email:
+                    o["email"]=email
+                
+                if o:
+                    ret.append(o)
             else:
-                if cls.is_valid_email(address_parts[0].strip()):
-                    ret.append({"email" : address_parts[0].strip()})
-                else:
-                    ret.append({"name" : address_parts[0].strip()})
+                field=address_parts[0].strip()
+                if field:
+                    if cls.is_valid_email(field):
+                        ret.append({"email" : field})
+                    else:
+                        ret.append({"name" : field})
         
         return ret
         
