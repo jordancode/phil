@@ -16,12 +16,12 @@ VALID_METHODS = [
                  "PUT",
                  "DELETE",
                  "HEAD",
+                 "OPTIONS"
                  ]
 
 UNSUPPORTED_METHODS = [
                "TRACE",
-               "CONNECT",
-               "OPTIONS"
+               "CONNECT"
                ]
 
 
