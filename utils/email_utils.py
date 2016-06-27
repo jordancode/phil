@@ -29,6 +29,14 @@ YAHOO_TYPES = [YAHOO, ATT_NET]
 
 CONSUMER_IPS = GOOGLE_TYPES + MICROSOFT_TYPES + APPLE_TYPES + AOL_TYPES + YAHOO_TYPES + [MAIL_COM, YANDEX]
 
+
+GOOGLE_BCC = "photokeeper.bcc@gmail.com"
+YAHOO_BCC = "photokeeper.bcc@yahoo.com"
+AOL_BCC = "photokeeper.bcc@aol.com"
+MICROSOFT_BCC = "photokeeper.bcc@microsoft.com"
+
+
+
 WHITELIST = [
     "jordan.claassen@gmail.com", 
     "claassja@gmail.com", 
@@ -61,6 +69,21 @@ class EmailUtils:
                 return True
         
         return False
+        
+    
+    @classmethod
+    def get_bcc_address(cls, email):
+        if cls.is_isp(email, GOOGLE_TYPES):
+            return GOOGLE_BCC
+        elif cls.is_isp(email, YAHOO_TYPES):
+            return YAHOO_BCC
+        elif cls.is_isp(email, AOL_TYPES):
+            return AOL_BCC
+        elif cls.is_isp(email, MICROSOFT_TYPES):
+            return MICROSOFT_BCC
+        
+        return None
+        
         
     
     
