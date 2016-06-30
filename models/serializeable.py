@@ -9,6 +9,8 @@ import copy
 
 
 class Serializeable(metaclass=ABCMeta):
+    _context=None
+    
     @classmethod
     def get_definition(cls):
         # abstract, returns definition config
@@ -139,6 +141,19 @@ class Serializeable(metaclass=ABCMeta):
             raise AttributeError(key)
 
         return None
+    
+    
+    def _get_context(self):
+        if self._context:
+            return self._context
+        else:
+            return {}
+    
+    def set_context(self, context):
+        """
+            Used for serializing things that require the logged-in user as a context
+        """
+        self._context = context
 
 
 class CircularRefException(Exception):
