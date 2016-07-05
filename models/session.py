@@ -88,6 +88,14 @@ class Session(Entity):
 
     def get_time_since_start(self):
         return datetime.datetime.now() - self._get_attr("start_ts")
+    
+    @property
+    def modified_ts(self):
+        return self._get_attr("modified_ts")
+    
+    @property
+    def created_ts(self):
+        return self._get_attr("created_ts")
 
     @property
     def log_out_ts(self):
@@ -164,7 +172,7 @@ class SessionDAO(framework.models.data_access_object.DataAccessObject):
     def get_all_sessions_for_user(self, user):
         query = "SELECT * FROM sessions WHERE user_id=%s"
         shard = MySQL.get(user.id)
-        rows = shard.query(query, (user.id))
+        rows = shard.query(query, (user.id,))
 
         ret = []
         for row in rows:
@@ -175,7 +183,7 @@ class SessionDAO(framework.models.data_access_object.DataAccessObject):
     def get_active_sessions_for_user(self, user):
         query = "SELECT * FROM sessions WHERE user_id=%s AND (log_out_ts=NULL OR log_out_ts>NOW())"
         shard = MySQL.get(user.id)
-        rows = shard.query(query, (user.id))
+        rows = shard.query(query, (user.id,))
 
         ret = []
         for row in rows:
@@ -186,7 +194,7 @@ class SessionDAO(framework.models.data_access_object.DataAccessObject):
     def get_last_session_for_user(self, user):
         query = "SELECT * FROM sessions WHERE user_id=%s ORDER BY modified_ts DESC LIMIT 1"
         shard = MySQL.get(user.id)
-        rows = shard.query(query, (user.id))
+        rows = shard.query(query, (user.id,))
 
         if not len(rows):
             raise SessionNotFoundException()
