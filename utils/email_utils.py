@@ -33,7 +33,7 @@ CONSUMER_IPS = GOOGLE_TYPES + MICROSOFT_TYPES + APPLE_TYPES + AOL_TYPES + YAHOO_
 GOOGLE_BCC = "photokeeper.bcc@gmail.com"
 YAHOO_BCC = "photokeeper.bcc@yahoo.com"
 AOL_BCC = "photokeeper.bcc@aol.com"
-MICROSOFT_BCC = "photokeeper.bcc@microsoft.com"
+MICROSOFT_BCC = "photokeeper.bcc@outlook.com"
 
 
 
