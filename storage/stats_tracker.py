@@ -5,6 +5,8 @@ from statsd.client import TCPStatsClient
 from user_agents import parse
 
 from framework.config.config import Config
+from framework.config.app_url import AppUrl
+import urllib
 
 
 class StatsTracker(TCPStatsClient):
@@ -34,16 +36,24 @@ class StatsTracker(TCPStatsClient):
     def incr(self, stat, count=1, rate=1):
         super().incr(stat,count,rate)
         self._incr_platform(stat,count,rate)
-        
+    
+    
+    def _get_checksum(self, event, count=1, sample=1):
+        key = (str(event) + ":" + str(count) + ":" + str(sample)).encode("utf-8")
+        return hashlib.md5(key).hexdigest().lower()
         
     
     def verify_checksum(self, event, count, sample, checksum):
         if not checksum:
             return False
+        return self._get_checksum(event,count,sample) == checksum.lower()
+    
+    def track_url(self, event, next):
         
-        key = (str(event) + ":" + str(count) + ":" + str(sample)).encode("utf-8")
+        checksum = self._get_checksum(event)
+        next=urllib.parse.quote(next)
         
-        return hashlib.md5(key).hexdigest().lower() == checksum.lower()
+        return AppUrl().get("web") + "/r?checksum="+checksum+"&event="+event+"&next="+next
     
     
     def _incr_platform(self, event, count=1, rate=1):
