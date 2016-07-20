@@ -7,7 +7,7 @@ class StringUtils:
         full_name=full_name.strip()
         full_name=full_name.lower()
         
-        if len() < 3:
+        if len(full_name) < 3:
             return False
         
         for c in full_name:
