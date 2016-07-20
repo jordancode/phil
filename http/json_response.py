@@ -131,6 +131,10 @@ class JSONResponse(BaseResponse,ETagResponseMixin,
         
         return self._success
     
+    @success.setter
+    def success(self, is_success):
+        self._success = is_success
+    
     
 class CustomEncoder(JSONEncoder):
     
