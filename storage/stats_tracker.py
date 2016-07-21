@@ -16,7 +16,7 @@ class StatsTracker(TCPStatsClient):
     def __init__(self, ua_string=None):
         config = Config.get("statsd")
         super().__init__(**config)
-        self._ua_string=None
+        self._ua_string=ua_string
     
     
     def _send(self, data):
