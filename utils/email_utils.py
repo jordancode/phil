@@ -1,3 +1,5 @@
+import math
+import random
 
 
 GMAIL= "@gmail."
@@ -51,6 +53,19 @@ WHITELIST = [
     "lancetokuda@att.net"
     ]
 
+
+SHARE_EMAILS=[
+    "photos2@photokeeper.com",
+    "photos3@photokeeper.com",
+    "photos4@photokeeper.com",
+    "photos5@photokeeper.com",
+    "photos6@photokeeper.com",
+    "photos7@photokeeper.com",
+    "photos8@photokeeper.com",
+    "photos9@photokeeper.com",
+    "photos10@photokeeper.com",
+    "photos11@photokeeper.com"
+]
 
 class EmailUtils:
      
@@ -154,6 +169,19 @@ class EmailUtils:
                         ret.append({"name" : field})
         
         return ret
+        
+    @classmethod
+    def get_random_share_email(cls):
+        return SHARE_EMAILS[math.floor(random.random() * len(SHARE_EMAILS))]
+        
+        
+        
+    @classmethod
+    def get_random_friendly_share_email(cls):
+        share_email=cls.get_random_share_email()
+        
+        return "PhotoKeeper <" + share_email + ">" 
+
         
         
         
