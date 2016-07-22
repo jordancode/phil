@@ -27,9 +27,7 @@ class StatsTracker(TCPStatsClient):
             self.close()
     
     def track(self, event, count=1):
-        
         self.incr(event, count)
-        self._incr_platform(event, count, 1)
         
     
     
