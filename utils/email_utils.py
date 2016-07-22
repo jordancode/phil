@@ -28,14 +28,16 @@ APPLE_TYPES = [APPLE,ICLOUD]
 AOL_TYPES = [AOL,AIM]
 YAHOO_TYPES = [YAHOO, ATT_NET]
 
-
-CONSUMER_IPS = GOOGLE_TYPES + MICROSOFT_TYPES + APPLE_TYPES + AOL_TYPES + YAHOO_TYPES + [MAIL_COM, YANDEX]
+CONSUMER_ESPS = GOOGLE_TYPES + MICROSOFT_TYPES + APPLE_TYPES + AOL_TYPES + YAHOO_TYPES + [MAIL_COM, YANDEX]
+ENABLED_ESPS = GOOGLE_TYPES + YAHOO_TYPES + APPLE_TYPES + [MAIL_COM, YANDEX]
 
 
 GOOGLE_BCCS = ["photokeeper.bcc@gmail.com","photokeeper.bcc2@gmail.com"]
 YAHOO_BCCS = ["photokeeper.bcc@yahoo.com","photokeeper.bcc2@yahoo.com"]
 AOL_BCCS = ["photokeeper.bcc@aol.com","photokeeper.bcc2@aol.com"]
 MICROSOFT_BCCS = ["photokeeper.bcc@outlook.com","photokeeper.bcc2@outlook.com"]
+
+
 
 
 WHITELIST = [
@@ -70,15 +72,15 @@ SHARE_EMAILS=[
 class EmailUtils:
      
     @classmethod
-    def is_isp(cls, email, isp):
+    def is_esp(cls, email, esp):
         
-        if isinstance(isp, str):
-            isp_list = [isp]
+        if isinstance(esp, str):
+            esp_list = [esp]
         else:
-            isp_list = isp
+            esp_list = esp
         
-        for isp_type in isp_list:
-            if email.find(isp_type) > 0:
+        for esp_type in esp_list:
+            if email.find(esp_type) > 0:
                 #verify we have at least one char before "@"
                 return True
         
@@ -87,27 +89,27 @@ class EmailUtils:
     
     @classmethod
     def get_bcc_addresses(cls, email):
-        if cls.is_isp(email, GOOGLE_TYPES):
+        if cls.is_esp(email, GOOGLE_TYPES):
             return GOOGLE_BCCS
-        elif cls.is_isp(email, YAHOO_TYPES):
+        elif cls.is_esp(email, YAHOO_TYPES):
             return YAHOO_BCCS
-        elif cls.is_isp(email, AOL_TYPES):
+        elif cls.is_esp(email, AOL_TYPES):
             return AOL_BCCS
-        elif cls.is_isp(email, MICROSOFT_TYPES):
+        elif cls.is_esp(email, MICROSOFT_TYPES):
             return MICROSOFT_BCCS
         
         return None
         
-        
+    
+    @classmethod
+    def is_enabled_esp(cls ,email):
+        return cls.is_esp(email, ENABLED_ESPS)
     
     
     @classmethod
     def is_consumer(cls, email):
-        for isp in CONSUMER_IPS:
-            if cls.is_isp(email, isp):
-                return True
-        
-        return False
+        return cls.is_esp(email, CONSUMER_ESPS)
+    
     
     @classmethod
     def is_whitelisted(cls, email):
