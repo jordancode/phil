@@ -113,7 +113,7 @@ class EmailUtils:
     
     @classmethod
     def is_whitelisted(cls, email):
-        if cls.is_isp(email, PHOTOKEEPER):
+        if cls.is_esp(email, PHOTOKEEPER):
             return True
         
         return email in WHITELIST
