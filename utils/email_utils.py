@@ -98,7 +98,7 @@ class EmailUtils:
         elif cls.is_esp(email, MICROSOFT_TYPES):
             return MICROSOFT_BCCS
         
-        return None
+        return []
         
     
     @classmethod
