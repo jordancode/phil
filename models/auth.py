@@ -298,7 +298,7 @@ class AuthService:
         return current_session
     
     
-    def sign_up(self, user_data, require_email = False):
+    def sign_up(self, user_data, require_email = False, user_agent_string = None):
         
         #no user with this auth yet, let's create one
         has_email = ("email" in user_data)
@@ -316,10 +316,11 @@ class AuthService:
                 user = app.models.user.UserService().new_user(
                                 user_data["name"],
                                 user_data["email"],
-                                True
+                                True,
+                                user_agent_string
                             )
             else:
-                user = app.models.user.UserService().new_user(user_data["name"])
+                user = app.models.user.UserService().new_user(user_data["name"],None,False,user_agent_string)
             
         except app.models.user_alias.AliasTakenError as e:
             logging.getLogger().warn("Email address already in use. Could be a preemptive sign up attack.")
