@@ -270,7 +270,7 @@ class AuthService:
                 
                 #--- STEP 3. Create a new user or use logged in one
                 if not current_session or current_session.is_logged_out():
-                    user = self.sign_up(user_data)
+                    user = self.sign_up(user_data, user_agent_string=user_agent_string)
                     
                     StatsTracker().track("auth.install." + auth_config['name'])
                 else:
