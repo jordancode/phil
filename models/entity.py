@@ -7,6 +7,7 @@ from framework.models.serializeable import Serializeable
 from framework.utils.multi_shard_query import MultiShardQuery
 from framework.utils.type import Type
 
+###
 
 # Entity shouldn't be an ABC because it can be used stand-alone
 class Entity(Serializeable):
