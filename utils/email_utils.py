@@ -1,3 +1,5 @@
+import math
+import random
 
 
 GMAIL= "@gmail."
@@ -26,14 +28,15 @@ APPLE_TYPES = [APPLE,ICLOUD]
 AOL_TYPES = [AOL,AIM]
 YAHOO_TYPES = [YAHOO, ATT_NET]
 
+CONSUMER_ESPS = GOOGLE_TYPES + MICROSOFT_TYPES + APPLE_TYPES + AOL_TYPES + YAHOO_TYPES + [MAIL_COM, YANDEX]
+ENABLED_ESPS = GOOGLE_TYPES + YAHOO_TYPES + APPLE_TYPES + [MAIL_COM, YANDEX]
 
-CONSUMER_IPS = GOOGLE_TYPES + MICROSOFT_TYPES + APPLE_TYPES + AOL_TYPES + YAHOO_TYPES + [MAIL_COM, YANDEX]
 
+GOOGLE_BCCS = ["photokeeper.bcc@gmail.com","photokeeper.bcc2@gmail.com"]
+YAHOO_BCCS = ["photokeeper.bcc@yahoo.com","photokeeper.bcc2@yahoo.com"]
+AOL_BCCS = ["photokeeper.bcc@aol.com","photokeeper.bcc2@aol.com"]
+MICROSOFT_BCCS = ["photokeeper.bcc@outlook.com","photokeeper.bcc2@outlook.com"]
 
-GOOGLE_BCC = "photokeeper.bcc@gmail.com"
-YAHOO_BCC = "photokeeper.bcc@yahoo.com"
-AOL_BCC = "photokeeper.bcc@aol.com"
-MICROSOFT_BCC = "photokeeper.bcc@outlook.com"
 
 
 
@@ -53,18 +56,31 @@ WHITELIST = [
     ]
 
 
+SHARE_EMAILS=[
+    "photos2@photokeeper.com",
+    "photos3@photokeeper.com",
+    "photos4@photokeeper.com",
+    "photos5@photokeeper.com",
+    "photos6@photokeeper.com",
+    "photos7@photokeeper.com",
+    "photos8@photokeeper.com",
+    "photos9@photokeeper.com",
+    "photos10@photokeeper.com",
+    "photos11@photokeeper.com"
+]
+
 class EmailUtils:
      
     @classmethod
-    def is_isp(cls, email, isp):
+    def is_esp(cls, email, esp):
         
-        if isinstance(isp, str):
-            isp_list = [isp]
+        if isinstance(esp, str):
+            esp_list = [esp]
         else:
-            isp_list = isp
+            esp_list = esp
         
-        for isp_type in isp_list:
-            if email.find(isp_type) > 0:
+        for esp_type in esp_list:
+            if email.find(esp_type) > 0:
                 #verify we have at least one char before "@"
                 return True
         
@@ -72,32 +88,32 @@ class EmailUtils:
         
     
     @classmethod
-    def get_bcc_address(cls, email):
-        if cls.is_isp(email, GOOGLE_TYPES):
-            return GOOGLE_BCC
-        elif cls.is_isp(email, YAHOO_TYPES):
-            return YAHOO_BCC
-        elif cls.is_isp(email, AOL_TYPES):
-            return AOL_BCC
-        elif cls.is_isp(email, MICROSOFT_TYPES):
-            return MICROSOFT_BCC
+    def get_bcc_addresses(cls, email):
+        if cls.is_esp(email, GOOGLE_TYPES):
+            return GOOGLE_BCCS
+        elif cls.is_esp(email, YAHOO_TYPES):
+            return YAHOO_BCCS
+        elif cls.is_esp(email, AOL_TYPES):
+            return AOL_BCCS
+        elif cls.is_esp(email, MICROSOFT_TYPES):
+            return MICROSOFT_BCCS
         
-        return None
+        return []
         
-        
+    
+    @classmethod
+    def is_enabled_esp(cls ,email):
+        return cls.is_esp(email, ENABLED_ESPS)
     
     
     @classmethod
     def is_consumer(cls, email):
-        for isp in CONSUMER_IPS:
-            if cls.is_isp(email, isp):
-                return True
-        
-        return False
+        return cls.is_esp(email, CONSUMER_ESPS)
+    
     
     @classmethod
     def is_whitelisted(cls, email):
-        if cls.is_isp(email, PHOTOKEEPER):
+        if cls.is_esp(email, PHOTOKEEPER):
             return True
         
         return email in WHITELIST
@@ -155,6 +171,19 @@ class EmailUtils:
                         ret.append({"name" : field})
         
         return ret
+        
+    @classmethod
+    def get_random_share_email(cls):
+        return SHARE_EMAILS[math.floor(random.random() * len(SHARE_EMAILS))]
+        
+        
+        
+    @classmethod
+    def get_random_friendly_share_email(cls):
+        share_email=cls.get_random_share_email()
+        
+        return "PhotoKeeper <" + share_email + ">" 
+
         
         
         

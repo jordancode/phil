@@ -1,7 +1,7 @@
 from framework.storage.redis import Redis
 from redlock.lock import RedLockFactory
 
-TTL = 300000
+TTL = 300
 NUM_RETRIES = 300
 RETRY_DELAY = 1000
 

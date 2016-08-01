@@ -245,7 +245,10 @@ class AuthService:
         type_id = AuthDAO()._class_to_type_id(auth_class)
         auth_config = Config.get("auth",["type_to_class",str(type_id)])
         
-        user_data = auth_class.get_user_data_from_auth_response(auth_response)
+        try:
+            user_data = auth_class.get_user_data_from_auth_response(auth_response)
+        except Exception:
+            raise Unauthorized()
         
         #provider id
         provider_id = user_data["id"]
@@ -270,7 +273,7 @@ class AuthService:
                 
                 #--- STEP 3. Create a new user or use logged in one
                 if not current_session or current_session.is_logged_out():
-                    user = self.sign_up(user_data)
+                    user = self.sign_up(user_data, user_agent_string=user_agent_string)
                     
                     StatsTracker().track("auth.install." + auth_config['name'])
                 else:
@@ -298,7 +301,7 @@ class AuthService:
         return current_session
     
     
-    def sign_up(self, user_data, require_email = False):
+    def sign_up(self, user_data, require_email = False, user_agent_string = None):
         
         #no user with this auth yet, let's create one
         has_email = ("email" in user_data)
@@ -316,10 +319,11 @@ class AuthService:
                 user = app.models.user.UserService().new_user(
                                 user_data["name"],
                                 user_data["email"],
-                                True
+                                True,
+                                user_agent_string
                             )
             else:
-                user = app.models.user.UserService().new_user(user_data["name"])
+                user = app.models.user.UserService().new_user(user_data["name"],None,False,user_agent_string)
             
         except app.models.user_alias.AliasTakenError as e:
             logging.getLogger().warn("Email address already in use. Could be a preemptive sign up attack.")

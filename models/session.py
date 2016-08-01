@@ -81,7 +81,7 @@ class Session(Entity):
             self._set_attr("flags", None, 0)
 
     def update_session_modified(self):
-        self._set_attr("modified_ts", int(datetime.datetime.now()))
+        self._set_attr("modified_ts", datetime.datetime.now())
 
     def get_time_since_modified(self):
         return datetime.datetime.now() - self._get_attr("modified_ts")

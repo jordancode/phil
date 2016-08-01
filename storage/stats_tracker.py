@@ -2,15 +2,21 @@ import hashlib
 import logging
 
 from statsd.client import TCPStatsClient
+from user_agents import parse
 
 from framework.config.config import Config
+from framework.config.app_url import AppUrl
+import urllib
 
 
 class StatsTracker(TCPStatsClient):
     
-    def __init__(self):
+    _ua_string=None
+    
+    def __init__(self, ua_string=None):
         config = Config.get("statsd")
         super().__init__(**config)
+        self._ua_string=ua_string
     
     
     def _send(self, data):
@@ -21,19 +27,54 @@ class StatsTracker(TCPStatsClient):
             self.close()
     
     def track(self, event, count=1):
-        return self.incr(event, count)
+        self.incr(event, count)
+        
     
     
     def incr(self, stat, count=1, rate=1):
-        return super().incr(stat,count,rate)
+        super().incr(stat,count,rate)
+        self._incr_platform(stat,count,rate)
+    
+    
+    def _get_checksum(self, event, count=1, sample=1):
+        key = (str(event) + ":" + str(count) + ":" + str(sample)).encode("utf-8")
+        return hashlib.md5(key).hexdigest().lower()
         
     
     def verify_checksum(self, event, count, sample, checksum):
         if not checksum:
             return False
+        return self._get_checksum(event,count,sample) == checksum.lower()
+    
+    def track_url(self, event_or_list, next):
         
-        key = (str(event) + ":" + str(count) + ":" + str(sample)).encode("utf-8")
+        if isinstance(event_or_list, list):
+            event_or_list=sorted(event_or_list)
+            event_or_list=",".join(event_or_list)
         
-        return hashlib.md5(key).hexdigest().lower() == checksum.lower()
+        checksum = self._get_checksum(event_or_list)
+        next=urllib.parse.quote(next)
+        
+        return AppUrl().get("web") + "/r?checksum="+checksum+"&event="+event_or_list+"&next="+next
+    
+    
+    def _incr_platform(self, event, count=1, rate=1):
+        if not self._ua_string:
+            return
+        
+        family = parse(self._ua_string).os.family
+        
+        if family == "Android":
+            event = event+"._android"
+        elif family == "iOS":
+            event = event+"._ios"
+        else:
+            event = event+"._desktop"
+        
+        return super().incr(event, count, rate)
+            
+    
+            
+        
         
         
