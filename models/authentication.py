@@ -74,6 +74,10 @@ class Authentication(Entity):
     def secret(self, new_secret):
         self._set_secret(new_secret, False)
     
+    @property
+    def credentials(self):
+        return self.secret
+    
     
     @property
     def user(self):
@@ -128,7 +132,7 @@ class Authentication(Entity):
     def get_api(self):
         api_cls = self.get_api_class()
         if api_cls is not None:
-            return api_cls().get_for_user(self.secret)
+            return api_cls().get_for_user(self.credentials)
         return None
     
     def after_login(self):

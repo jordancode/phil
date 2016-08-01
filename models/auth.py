@@ -11,6 +11,7 @@ from framework.models.data_access_object import RowDeletedException
 from framework.config.config import Config
 from werkzeug.exceptions import Unauthorized
 from framework.utils.list_utils import ListUtils
+from framework.storage.stats_tracker import StatsTracker
 
 
 
@@ -176,6 +177,12 @@ class AuthService:
         if not auth.verify_secret(secret, time):
             raise InvalidCredentialsException()
         
+        
+        type_id = AuthDAO()._class_to_type_id(auth_class)
+        auth_config = Config.get("auth",["type_to_class",str(type_id)])
+        
+        StatsTracker().track("auth.log_in." + auth_config['name'])
+        
         auth.after_login()
 
         session_dao = framework.models.session.SessionDAO()
@@ -203,6 +210,11 @@ class AuthService:
 
         except (NoAuthFoundException, framework.models.data_access_object.RowDeletedException):
             pass
+        
+        type_id = AuthDAO()._class_to_type_id(auth_class)
+        auth_config = Config.get("auth",["type_to_class",str(type_id)])
+        
+        StatsTracker().track("auth.connect." + auth_config['name'])
 
         # can throw exceptions if these credentials don't work
         auth = dao.new_auth(auth_class, provider_id, secret, user, expires_ts)
@@ -259,6 +271,8 @@ class AuthService:
                 #--- STEP 3. Create a new user or use logged in one
                 if not current_session or current_session.is_logged_out():
                     user = self.sign_up(user_data)
+                    
+                    StatsTracker().track("auth.install." + auth_config['name'])
                 else:
                     user = current_session.user
             

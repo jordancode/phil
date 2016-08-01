@@ -29,6 +29,14 @@ YAHOO_TYPES = [YAHOO, ATT_NET]
 
 CONSUMER_IPS = GOOGLE_TYPES + MICROSOFT_TYPES + APPLE_TYPES + AOL_TYPES + YAHOO_TYPES + [MAIL_COM, YANDEX]
 
+
+GOOGLE_BCC = "photokeeper.bcc@gmail.com"
+YAHOO_BCC = "photokeeper.bcc@yahoo.com"
+AOL_BCC = "photokeeper.bcc@aol.com"
+MICROSOFT_BCC = "photokeeper.bcc@outlook.com"
+
+
+
 WHITELIST = [
     "jordan.claassen@gmail.com", 
     "claassja@gmail.com", 
@@ -61,6 +69,21 @@ class EmailUtils:
                 return True
         
         return False
+        
+    
+    @classmethod
+    def get_bcc_address(cls, email):
+        if cls.is_isp(email, GOOGLE_TYPES):
+            return GOOGLE_BCC
+        elif cls.is_isp(email, YAHOO_TYPES):
+            return YAHOO_BCC
+        elif cls.is_isp(email, AOL_TYPES):
+            return AOL_BCC
+        elif cls.is_isp(email, MICROSOFT_TYPES):
+            return MICROSOFT_BCC
+        
+        return None
+        
         
     
     
@@ -113,15 +136,23 @@ class EmailUtils:
             address_parts = address.split("<")
             
             if len(address_parts) == 2:
-                ret.append({
-                    "name" : address_parts[0].strip(), 
-                    "email" : address_parts[1].split(">")[0].strip()
-                })
+                name = address_parts[0].strip()
+                email = address_parts[1].split(">")[0].strip()
+                o = {}
+                if name:
+                    o["name"]=name
+                if email:
+                    o["email"]=email
+                
+                if o:
+                    ret.append(o)
             else:
-                if cls.is_valid_email(address_parts[0].strip()):
-                    ret.append({"email" : address_parts[0].strip()})
-                else:
-                    ret.append({"name" : address_parts[0].strip()})
+                field=address_parts[0].strip()
+                if field:
+                    if cls.is_valid_email(field):
+                        ret.append({"email" : field})
+                    else:
+                        ret.append({"name" : field})
         
         return ret
         

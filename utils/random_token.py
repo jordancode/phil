@@ -41,14 +41,28 @@ class RandomToken:
                 length, 
                 id.get_shard_id(), 
                 id.get_pool_id())
-        
+    
+    
     @classmethod
-    def get_temp_id_from_token(cls, token):
+    def get_shard_from_token(cls, token):
+        hex_str = token[-4:]
+        i = int(hex_str,16)
+        shard_id = (i & (cls._get_bit_mask(10) << 4)) >> 4
+        
+        return shard_id
+    
+    @classmethod
+    def get_pool_from_token(cls, token):
         hex_str = token[-4:]
         
         i = int(hex_str,16)
         pool_id = i & cls._get_bit_mask(4)
-        shard_id = (i & (cls._get_bit_mask(10) << 4)) >> 4
+        return pool_id
+        
+    @classmethod
+    def get_temp_id_from_token(cls, token):
+        shard_id = cls.get_shard_from_token(token)
+        pool_id = cls.get_pool_from_token(token)
         
         return Id.dummy(shard_id, pool_id)
     

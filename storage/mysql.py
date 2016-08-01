@@ -284,7 +284,8 @@ class MySQLConnectionManager:
     
     _conn_pools = None
     _config = None
-    _stoc = False 
+    start_transaction_on_connect = False
+    _transaction_level=0
     
     def __init__(self, config):
         self._config = config
@@ -347,32 +348,50 @@ class MySQLConnectionManager:
 
     
     def start_transaction(self):
-        logging.getLogger().warn("----- START TRANSACTION -----")
         self.start_transaction_on_connect = True
+        
+        if self._transaction_level == 0:
+            logging.getLogger().warn("----- START TRANSACTION -----")
+        
+        self._incr_transaction_level()
             
     
     def commit(self):
         with CONNECTION_POOL_LOCK:
-            logging.getLogger().warn("----- COMMIT -----")
             self.start_transaction_on_connect = False
+            self._decr_transaction_level()
             
-            if self._conn_pools is not None:
-                for conn in self.get_all_connections():
-                    if conn.in_transaction:
-                        conn.commit()
-                        conn.autocommit = True
+            if self._transaction_level <= 0:
+                logging.getLogger().warn("----- COMMIT -----")
+                
+                if self._conn_pools is not None:
+                    for conn in self.get_all_connections():
+                        if conn.in_transaction:
+                            conn.commit()
+                            conn.autocommit = True
     
     
     def rollback(self):
         with CONNECTION_POOL_LOCK:
-            logging.getLogger().warn("----- ROLLBACK -----")
-            if self._conn_pools is not None:
-                
-                self.start_transaction_on_connect = False
-                for conn in self.get_all_connections():
-                    if conn.in_transaction:
-                        conn.rollback()
-                        conn.autocommit = True
+            self.start_transaction_on_connect = False
+            
+            self._decr_transaction_level()
+            
+            if self._transaction_level <= 0:
+                logging.getLogger().warn("----- ROLLBACK -----")
+            
+                if self._conn_pools is not None:
+                    for conn in self.get_all_connections():
+                        if conn.in_transaction:
+                            conn.rollback()
+                            conn.autocommit = True
+    
+    
+    def _incr_transaction_level(self):
+        self._transaction_level = max(self._transaction_level + 1, 1)
+    
+    def _decr_transaction_level(self):
+        self._transaction_level = max(self._transaction_level - 1,0)
     
     
     def get_all_connections(self):
@@ -384,16 +403,6 @@ class MySQLConnectionManager:
             for pool in self._conn_pools.values():
                 ret = ret + pool.get_all_connections()
             return ret
-                     
-    @property
-    def start_transaction_on_connect(self):
-        return self._stoc
-    
-    
-    
-    @start_transaction_on_connect.setter
-    def start_transaction_on_connect(self, boolean):
-        self._stoc = boolean
             
 
     def _get_server_key(self, host, port):

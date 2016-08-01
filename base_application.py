@@ -15,6 +15,7 @@ from framework.config.routes import BATCH_REQUEST_KEY
 
 class BaseApplication():
     
+    _rule=None
     
     def __init__(self, routes):
         self._routes = routes
@@ -26,6 +27,8 @@ class BaseApplication():
             if rule is None:
                 raise NotFound()
             
+            self._rule = rule
+            
             request.rule = rule
             response = self.call_controller(request, rule, args)
 
@@ -36,12 +39,14 @@ class BaseApplication():
     
     def get_routes_adapter(self, environ):
         
+        server_name=self.get_server_name(environ)
+        
         return self._routes.bind_to_environ(
                 environ,
-                server_name=self.get_server_name()
+                server_name=server_name
             )
     
-    def get_server_name(self):
+    def get_server_name(self,environ=None):
         return None
     
     def pre_hook(self,request):
