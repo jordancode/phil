@@ -245,7 +245,10 @@ class AuthService:
         type_id = AuthDAO()._class_to_type_id(auth_class)
         auth_config = Config.get("auth",["type_to_class",str(type_id)])
         
-        user_data = auth_class.get_user_data_from_auth_response(auth_response)
+        try:
+            user_data = auth_class.get_user_data_from_auth_response(auth_response)
+        except Exception:
+            raise Unauthorized()
         
         #provider id
         provider_id = user_data["id"]
