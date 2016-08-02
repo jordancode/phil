@@ -17,6 +17,7 @@ class ModelCache(Cache):
 
 
     _request_cache = {}
+    DEFAULT_EXPIRE = 10 * 24 * 3600
 
 
     # from request-session memory
@@ -52,8 +53,8 @@ class ModelCache(Cache):
 
     # {namespacekey: val, ..}
     @classmethod
-    def set(cls, namespace, key, value):
-        Cache().set(namespace+str(key), value)
+    def set(cls, namespace, key, value, expire=DEFAULT_EXPIRE):
+        Cache().set(namespace+str(key), value, expire)
         cls.set_for_model(namespace, key, value)
 
 
@@ -67,8 +68,8 @@ class ModelCache(Cache):
 
     # {namespacekey: val, ..}
     @classmethod
-    def set_multi(cls, modelObj):
-        Cache().set_multi(modelObj)
+    def set_multi(cls, modelObj, expire=DEFAULT_EXPIRE):
+        Cache().set_multi(modelObj, expire)
 
 
     @classmethod

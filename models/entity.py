@@ -135,11 +135,6 @@ class EntityDAO(framework.models.data_access_object.DataAccessObject):
         
         cached = ModelCache.get(self._get_model_class_name(), str(id))
 
-        cached = 0
-
-        # logging.getLogger().debug("xxxxx")
-        # logging.getLogger().debug( type(cached['full_name']) )
-
         if cached:
             rows = [cached]
         else:
@@ -176,9 +171,13 @@ class EntityDAO(framework.models.data_access_object.DataAccessObject):
 
         #make a list of uncached id's we still need tofetch
         for id in id_list:
-            # if classname+str(id) in ret_cache:
-            #     ret.append(ret_cache[classname+str(id)])
-            # else:
+            if classname+str(id) in ret_cache:
+                row_from_cache = ret_cache[classname+str(id)]
+                model = self._row_to_model(row_from_cache)
+                model.update_stored_state()
+
+                ret.append(model)
+            else:
                 ids_to_find.append(id)
 
 
@@ -194,11 +193,15 @@ class EntityDAO(framework.models.data_access_object.DataAccessObject):
             rows_for_cache = {}
 
             for row in rows:
+
+
                 model = self._row_to_model(row)
                 model.update_stored_state()
 
+
                 #CACHE SET EACH MODEL
-                rows_for_cache[classname+str(model.id)] = row
+                rows_for_cache[classname+str(row['id'])] = row
+
 
                 ret.append(model)
 
@@ -242,12 +245,12 @@ class EntityDAO(framework.models.data_access_object.DataAccessObject):
 
 
         # CACHE convert to {namespaceid:val.. } format
-        classname = self._get_model_class_name()
-        dicts_cache = {}
-        for i in dicts:
-            dicts_cache[classname+str(i['id'])] = i
-
-        ModelCache.set_multi(dicts_cache)
+        # classname = self._get_model_class_name()
+        # dicts_cache = {}
+        # for i in dicts:
+        #     dicts_cache[classname+str(i['id'])] = i
+        #
+        # ModelCache.set_multi(dicts_cache)
 
 
         return MultiShardQuery(self._pool()).multi_shard_insert(

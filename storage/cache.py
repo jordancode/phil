@@ -24,7 +24,7 @@ class Cache:
             Config.get("memcache", "servers")
         )
 
-        self.mc = memcache.Client(servers, debug=1, pickleProtocol=2)
+        self.mc = memcache.Client(servers, debug=1)
 
     _instance = None
     _client = None
@@ -38,10 +38,6 @@ class Cache:
         value = self.mc.get(key)
 
 
-        logging.getLogger().debug( "qqqqq_GET"+  pprint.pformat(value)  )
-
-
-
         if value is None:
             return None
         
@@ -50,16 +46,13 @@ class Cache:
 
 
     #set one key, can use for custom key
-    def set(self, key, value):
+    def set(self, key, value, expire=0):
         if value is None:
             return 
 
 
-        logging.getLogger().debug( "_SET"+  pprint.pformat(value)  )
 
-
-
-        self.mc.set(key, value)
+        self.mc.set(key, value, time=expire)
 
 
     def expire(self, key):
@@ -81,6 +74,6 @@ class Cache:
 
 
     # TAKES {'key1' : 'val1', 'key2' : 'val2'}
-    def set_multi(self, key_obj):
+    def set_multi(self, key_obj, expire=0):
 
-        self.mc.set_multi(key_obj)
+        self.mc.set_multi(key_obj, time=expire)
