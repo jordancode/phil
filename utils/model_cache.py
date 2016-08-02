@@ -73,8 +73,8 @@ class ModelCache(Cache):
 
 
     @classmethod
-    def expire(cls, namespace, id):
-        Cache().expire(namespace+str(id))
+    def delete(cls, namespace, id):
+        Cache().delete(namespace+str(id))
         # del cls._request_cache[model_name]
 
 

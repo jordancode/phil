@@ -252,6 +252,10 @@ class EntityDAO(framework.models.data_access_object.DataAccessObject):
         #
         # ModelCache.set_multi(dicts_cache)
 
+        classname = self._get_model_class_name()
+        for i in dicts:
+            ModelCache.delete(classname, str(i['id']))
+
 
         return MultiShardQuery(self._pool()).multi_shard_insert(
             table,
@@ -271,7 +275,7 @@ class EntityDAO(framework.models.data_access_object.DataAccessObject):
 
     def delete(self, id):
         #CACHE
-        ModelCache.expire(self._get_model_class_name(), id)
+        ModelCache.delete(self._get_model_class_name(), id)
 
         return self._save(self._table, {"id": id, "deleted": 1, "modified_ts": datetime.datetime.now()},
                           ["deleted", "modified_ts"], id)

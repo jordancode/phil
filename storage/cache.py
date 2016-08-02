@@ -55,7 +55,7 @@ class Cache:
         self.mc.set(key, value, time=expire)
 
 
-    def expire(self, key):
+    def delete(self, key):
 
         self.mc.delete(str(key))
 
