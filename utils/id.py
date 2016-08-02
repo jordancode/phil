@@ -192,7 +192,7 @@ class Id:
             pipe.incr(redis_key)
             
         #expire two intervals past the last call so we can handle up to 60 secs of time drift between servers
-        pipe.delete(redis_key, 2 * self.INTERVAL_SECS)
+        pipe.expire(redis_key, 2 * self.INTERVAL_SECS)
         res = pipe.execute()
         
         return res[0]

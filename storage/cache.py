@@ -1,17 +1,4 @@
-import pickle
-
-from memcache import Client
-import logging
-import json
-import pprint
-
-
-import json
-import logging
-
 import memcache
-from framework.utils.json_utils import JSONUtils
-import json
 from framework.config.config import Config
 
 
@@ -24,9 +11,8 @@ class Cache:
             Config.get("memcache", "servers")
         )
 
-        self.mc = memcache.Client(servers, debug=1)
+        self._client = memcache.Client(servers, debug=1)
 
-    _instance = None
     _client = None
 
 
@@ -34,9 +20,7 @@ class Cache:
     #check if in cache then return value, else None
     def get(self, key):
         key=str(key)
-
-        value = self.mc.get(key)
-
+        value = self._client.get(key)
 
         if value is None:
             return None
@@ -48,26 +32,31 @@ class Cache:
     #set one key, can use for custom key
     def set(self, key, value, expire=0):
         if value is None:
-            return 
-
-
-
-        self.mc.set(key, value, time=expire)
+            return
+        
+        self._client.set(key, value, time=expire)
 
 
     def delete(self, key):
 
-        self.mc.delete(str(key))
+        self._client.delete(str(key))
+    
+    
+    def delete_multi(self, key_list):
+        if len(key_list):
 
+            self._client.delete_multi([str(key) for key in key_list])
 
     #check if in cache then return value, else None
     # TAKES [key1, key2]
     # RETURN {'key1' : 'val1', 'key2' : 'val2'}
-    def get_multi(self, keys):
+    def get_multi(self, key_list):
+        if not len(key_list):
+            return {}
 
-        values = self.mc.get_multi(keys)
+        values = self._client.get_multi(key_list)
         if values is None:
-            return []
+            return {}
 
         return values
 
@@ -75,5 +64,7 @@ class Cache:
 
     # TAKES {'key1' : 'val1', 'key2' : 'val2'}
     def set_multi(self, key_obj, expire=0):
+        if not key_obj:
+            return
 
-        self.mc.set_multi(key_obj, time=expire)
+        self._client.set_multi(key_obj, time=expire)

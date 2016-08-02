@@ -145,9 +145,9 @@ class EntityDAO(framework.models.data_access_object.DataAccessObject):
                 raise framework.models.data_access_object.RowNotFoundException()
 
 
-                #ADD THIS ID:rows to cache
-
-        ModelCache.set(self._get_model_class_name(), str(id), rows[0])
+            #ADD THIS ID:rows to cache
+            
+            ModelCache.set(self._get_model_class_name(), str(id), rows[0])
 
 
 
@@ -168,50 +168,41 @@ class EntityDAO(framework.models.data_access_object.DataAccessObject):
         #CACHE GET
         classname = self._get_model_class_name()
         ret_cache = ModelCache.get_multi(classname, id_list)
+        cached_rows = []
+        db_rows = []
+        
 
         #make a list of uncached id's we still need tofetch
         for id in id_list:
             if classname+str(id) in ret_cache:
-                row_from_cache = ret_cache[classname+str(id)]
-                model = self._row_to_model(row_from_cache)
-                model.update_stored_state()
-
-                ret.append(model)
+                cached_rows.append(ret_cache[classname+str(id)])
             else:
                 ids_to_find.append(id)
 
-
-
-
-
         if len(ids_to_find):
-            rows = self._primary_get_list(ids_to_find)
+            db_rows = self._primary_get_list(ids_to_find)
+            
+            #set fetched rows
+            if db_rows:
+                ModelCache.set_multi(classname,{ str(row['id']) : row for row in db_rows })
+        
+        
+        rows = db_rows + cached_rows
 
-            if not self.return_deleted:
-                rows = self._filter_deleted(rows)
+        if not self.return_deleted:
+            rows = self._filter_deleted(rows)
+        
 
-            rows_for_cache = {}
+        for row in rows:
+            model = self._row_to_model(row)
+            model.update_stored_state()
+            ret.append(model)
 
-            for row in rows:
-
-
-                model = self._row_to_model(row)
-                model.update_stored_state()
-
-
-                #CACHE SET EACH MODEL
-                rows_for_cache[classname+str(row['id'])] = row
-
-
-                ret.append(model)
-
-            ModelCache.set_multi(rows_for_cache)
 
         # sort list by original order since it gets messed up with cache and shards
         list_map = {id: index for index, id in enumerate(id_list)}
 
         ret = sorted(ret, key=lambda row: list_map.get(row.id))  #should be .id
-
 
         return ret
 
@@ -253,8 +244,8 @@ class EntityDAO(framework.models.data_access_object.DataAccessObject):
         # ModelCache.set_multi(dicts_cache)
 
         classname = self._get_model_class_name()
-        for i in dicts:
-            ModelCache.delete(classname, str(i['id']))
+        
+        ModelCache.delete_multi(classname, [ str(d['id']) for d in dicts ] )
 
 
         return MultiShardQuery(self._pool()).multi_shard_insert(
