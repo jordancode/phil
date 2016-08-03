@@ -25,6 +25,7 @@ class BaseApplication():
         try:
             rule, args = adapter.match(return_rule=True)
             if rule is None:
+                print("---------- RAISE NOT FOUND")
                 raise NotFound()
             
             self._rule = rule
@@ -33,7 +34,7 @@ class BaseApplication():
             response = self.call_controller(request, rule, args)
 
         except Exception as e:
-            response = self.get_response_from_error(e, request)
+            return self.get_response_from_error(e,request,adapter)
             
         return response
     
@@ -89,7 +90,7 @@ class BaseApplication():
                 response = BatchResponse(sub_responses)
                 
             except Exception as e:
-                response = self.get_response_from_error(e, request)
+                response = self.get_response_from_error(e, request, adapter)
             
         else:
             request = MethodOverrideRequest(environ)
@@ -108,21 +109,18 @@ class BaseApplication():
         return ret
     
     
-    def get_response_from_error(self, e, request):
+    def get_response_from_error(self, e, request, adapter):
         self.log_error(request,e)
         
-        if isinstance(e, HTTPException):
-            response = e
+        response = JSONResponse(status=500)
+        if Environment.get() != Environment.PROD:
+            exc_type, exc_value, exc_traceback = sys.exc_info()
+            response.set_error(repr(e))
+            response.set_key("traceback", traceback.format_exception(
+                    exc_type, exc_value, exc_traceback
+                ))
         else:
-            response = JSONResponse(status=500)
-            if Environment.get() != Environment.PROD:
-                exc_type, exc_value, exc_traceback = sys.exc_info()
-                response.set_error(repr(e))
-                response.set_key("traceback", traceback.format_exception(
-                        exc_type, exc_value, exc_traceback
-                    ))
-            else:
-                response.set_error("An error occurred")
+            response.set_error("An error occurred")
                 
         return response
     
