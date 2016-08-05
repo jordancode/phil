@@ -57,13 +57,13 @@ WHITELIST = [
 
 
 SHARE_EMAILS=[
-    "photos2@photokeeper.com",
-    "photos3@photokeeper.com",
+    #"photos2@photokeeper.com",
+    #"photos3@photokeeper.com",
     "photos4@photokeeper.com",
     "photos5@photokeeper.com",
     "photos6@photokeeper.com",
-    "photos7@photokeeper.com",
-    "photos8@photokeeper.com",
+    #"photos7@photokeeper.com",
+    #"photos8@photokeeper.com",
     "photos9@photokeeper.com",
     "photos10@photokeeper.com",
     "photos11@photokeeper.com"
