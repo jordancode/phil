@@ -27,13 +27,15 @@ class TokenAuth(Authentication):
     def parse(cls, token, max_time=3600):
         try:
             provider_id, hash, ts = token.split("_")
+            
+            now = DateUtils.datetime_to_unix(datetime.datetime.now())
+        
+            if int(ts) + max_time < now:
+                raise ExpiredTokenException()
+        
         except ValueError:
             raise InvalidTokenException() 
         
-        now = DateUtils.datetime_to_unix(datetime.datetime.now())
-        
-        if int(ts) + max_time < now:
-            raise ExpiredTokenException()
         
         return provider_id, hash, int(ts)
                 
