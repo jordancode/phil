@@ -6,7 +6,7 @@ from user_agents import parse
 
 from framework.config.config import Config
 from framework.config.app_url import AppUrl
-import urllib
+import urllib.parse
 
 
 class StatsTracker(TCPStatsClient):
@@ -24,6 +24,7 @@ class StatsTracker(TCPStatsClient):
             super()._send(data)
         except Exception as e:
             logging.getLogger().warn("Stats tracking failed, connection error")
+            logging.getLogger().warn("Would have tracked " + repr(data))
             self.close()
     
     def track(self, event, count=1):
