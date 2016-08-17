@@ -12,6 +12,8 @@ class AppUrl:
         
         if subdomain:
             full_host =  subdomain + "." + host
+        elif subdomain_type:
+            full_host = subdomain_type + "." + host
         else:
             full_host = host
         
