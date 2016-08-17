@@ -8,6 +8,7 @@ from werkzeug.wrappers import Request
 from framework.http.json_http_exception import JSONHTTPException
 from framework.utils.date_utils import DateUtils
 import pprint
+from framework.config.config import Config
 
 KEY = "_method"
 
@@ -224,6 +225,30 @@ class MethodOverrideRequest(Request):
             raise JSONHTTPException(InvalidHTTPMethodError)
         
         environ['REQUEST_METHOD'] = method 
+        
+        
+    def get_subdomain(self):
+        environ = self.environ
+        
+        http_host = environ.get("HTTP_HOST")
+        if not http_host:
+            return None
+        
+        host_list = Config.get("app","hosts")
+        
+        for host in host_list.values():
+            try:
+                server_name_index = http_host.index("." + host["server_name"])
+                if server_name_index > 0:
+                    return http_host[:server_name_index]
+                else:
+                    return None
+            except Exception as e:
+                pass
+            
+        return None
+        
+        
 
 class BadParameterException(BadRequest):
     def __init__(self, param_name):
