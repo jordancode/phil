@@ -7,6 +7,7 @@ from werkzeug.wrappers import Request
 
 from framework.http.json_http_exception import JSONHTTPException
 from framework.utils.date_utils import DateUtils
+import pprint
 
 KEY = "_method"
 
@@ -134,7 +135,7 @@ class MethodOverrideRequest(Request):
         if key in dictionary:
             try:
                 ret = list(json.loads(dictionary[key]))
-            except TypeError:
+            except (TypeError, ValueError):
                 ret = dictionary.getlist(key)
             
         else:
