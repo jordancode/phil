@@ -242,7 +242,7 @@ class MethodOverrideRequest(Request):
                 if server_name_index > 0:
                     subdomain = http_host[:server_name_index]
                     
-                    for k, v in host.get("subdomains"): 
+                    for k, v in host.get("subdomains").items(): 
                         if v == subdomain:
                             return k
                     
