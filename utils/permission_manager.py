@@ -27,6 +27,9 @@ class PermissionManager:
         #make sure we have an iteractable type
         assert issubclass(cls_,Interactable)
         
+        #filter unique ids
+        id_list=list(set(id_list))
+        
         try:
             dao = cls_.getUserHasDAO()
             uhx_objs = dao.get_list(self._logged_in_user.id, id_list)
