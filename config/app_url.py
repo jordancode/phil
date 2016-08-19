@@ -10,8 +10,12 @@ class AppUrl:
         subdomain = config.get("subdomains").get(subdomain_type)
         host = config.get("server_name")
         
-        if subdomain:
-            full_host =  subdomain + "." + host
+        if subdomain is not None:
+            if subdomain: 
+                full_host =  subdomain + "." + host
+            else:
+                #handle blank subdomain
+                full_host = host
         elif subdomain_type:
             full_host = subdomain_type + "." + host
         else:
