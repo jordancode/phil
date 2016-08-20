@@ -40,14 +40,14 @@ class BaseApplication():
     
     def get_routes_adapter(self, environ):
         
-        server_name=self.get_server_name(environ)
+        http_host=self.get_http_host_for_routing(environ)
         
         return self._routes.bind_to_environ(
                 environ,
-                server_name=server_name
+                server_name=http_host
             )
     
-    def get_server_name(self,environ=None):
+    def get_http_host_for_routing(self,environ=None):
         return None
     
     def pre_hook(self,request):
