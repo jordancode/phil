@@ -37,7 +37,7 @@ class AppUrl:
     
     @classmethod
     def get_email(cls, include_protocol=True):
-        if Environment.get() == "prod":
+        if Environment.get() == "PROD":
             return cls.get( "email", "email", include_protocol)
         else:
             return cls.get("email", include_protocol)
