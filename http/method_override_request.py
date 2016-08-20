@@ -13,18 +13,18 @@ from framework.config.config import Config
 KEY = "_method"
 
 VALID_METHODS = [
-                 "GET",
-                 "POST",
-                 "PUT",
-                 "DELETE",
-                 "HEAD",
-                 "OPTIONS"
-                 ]
+         "GET",
+         "POST",
+         "PUT",
+         "DELETE",
+         "HEAD",
+         "OPTIONS"
+    ]
 
 UNSUPPORTED_METHODS = [
-               "TRACE",
-               "CONNECT"
-               ]
+       "TRACE",
+       "CONNECT"
+    ]
 
 
 class MethodOverrideRequest(Request):
@@ -225,7 +225,25 @@ class MethodOverrideRequest(Request):
             raise JSONHTTPException(InvalidHTTPMethodError)
         
         environ['REQUEST_METHOD'] = method 
+    
+    
+    def get_host(self):
+        environ = self.environ
+        http_host = environ.get("HTTP_HOST")
+        if not http_host:
+            return None
         
+        host_list = Config.get("app","hosts")
+        for host_name, host in host_list.items():
+            try:
+                server_name_index = http_host.index("." + host["server_name"])
+                if server_name_index > 0:
+                    return host_name
+            except Exception as e:
+                pass
+        
+        return None
+            
         
     def get_subdomain(self):
         environ = self.environ

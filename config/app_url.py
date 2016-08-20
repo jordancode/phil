@@ -1,4 +1,6 @@
 from framework.config.config import Config
+from framework.config.environment import Environment
+
 class AppUrl:
     
     @staticmethod
@@ -25,4 +27,17 @@ class AppUrl:
             return proto + "://" + full_host
         else:
             return full_host
+    
+    @classmethod
+    def get_current(cls, request, include_protocol=True):
+        if not request:
+            return cls.get(include_protocol=include_protocol)
         
+        return cls.get(request.get_subdomain(), request.get_host(), include_protocol)
+    
+    @classmethod
+    def get_email(cls, include_protocol=True):
+        if Environment.get() == "prod":
+            return cls.get( "email", "email", include_protocol)
+        else:
+            return cls.get("email", include_protocol)

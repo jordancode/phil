@@ -52,7 +52,7 @@ class StatsTracker(TCPStatsClient):
             return False
         return self._get_checksum(event,count,sample) == checksum.lower()
     
-    def track_url(self, event_or_list, next, subdomain="web"):
+    def track_url(self, event_or_list, next, request=None):
         
         if isinstance(event_or_list, list):
             event_or_list=sorted(event_or_list)
@@ -61,7 +61,7 @@ class StatsTracker(TCPStatsClient):
         checksum = self._get_checksum(event_or_list)
         next=urllib.parse.quote(next)
         
-        return AppUrl().get(subdomain) + "/r?checksum="+checksum+"&event="+event_or_list+"&next="+next
+        return AppUrl().get_current(request) + "/r?checksum="+checksum+"&event="+event_or_list+"&next="+next
     
     
     def _incr_platform(self, event, count=1, rate=1):

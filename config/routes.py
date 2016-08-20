@@ -142,15 +142,15 @@ class DocRule(Rule):
     
     def to_dict(self):
         ret = {
-                    "route" : self.rule,
-                    "subdomain" : self.subdomain,
-                    "methods" : [m for m in self.methods if m != "HEAD"],#filter HEAD methods, added automatically
-                    "endpoint" : self.endpoint,
-                    "parameters" : self.parameters,
-                    "comment" : self.comment,
-                    "return" : self.return_data,
-                    "not_implemented" : self.not_implemented
-                }
+                "route" : self.rule,
+                "subdomain" : self.subdomain,
+                "methods" : [m for m in self.methods if m != "HEAD"],#filter HEAD methods, added automatically
+                "endpoint" : self.endpoint,
+                "parameters" : self.parameters,
+                "comment" : self.comment,
+                "return" : self.return_data,
+                "not_implemented" : self.not_implemented
+            }
         
         if self.comment:
             ret["comment"] = self.comment
