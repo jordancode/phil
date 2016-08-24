@@ -40,4 +40,4 @@ class AppUrl:
         if Environment.get() == "PROD":
             return cls.get( "email", "email", include_protocol)
         else:
-            return cls.get("email", include_protocol)
+            return cls.get("email", include_protocol=include_protocol)
