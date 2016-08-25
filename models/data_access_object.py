@@ -52,7 +52,8 @@ class DataAccessObject(metaclass=ABCMeta):
         
     
     def remove_from_cache(self, id):
-        del self._model_cache[id]
+        if id in self._model_cache:
+            del self._model_cache[id]
         
     
     #this is a property so it can be overriden
