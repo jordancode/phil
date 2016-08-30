@@ -1,3 +1,4 @@
+from framework.config.config import Config
 class StringUtils:
     @staticmethod
     def is_valid_name(full_name):
@@ -43,5 +44,23 @@ class StringUtils:
         
                 
         return True
+    
+    
+    @staticmethod
+    def is_male_name(full_name):
         
+        MALE_TITLES=["MR","MR.", "SR", "SR."]
+        male_names = Config.get("names", "male_name_list")
+        
+        split_name = full_name.split()
+        split_name = [n.strip() for n in split_name if n.strip()]
+        
+        if not len(split_name):
+            return False
+        
+        first_name =split_name[0].upper()
+        if first_name in MALE_TITLES or first_name in male_names:
+            return True
+        
+        return False
         
