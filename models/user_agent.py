@@ -29,8 +29,10 @@ class UserAgent(Entity):
     
     @property
     def is_native(self):
+        legacy_android_native = (self.string.find("Android") >=0 and self.string.find("Mozilla") < 0)
+        
         #override to look for 
-        return False       
+        return self.string.find("PhotoKeeper/") >= 0 or legacy_android_native
     
     @property
     def is_iOS(self):
