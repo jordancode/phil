@@ -23,7 +23,6 @@ class PermissionManager:
         return self.verify_permissions(cls_, id_list, PermissionsMask(read=True))
     
     def verify_permissions(self, cls_, id_list, permissions_mask = PermissionsMask(read=True)):
-        
         #make sure we have an iteractable type
         assert issubclass(cls_,Interactable)
         
@@ -37,14 +36,37 @@ class PermissionManager:
             #verify ownership rows exist
             raise PermissionsError()
         
-        if len(uhx_objs) < len(id_list):
-            raise PermissionsError()
-        
         for uhx in uhx_objs:
             if not uhx.permission.has_mask(permissions_mask):
                 #verify permissions
                 raise PermissionsError()
         
-        
-        
         return uhx_objs
+    
+    
+    def filter_permissions(self, cls_, id_list, permissions_mask = PermissionsMask(read=True)):
+
+            
+        #make sure we have an iteractable type
+        assert issubclass(cls_,Interactable)
+        
+        #filter unique ids
+        id_list=list(set(id_list))
+        
+    
+        dao = cls_.getUserHasDAO()
+        dao.return_deleted=True
+        uhx_objs = dao.get_list(self._logged_in_user.id, id_list)
+
+        
+        if len(uhx_objs) < len(id_list):
+            raise PermissionsError()
+        
+        ret = []
+        
+        for uhx in uhx_objs:
+            if not uhx.deleted and uhx.permission.has_mask(permissions_mask):
+                ret.append(uhx)
+        
+        return ret
+        
