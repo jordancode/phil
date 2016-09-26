@@ -47,6 +47,8 @@ class Entity(Serializeable):
 
     def set_deleted(self):
         self._deleted = True
+        if "modified_ts" in self._current_state or "modified_ts" in self._stored_state:
+            self._current_state["modified_ts"]=datetime.datetime.now()
 
     def _recursive_to_dict(self, seen_refs, stringify_ids, optional_keys=None):
         d = super()._recursive_to_dict(seen_refs, stringify_ids, optional_keys=optional_keys)

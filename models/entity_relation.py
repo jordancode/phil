@@ -7,6 +7,7 @@ from framework.utils.associative_array import SORT_HI_TO_LO
 from framework.utils.id import BadIdError
 from framework.utils.multi_shard_query import MultiShardQuery
 from framework.utils.query_builder import SQLQueryBuilder, And
+import datetime
 
 
 class EntityRelation(Entity):
@@ -225,6 +226,7 @@ class EntityRelationDAO(framework.models.data_access_object.DataAccessObject):
         #try to nullify sort_index so we can later re-add
         try:
             model.sort_index = None
+            model.modeified_ts = datetime.datetime.now()
         except (AttributeError, ValueError):
             pass
         
