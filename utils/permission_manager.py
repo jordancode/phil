@@ -14,13 +14,13 @@ class PermissionManager:
     
     
     def verify_can_read(self, cls_, id_list):
-        return self.verify_permissions(cls_, id_list, PermissionsMask(write=True))
+        return self.verify_permissions(cls_, id_list, PermissionsMask(read=True))
     
     def verify_is_owner(self, cls_, id_list):
         return self.verify_permissions(cls_, id_list, PermissionsMask(owner=True))
     
     def verify_can_write(self, cls_, id_list):
-        return self.verify_permissions(cls_, id_list, PermissionsMask(read=True))
+        return self.verify_permissions(cls_, id_list, PermissionsMask(write=True))
     
     def verify_permissions(self, cls_, id_list, permissions_mask = PermissionsMask(read=True)):
         #make sure we have an iteractable type
