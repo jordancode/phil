@@ -558,6 +558,7 @@ class MySQLConnectionPool():
         
     
     def _init_connection(self):
+        print(" OPEN CONNECTION TO SHARD: ")
         conn = mysql.connector.connect(
                 user=self._config["user"], 
                 password=self._config["pass"],
