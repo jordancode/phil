@@ -30,10 +30,13 @@ class ClassLoader:
         
         for type_id, dict in self._map.items():
             module = importlib.import_module(dict["module"])
-            class_to_check = getattr(module, dict["class"])
-            
-            if class_to_check == class_ or issubclass(class_, class_to_check):    
-                return int(type_id)
+            try:    
+                class_to_check = getattr(module, dict["class"])
+                
+                if class_to_check == class_ or issubclass(class_, class_to_check):    
+                    return int(type_id)
+            except AttributeError:
+                pass
            
         raise InvalidTypeError(type_id, self._config_name)
     
