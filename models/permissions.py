@@ -50,7 +50,7 @@ class Permissions:
 
         return True
 
-    def _recursive_to_dict(self, seen_refs, serialize_ids=False, optional_keys=None):
+    def _recursive_to_dict(self, seen_refs, serialize_ids=False, optional_keys=None, for_api=False):
         return self.to_bitmap()
 
     def to_bitmap(self):

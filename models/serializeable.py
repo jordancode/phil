@@ -17,7 +17,7 @@ class Serializeable(metaclass=ABCMeta):
         return None
 
     @classmethod
-    def get_definition_for_keys(cls, optional_keys=None):
+    def get_definition_for_keys(cls, optional_keys=None,for_api=False):
         # returns the required definition plus
         # any optional keys in the "optional_keys" array/dict
 
@@ -30,7 +30,7 @@ class Serializeable(metaclass=ABCMeta):
 
         ret = {}
         for key, attr in defn.items():
-            if attr.is_required() or key in key_dict:
+            if attr.is_required() or (for_api and attr.is_required_for_api()) or key in key_dict:
                 ret[key] = attr
 
         return ret
@@ -56,12 +56,12 @@ class Serializeable(metaclass=ABCMeta):
 
         return []
 
-    def to_dict(self, stringify_ids=False, optional_keys=None):
-        d = self._recursive_to_dict([], stringify_ids, optional_keys)
+    def to_dict(self, stringify_ids=False, optional_keys=None, for_api=False):
+        d = self._recursive_to_dict([], stringify_ids, optional_keys, for_api)
 
         return d
 
-    def _recursive_to_dict(self, seen_refs, stringify_ids, optional_keys=None):
+    def _recursive_to_dict(self, seen_refs, stringify_ids, optional_keys=None, for_api=False):
         # if we have a circular reference, then simply exit
         if self in seen_refs:
             raise CircularRefException()
@@ -72,9 +72,9 @@ class Serializeable(metaclass=ABCMeta):
             "object": self.__class__.__name__
         }
 
-        defn = self.get_definition_for_keys(optional_keys)
+        defn = self.get_definition_for_keys(optional_keys,for_api)
 
-        for key in self._get_keys(optional_keys):
+        for key in self._get_keys(optional_keys,for_api):
             if not self._include_key(key, defn):
                 continue
 
@@ -87,7 +87,7 @@ class Serializeable(metaclass=ABCMeta):
                 value = self._get_attr(key)
 
             try:
-                dict = value._recursive_to_dict(copy.copy(seen_refs), stringify_ids, optional_keys)
+                dict = value._recursive_to_dict(copy.copy(seen_refs), stringify_ids, optional_keys, for_api)
                 state[key] = dict
             except AttributeError:
                 new_value = value
@@ -124,9 +124,9 @@ class Serializeable(metaclass=ABCMeta):
 
         return value
 
-    def _get_keys(self, opitional_keys = None):
+    def _get_keys(self, opitional_keys = None,for_api=False):
         if self._() is not None:
-            return self.get_definition_for_keys(opitional_keys)
+            return self.get_definition_for_keys(opitional_keys,for_api)
         return []
 
     def _get_attr(self, key):

@@ -11,7 +11,7 @@ class JSONUtils:
             #stringifies otherwise non-json nodes
             try:
                 value.set_context(context)
-                return value.to_dict(True, optional_keys)
+                return value.to_dict(True, optional_keys, for_api=True)
             except AttributeError:
                 pass
             

@@ -50,8 +50,8 @@ class Entity(Serializeable):
         if "modified_ts" in self._current_state or "modified_ts" in self._stored_state:
             self._current_state["modified_ts"]=datetime.datetime.now()
 
-    def _recursive_to_dict(self, seen_refs, stringify_ids, optional_keys=None):
-        d = super()._recursive_to_dict(seen_refs, stringify_ids, optional_keys=optional_keys)
+    def _recursive_to_dict(self, seen_refs, stringify_ids, optional_keys=None, for_api=False):
+        d = super()._recursive_to_dict(seen_refs, stringify_ids, optional_keys=optional_keys,for_api=for_api)
         d["deleted"] = self.deleted
 
         return d
@@ -73,9 +73,9 @@ class Entity(Serializeable):
 
         return dirty_keys
 
-    def _get_keys(self, opitional_keys = None):
+    def _get_keys(self, opitional_keys = None,for_api=False):
         ret = set().union(self._stored_state.keys(), self._current_state.keys())
-        defn =  self.get_definition_for_keys(opitional_keys)
+        defn =  self.get_definition_for_keys(opitional_keys,for_api)
         if defn:
             ret = set().union(defn.keys(), ret)
         return ret

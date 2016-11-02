@@ -32,8 +32,8 @@ class EntityRelation(Entity):
     def id2(self):
         return self._get_attr(self._id2_name)
 
-    def to_dict(self, stringify_ids=False, optional_keys=None):
-        d = super().to_dict(stringify_ids, optional_keys)
+    def to_dict(self, stringify_ids=False, optional_keys=None,for_api=False):
+        d = super().to_dict(stringify_ids, optional_keys, for_api)
         if "id" in d:
             del (d["id"])
 
