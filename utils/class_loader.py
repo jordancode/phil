@@ -29,12 +29,13 @@ class ClassLoader:
     def get_type_id(self, class_):
         
         for type_id, dict in self._map.items():
-            if (dict["module"] == class_.__module__ and
-                    dict["class"] == class_.__name__):
-                
+            module = importlib.import_module(dict["module"])
+            class_to_check = getattr(module, dict["class"])
+            
+            if class_to_check == class_ or issubclass(class_, class_to_check):    
                 return int(type_id)
            
-        raise InvalidTypeError(type_id)
+        raise InvalidTypeError(type_id, self._config_name)
     
     
     def get_type_id_from_name(self, name):
