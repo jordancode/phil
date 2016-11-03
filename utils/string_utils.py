@@ -1,5 +1,7 @@
 from framework.config.config import Config
+
 class StringUtils:
+    
     @staticmethod
     def is_valid_name(full_name):
         if not isinstance(full_name,str):
@@ -17,13 +19,12 @@ class StringUtils:
                 return False
                 
         split_name = full_name.split()
-        
-        TITLES=["mr","mr.","ms","ms.","mrs", "mrs.", "sr", "sr.", "srta", "srta.", "sra", "sra."]
+
         
         if not len(split_name):
             return False
         
-        if split_name[0] in TITLES:
+        if StringUtils.has_title(full_name):
             split_name.pop(0)
 
             
@@ -60,6 +61,22 @@ class StringUtils:
         
         first_name =split_name[0].upper()
         if first_name in MALE_TITLES or first_name in male_names:
+            return True
+        
+        return False
+    
+    
+    @staticmethod
+    def has_title(full_name):
+        
+        full_name=full_name.strip()
+        full_name=full_name.lower()
+                
+        TITLES=[ "mr", "mr.","ms","ms.","mrs", "mrs.", "sr", "sr.", "srta", "srta.", "sra", "sra." ]
+        
+        split_name = full_name.split()
+        
+        if split_name[0] in TITLES:
             return True
         
         return False
