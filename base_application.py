@@ -14,7 +14,7 @@ from framework.http.batch_request import BatchRequest
 from framework.config.routes import BATCH_REQUEST_KEY
 
 class BaseApplication():
-    #
+    ##
     
     _rule=None
     
