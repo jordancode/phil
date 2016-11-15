@@ -20,7 +20,6 @@ class StatsTracker(TCPStatsClient):
     
     
     def _send(self, data):
-        return False
         
         try:
             super()._send(data)
