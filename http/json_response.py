@@ -18,8 +18,9 @@ class JSONResponse(BaseResponse,ETagResponseMixin,
     
     
     _success = True
+    _user = None
     
-    def __init__(self, data_dict=None, headers=None, status=200, optional_keys=None, caller=None):
+    def __init__(self, data_dict=None, headers=None, status=200, optional_keys=None, caller=None, user=None):
         if data_dict is None:
             data_dict = {}
             
@@ -33,6 +34,8 @@ class JSONResponse(BaseResponse,ETagResponseMixin,
         elif caller is not None and hasattr(caller, "meta") and "optional_keys" in caller.meta:
             self.set_optional_keys(caller.meta["optional_keys"])
         
+        
+        self._user = user
         
         super().__init__(None, status=status, headers=headers, content_type="text/json")
     
@@ -62,7 +65,7 @@ class JSONResponse(BaseResponse,ETagResponseMixin,
         response = None
         
         if self._data_dict is not None:
-            response = JSONUtils.dumps(self._data_dict, optional_keys=self._optional_keys)
+            response = JSONUtils.dumps(self._data_dict, optional_keys=self._optional_keys, context=self._user)
         
         self.set_data(response)
     
