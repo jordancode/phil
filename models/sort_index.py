@@ -2,6 +2,7 @@ import datetime
 
 from framework.storage.redis import Redis
 from framework.utils.date_utils import DateUtils
+import math
 
 
 class SortIndex:
@@ -28,6 +29,29 @@ class SortIndex:
     _incr = None
     _type = None
     
+    @classmethod
+    def get_between(cls, si1, si2, parent_id):
+        
+        #make sure si1,si2 are actually of type SortIndex (not ints)
+        to_order=[]
+        for si in [si1,si2]:
+            if not isinstance(si, SortIndex):
+                si = SortIndex(si)
+            to_order.append(si)
+        si1,si2=sorted(to_order, key=lambda si: si.get_value(), reverse=True)
+        
+        #create an average sort index
+        ret = SortIndex()
+        ret.set_time( math.floor( (si1.get_time() + si2.get_time()) / 2) )
+        ret.set_incr(cls.get_next_incr(parent_id))
+        
+        #if it's the same as an existing one, then throw an error
+        rv = ret.get_value()
+        if rv >= si1.get_value() or rv <= si2.get_value():
+            raise NoGapError()
+        
+        return ret
+        
 
     @classmethod
     def get_for_date(cls, parent_id, dt=None):
@@ -147,7 +171,7 @@ class SortIndex:
 
 class NoGapError(Exception):
     def __init__(self):
-        super().__init__()
+        super().__init__("No gap between sort indices")
 
 
 class BadSortIndexError(Exception):
