@@ -58,7 +58,7 @@ class WhereClause(metaclass=ABCMeta):
     
     def _build_node(self, node):
         if isinstance(node, WhereClause):
-            return paren(node.build(),True)
+            return paren(node.build())
         else:
             if self._backtick:
                 return do_backtick(str(node[0])) + " " + str(node[1]) + " " + str(node[2])
@@ -213,8 +213,9 @@ class SQLInsertQuery(IgnorableQuery, BaseSQLQuery):
             #if we are inserting multiple rows, need to collapse to strings
             if isinstance(values_arr[0], list):
                 values_arr = [paren(",".join(v)) for v in values_arr]
-            
-            s += paren(",".join(values_arr))
+                s += ",".join(values_arr)
+            else:
+                s += paren(",".join(values_arr))
             
             self._parts["values"] = s 
         
@@ -327,13 +328,6 @@ def do_backtick(col):
         
     return col
 
-def paren(col, force=False):
-    if force:
-        col = "("+col+")"
-    else:
-        if not col[0] == "(":
-            col = "(" + col
-        if not col[-1] == ")":
-            col = col + ")"
-        
+def paren(col):
+    col = "("+col+")"        
     return col
