@@ -14,6 +14,7 @@ class Type:
     FLOAT = "float"
     BOOL = "bool"
     STRING = "string"
+    ASCII = "ascii" #a string restricted to the ascii characters
     UNIXTIME = "unixtime"
     JSON = "json"
     BYTES = "bytes"
@@ -47,6 +48,11 @@ class Type:
                 if isinstance(value, bytes):
                     value = value.decode("utf-8")
                 return str(value)
+            elif dest_type == cls.ASCII:
+                if isinstance(value, str):
+                    value = value.encode("ascii","ignore")
+                return value.decode("ascii","ignore")
+                
             elif dest_type == cls.BOOL:
                 return value in cls.TRUTHY_VALUES
             elif dest_type == cls.UNIXTIME:
