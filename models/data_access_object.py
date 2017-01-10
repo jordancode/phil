@@ -17,7 +17,7 @@ class DataAccessObject(metaclass=ABCMeta):
     _model_cache = None
     _model_class = None
     
-    _return_deleted = False
+    return_deleted = False
     
     
     def __init__(self, model_class):
@@ -54,16 +54,7 @@ class DataAccessObject(metaclass=ABCMeta):
     def remove_from_cache(self, id):
         if id in self._model_cache:
             del self._model_cache[id]
-        
-    
-    #this is a property so it can be overriden
-    @property
-    def return_deleted(self):
-        return self._return_deleted
-    
-    @return_deleted.setter
-    def return_deleted(self, boolean):
-        self._return_deleted = boolean
+
     
     def _get(self, table_name, column_list, value_list, shard_by = None, order_by = None, count = None, offset = None):
         sql = (

@@ -17,6 +17,7 @@ from framework.storage.stats_tracker import StatsTracker
 
 
 class AuthDAO(framework.models.data_access_object.DataAccessObject):
+    
     def __init__(self):
         super().__init__(Authentication)
 
@@ -97,8 +98,6 @@ class AuthDAO(framework.models.data_access_object.DataAccessObject):
     def save_list(self, auth_list):
         for auth in auth_list:
             self.save(auth)
-
-        
     
     def _model_to_row(self, model):
         dict = super()._model_to_row(model)
@@ -107,7 +106,7 @@ class AuthDAO(framework.models.data_access_object.DataAccessObject):
         return dict
 
     def _row_to_model(self, row):
-        if row['deleted']:
+        if row['deleted'] and not self.return_deleted:
             raise framework.models.data_access_object.RowDeletedException()
 
         auth_class = self._type_id_to_class(row['provider_type'])
