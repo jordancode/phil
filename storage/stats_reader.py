@@ -25,14 +25,24 @@ class StatsReader:
     
     def get_sum(self, stat_name, start_ts, end_ts=None):
         series = self.get_series(stat_name, start_ts, end_ts)
-        pprint.pprint(series)
         
         return self._sum_series(series)
     
-    
-    def get_series(self, stat_name, start_ts, end_ts=None, interval=INTERVAL_1_MINUTE, func=FUNCTION_SUM):
-        url = self._get_renderer_url(stat_name, start_ts, end_ts, interval, func)
+    """
+        returns an array of arrays
+        [
+            [value0, unix_ts0],
+            [value1, unix_ts1],
+            ...
+        ]
+        
+    """
+    def get_series(self, stat_name, start_dt, end_dt=None, interval=INTERVAL_1_MINUTE, func=FUNCTION_SUM):
+        url = self._get_renderer_url(stat_name, start_dt, end_dt, interval, func)
         response = self._make_request(url)
+        if not len(response):
+            return []
+        
         return response[0]["datapoints"]
     
     
@@ -55,30 +65,33 @@ class StatsReader:
         return ret
     
     
-    def _get_renderer_url(self, stat_name, start_ts, end_ts=None, interval=INTERVAL_1_MINUTE, func=FUNCTION_SUM):
+    def _get_renderer_url(self, stat_name, start_dt, end_dt=None, interval=INTERVAL_1_MINUTE, func=FUNCTION_SUM):
         url = self._get_graphite_endpoint()
         
+        stat_name=stat_name+".count"
         url += "/render?"
         url += "target=summarize(" + stat_name + ',"' + str(interval) + 'second","' + func + '",true)'
-        url += "&from=" + str(DateUtils.datetime_to_unix(start_ts))
+        url += "&from=" + str(DateUtils.datetime_to_unix(start_dt))
         
-        if end_ts:
-            url += "&until=" + str(DateUtils.datetime_to_unix(end_ts))
+        if end_dt:
+            url += "&until=" + str(DateUtils.datetime_to_unix(end_dt))
         
         url += "&format=json"
         
         return url
     
-    def _make_request(self, url):
-        
-        #bit of a hack here, but get's admin pages to work by 
+    def _get_cookies(self):
+        #bit of a hack here, but gets admin pages to work by 
+        #passing a hard-coded session along with the request
         css=CookieSessionStore()
         cookies={
             css._get_cookie_name(): self._get_graphite_session_id(),
             css._get_token_cookie_name(): self._get_graphite_session_token()
         }
-        
-        response = requests.get(url,cookies=cookies)
+        return cookies
+    
+    def _make_request(self, url):
+        response = requests.get(url,cookies=self._get_cookies())
         
         return response.json()
         
