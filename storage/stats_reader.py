@@ -92,8 +92,10 @@ class StatsReader:
     
     def _make_request(self, url):
         response = requests.get(url,cookies=self._get_cookies())
-        
-        return response.json()
+        try:
+            return response.json()
+        except Exception as e:
+            return []
         
         
         
