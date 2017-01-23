@@ -52,7 +52,8 @@ class StringUtils:
     def suffix_integer(d):
         return 'th' if 11<=d<=13 else {1:'st',2:'nd',3:'rd'}.get(d%10, 'th')
     
-    def get_friendly_date_string(self, dt):
+    @staticmethod
+    def get_friendly_date_string(dt):
         today=datetime.datetime.now()
         ret = ""
         if dt.year != today.year:
