@@ -1,4 +1,6 @@
 from framework.config.config import Config
+import datetime
+import calendar
 
 class StringUtils:
     
@@ -45,6 +47,30 @@ class StringUtils:
         
                 
         return True
+    
+    @staticmethod
+    def suffix_integer(d):
+        return 'th' if 11<=d<=13 else {1:'st',2:'nd',3:'rd'}.get(d%10, 'th')
+    
+    def get_friendly_date_string(self, dt):
+        today=datetime.datetime.now()
+        ret = ""
+        if dt.year != today.year:
+            ret = str(dt.year)#1995
+        elif dt.month == today.month-1:
+            ret = "last month"
+        elif  dt.month != today.month:
+            ret = calendar.month_name[dt.month]#January
+        elif dt.day > today.day -7:
+            ret = calendar.day_name[dt.weekday()]#Thursday
+        elif dt.day > today.day -14:
+            ret = "last " + calendar.day_name[dt.weekday()]#last Thursday
+        elif dt.day != today.day:
+            ret = "earlier this month"
+        else:
+            ret = "today"
+        
+        return ret
     
     
     @staticmethod
