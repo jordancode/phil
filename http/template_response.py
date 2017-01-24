@@ -60,6 +60,7 @@ class TemplateResponse(BaseResponse,ETagResponseMixin,
             app_config = Config.get("app")
             host_type=self._host_type or "main"
             
+            app_config["host_type"] = host_type
             app_config["www_url"] = AppUrl.get("web", host_type)
             app_config["api_url"] = AppUrl.get("api", host_type)
             app_config["assets_url"] = AppUrl.get("assets", host_type)
