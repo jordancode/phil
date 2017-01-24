@@ -19,16 +19,19 @@ class TemplateResponse(BaseResponse,ETagResponseMixin,
     
     _template_name = None
     _template_data = None
+    _host_type=None
     
     _user = None
     
     
     
-    def __init__(self, template_name=None, template_data=None, user=None, headers=None):
+    def __init__(self, template_name=None, template_data=None, user=None, headers=None,host_type=None):
         
         self.set_template(template_name)
         self._user = user
+        self._host_type=host_type
         self.set_template_data(template_data)
+        
         
         super().__init__(None, status=200, headers=headers, content_type="text/html")
         
@@ -55,11 +58,12 @@ class TemplateResponse(BaseResponse,ETagResponseMixin,
         
         if not "config_" in ret:
             app_config = Config.get("app")
+            host_type=self._host_type or "main"
             
-            app_config["www_url"] = AppUrl.get("web")
-            app_config["api_url"] = AppUrl.get("api")
-            app_config["assets_url"] = AppUrl.get("assets")
-            app_config["admin_url"] = AppUrl.get("admin")
+            app_config["www_url"] = AppUrl.get("web", host_type)
+            app_config["api_url"] = AppUrl.get("api", host_type)
+            app_config["assets_url"] = AppUrl.get("assets", host_type)
+            app_config["admin_url"] = AppUrl.get("admin", host_type)
             
             ret['config_'] = {
                 "app" : app_config,
