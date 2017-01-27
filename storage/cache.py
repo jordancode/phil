@@ -3,7 +3,7 @@ from memcache import Client
 from framework.config.config import Config
 
 
-class Cache:
+class Cache(Client):
     
     _instance = None
     _client = None
@@ -20,20 +20,3 @@ class Cache:
             cls._instance = cls(servers)
             
         return cls._instance
-    
-    def __init__(self, servers, args = None):
-        
-        if args is not None:
-            self._client = Client(servers, **args)
-        else:
-            self._client = Client(servers)
-            
-    
-    def get(self, key):
-        return False
-    
-    def set(self,key,value, expire = None):
-        return None
-    
-    def expire(self,key, expire):
-        return False
