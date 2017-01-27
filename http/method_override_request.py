@@ -136,7 +136,7 @@ class MethodOverrideRequest(Request):
         if key in dictionary:
             try:
                 ret = list(json.loads(dictionary[key]))
-            except (TypeError, ValueError):
+            except (TypeError, ValueError, IndexError):
                 ret = dictionary.getlist(key)
             
         else:
