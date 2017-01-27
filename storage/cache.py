@@ -17,6 +17,6 @@ class Cache(Client):
                   Config.get("memcache", "servers")
               )
             
-            cls._instance = cls(servers)
+            cls._instance = cls(servers,pickleProtocol=4)
             
         return cls._instance
