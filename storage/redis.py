@@ -27,9 +27,14 @@ class Redis(StrictRedis):
         
         db_number = dbs[db_name]
         
+        all_connection_config=Config.get("redis","connection")
+        if db_name in all_connection_config:
+            connection_config=all_connection_config[db_name]
+        else:
+            connection_config=all_connection_config["default"]
         
         if not db_number in cls._connection_pools:
-            cfg = copy(Config.get("redis","connection"))
+            cfg = copy(connection_config)
             cfg["db"] = db_number
             cls._connection_pools[db_number] = ConnectionPool(**cfg)
         
