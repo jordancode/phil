@@ -180,7 +180,7 @@ class AuthService:
         type_id = AuthDAO()._class_to_type_id(auth_class)
         auth_config = Config.get("auth",["type_to_class",str(type_id)])
         
-        StatsTracker().track("auth.log_in." + auth_config['name'])
+        StatsTracker(ua_string=user_agent).track("auth.log_in." + auth_config['name'])
         
         auth.after_login()
 
@@ -213,7 +213,7 @@ class AuthService:
         type_id = AuthDAO()._class_to_type_id(auth_class)
         auth_config = Config.get("auth",["type_to_class",str(type_id)])
         
-        StatsTracker().track("auth.connect." + auth_config['name'])
+        StatsTracker(ua_string=user_agent).track("auth.connect." + auth_config['name'])
 
         # can throw exceptions if these credentials don't work
         auth = dao.new_auth(auth_class, provider_id, secret, user, expires_ts)
@@ -274,7 +274,7 @@ class AuthService:
                 if not current_session or current_session.is_logged_out():
                     user = self.sign_up(user_data, user_agent_string=user_agent_string)
                     
-                    StatsTracker().track("auth.install." + auth_config['name'])
+                    StatsTracker(ua_string=user_agent_string).track("auth.install." + auth_config['name'])
                 else:
                     user = current_session.user
             
