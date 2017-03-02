@@ -30,7 +30,7 @@ class BatchRequest(MethodOverrideRequest):
         
     def get_sub_requests(self):
         
-        request_array = self.get_json_value("batch")
+        request_array = self.get_value("batch")
         host = werkzeug.wsgi.get_host(self.environ)
         
         ret = []
