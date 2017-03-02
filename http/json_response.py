@@ -68,6 +68,8 @@ class JSONResponse(BaseResponse,ETagResponseMixin,
             response = JSONUtils.dumps(self._data_dict, optional_keys=self._optional_keys, context=self._user)
         
         self.set_data(response)
+        
+        return response
     
     
     
