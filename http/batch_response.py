@@ -36,6 +36,8 @@ class BatchResponse(JSONResponse):
             if isinstance(resp, HTTPException):
                 resp = resp.get_response()
             
+            resp._update_response()
+            
             if isinstance(resp, JSONResponse):
                 self._data_dict["batch"].append(resp.get_data_dict())
             else:
