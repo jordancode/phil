@@ -19,7 +19,7 @@ class BatchRequest(MethodOverrideRequest):
         parameters = [
             {
                 "name" : "batch",
-                "type" : "dict",
+                "type" : "json",
                 "required" : True
             } 
         ]
