@@ -230,7 +230,7 @@ class AuthService:
         return session
     
     
-    def connect(self, auth_class, auth_response, current_session = None, user_agent_string = None):
+    def connect(self, auth_class, auth_response, current_session = None, user_agent_string = None, referrer=None):
         
         """
         service_type: 1-N the id of the auth service from auth.json
@@ -272,7 +272,7 @@ class AuthService:
                 
                 #--- STEP 3. Create a new user or use logged in one
                 if not current_session or current_session.is_logged_out():
-                    user = self.sign_up(user_data, user_agent_string=user_agent_string)
+                    user = self.sign_up(user_data, user_agent_string=user_agent_string,referrer=referrer)
                     
                     StatsTracker(ua_string=user_agent_string).track("auth.install." + auth_config['name'])
                 else:
@@ -300,7 +300,7 @@ class AuthService:
         return current_session
     
     
-    def sign_up(self, user_data, require_email = False, user_agent_string = None):
+    def sign_up(self, user_data, require_email = False, user_agent_string = None, referrer=None):
         
         #no user with this auth yet, let's create one
         has_email = ("email" in user_data)
@@ -319,7 +319,8 @@ class AuthService:
                                 user_data["name"],
                                 user_data["email"],
                                 True,
-                                user_agent_string
+                                user_agent_string,
+                                referrer
                             )
             else:
                 user = app.models.user.UserService().new_user(user_data["name"],None,False,user_agent_string)
