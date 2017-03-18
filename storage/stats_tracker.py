@@ -70,15 +70,27 @@ class StatsTracker(TCPStatsClient):
             return
         
         family = parse(self._ua_string).os.family
+        legacy_android_native = (self._ua_string.find("Android") >=0 and self._ua_string.find("Mozilla") < 0)
+        #override to look for 
+        is_native = self._ua_string.find("PhotoKeeper/") >= 0 or legacy_android_native
+        is_mobile=True
         
         if family == "Android":
-            event = event+"._android"
+            new_event = event+"._android"
         elif family == "iOS":
-            event = event+"._ios"
+            new_event = event+"._ios"
         else:
-            event = event+"._desktop"
+            new_event = event+"._desktop"
+            is_mobile=False
         
-        return super().incr(event, count, rate)
+        
+        super().incr(new_event, count, rate)
+        
+        if is_mobile:
+            if is_native:
+                super().incr(new_event+"_native", count, rate)
+            else:
+                super().incr(new_event+"_web", count, rate)
         
         
     def _pick_bucket(self, bucket_indicator, buckets):
