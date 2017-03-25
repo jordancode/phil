@@ -1,3 +1,5 @@
+import json
+import urllib.parse
 
 class URLUtils:
     
@@ -7,7 +9,13 @@ class URLUtils:
         param_arr=[]
         for k,v in query_params.items():
             if v is not None:
-                param_arr.append(str(k)+"="+str(v))
+                if isinstance(v, dict):
+                    v=json.dumps(v)
+                else:
+                    v=str(v)
+                v=urllib.parse.quote(v)
+                
+                param_arr.append(str(k)+"="+v)
         
         if not len(param_arr):
             return ""
