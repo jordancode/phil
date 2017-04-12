@@ -76,7 +76,7 @@ class TemplateResponse(BaseResponse,ETagResponseMixin,
              }
             
             if isinstance(self._user, Entity):
-                ret["user_"] =self._user.to_dict(True)
+                ret["user_"] =self._user.to_dict(True,optional_keys=["email"])
                 ret["user_json_"] =json.dumps(ret["user_"], default=self._json_helper)
         
         return ret
