@@ -320,10 +320,12 @@ class AuthService:
                                 user_data["email"],
                                 True,
                                 user_agent_string,
-                                referrer
+                                referrer,
+                                user_data.get("language")
                             )
             else:
-                user = app.models.user.UserService().new_user(user_data["name"],None,False,user_agent_string)
+                user = app.models.user.UserService().new_user(user_data["name"],None,False,user_agent_string, None, user_data.get("language"))
+            
             
         except app.models.user_alias.AliasTakenError as e:
             logging.getLogger().warn("Email address already in use. Could be a preemptive sign up attack.")
