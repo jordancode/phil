@@ -23,7 +23,7 @@ class StringUtils:
         split_name = full_name.split()
 
         
-        if not len(split_name):
+        if not len(split_name) > 1:
             return False
         
         if StringUtils.has_title(full_name):
