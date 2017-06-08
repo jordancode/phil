@@ -185,7 +185,7 @@ class MethodOverrideRequest(Request):
             elif type == "unixtime":
                 #cast to float from string then to int to remove decimal 
                 return DateUtils.unix_to_datetime(int(float(value)))
-            elif type == "json":
+            elif type == "json" or type == "dict":
                 if isinstance(value,list) or isinstance(value, dict):
                     return value #return already parsed JSON
                 
