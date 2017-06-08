@@ -10,12 +10,18 @@ import copy
 class S3(tinys3.Connection):
     
     def __init__(self, temp_bucket=False):
+        key_whitelist=["access_key", "secret_key", "default_bucket", "tls", "endpoint"]
+        
         config = copy.deepcopy(Config.get("s3"))
         if temp_bucket:
             config["default_bucket"] = config["temp_bucket"]
         
-        if "temp_bucket" in config:
-            del config["temp_bucket"]
+        config_keys=config.keys()
+        for key in config_keys:
+            if key not in key_whitelist:
+                del config[key]
+            
+        
         
         super().__init__(**config)
         
