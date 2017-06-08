@@ -12,18 +12,21 @@ class S3(tinys3.Connection):
     def __init__(self, temp_bucket=False):
         key_whitelist=["access_key", "secret_key", "default_bucket", "tls", "endpoint"]
         
-        config = copy.deepcopy(Config.get("s3"))
+        config = Config.get("s3")
+        temp_config={}
+
+        
         if temp_bucket:
-            config["default_bucket"] = config["temp_bucket"]
+            temp_config["default_bucket"] = config["temp_bucket"]
+        else:
+            temp_config["default_bucket"] = config["default_bucket"]
         
-        config_keys=config.keys()
-        for key in config_keys:
-            if key not in key_whitelist:
-                del config[key]
-            
+        #copy over remaining keys
+        for key in key_whitelist:
+            if key in config and key not in temp_config:
+                temp_config[key] = config[key]
         
-        
-        super().__init__(**config)
+        super().__init__(**temp_config)
         
         
     def get(self, key, bucket=None, headers=None):
