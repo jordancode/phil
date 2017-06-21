@@ -29,11 +29,14 @@ class AppUrl:
             return full_host
     
     @classmethod
-    def get_current(cls, request, include_protocol=True):
+    def get_current(cls, request, subdomain_type=None, include_protocol=True):
         if not request:
             return cls.get(include_protocol=include_protocol)
         
-        return cls.get(request.get_subdomain(), request.get_host(), include_protocol)
+        if not subdomain_type:
+            subdomain_type=request.get_subdomain()
+        
+        return cls.get(subdomain_type, request.get_host(), include_protocol)
     
     @classmethod
     def get_email(cls, include_protocol=True):
