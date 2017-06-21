@@ -7,7 +7,7 @@ from app.utils.constants import ROOT_PATH
 
 class Config:
     """
-        used for reading json config files
+        Used for reading json config files
     """
     
     _config_cache = {}
