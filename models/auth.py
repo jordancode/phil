@@ -12,6 +12,7 @@ from framework.config.config import Config
 from werkzeug.exceptions import Unauthorized
 from framework.utils.list_utils import ListUtils
 from framework.storage.stats_tracker import StatsTracker
+from framework.utils.query_builder import SQLQueryBuilder, And
 
 
 
@@ -65,16 +66,29 @@ class AuthDAO(framework.models.data_access_object.DataAccessObject):
 
         return auth
 
-    def get_auth_for_user(self, user_id, auth_class=None):
+    def get_auth_for_user(self, user_id, auth_classes=None):
 
-        cols = ["user_id"]
+        where_clause = And([("user_id","=","%s")])
         vals = [user_id]
-        if auth_class is not None:
-            auth_type = self._class_to_type_id(auth_class)
-            cols.append("provider_type")
-            vals.append(auth_type)
-
-        rows = self._get("auth_lookup", cols, vals, user_id)
+        
+        
+        qb=SQLQueryBuilder.select("auth_lookup", backtick=False)
+        
+        if auth_classes is not None:
+            if isinstance(auth_classes,type):
+                auth_classes=[auth_classes]
+            
+            esses=[]
+            for auth_class in auth_classes:
+                auth_type = self._class_to_type_id(auth_class)
+            
+                vals.append(auth_type)
+                esses.append("%s")
+            
+            where_clause.append(("provider_type", "IN", "(" + ",".join(esses) + ")"))
+        
+        qb=qb.where(where_clause)
+        rows=MySQL.get(user_id).query(qb.build(),vals)
         rows = self._filter_deleted(rows)
 
         return [self._row_to_model(row) for row in rows]

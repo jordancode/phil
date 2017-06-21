@@ -12,7 +12,7 @@ class Authentication(Entity):
     """
     
     @classmethod
-    def get_api_class(cls):
+    def get_api_obj(cls, *args, **kwargs):
         return None
     
     @classmethod
@@ -130,9 +130,9 @@ class Authentication(Entity):
         return False
     
     def get_api(self):
-        api_cls = self.get_api_class()
-        if api_cls is not None:
-            return api_cls().get_for_user(self.credentials)
+        api_obj = self.get_api_obj()
+        if api_obj is not None:
+            return api_obj.get_for_user(self.credentials)
         return None
     
     def after_login(self):
