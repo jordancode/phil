@@ -48,5 +48,5 @@ class AppUrl:
     
     @classmethod
     def get_current_cookie_domain(cls, request):
-        return "." + cls.get_current(request,include_protocol=False)
+        return "." + cls.get_current(request,subdomain_type="",include_protocol=False)
         
