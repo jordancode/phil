@@ -62,7 +62,7 @@ class BaseApplication():
     
     def get_session_store(self,request):
         #override if want to store session id's another way on the client
-        return framework.http.cookie_session_store.CookieSessionStore()
+        return framework.http.cookie_session_store.CookieSessionStore(request)
     
     
     def call_controller(self, request, rule, args):

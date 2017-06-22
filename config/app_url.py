@@ -33,7 +33,7 @@ class AppUrl:
         if not request:
             return cls.get(include_protocol=include_protocol)
         
-        if not subdomain_type:
+        if subdomain_type is None:
             subdomain_type=request.get_subdomain()
         
         return cls.get(subdomain_type, request.get_host(), include_protocol)
@@ -44,4 +44,9 @@ class AppUrl:
             return cls.get( "email", "email", include_protocol)
         else:
             return cls.get("email", include_protocol=include_protocol)
+    
+    
+    @classmethod
+    def get_current_cookie_domain(cls, request):
+        return "." + cls.get_current(include_protocol=False)
         

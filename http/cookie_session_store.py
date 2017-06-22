@@ -3,6 +3,7 @@ from framework.config.config import Config
 from framework.http.base_session_store import BaseSessionStore
 import logging
 import datetime
+from framework.config.app_url import AppUrl
 
 
 class CookieSessionStore(BaseSessionStore):
@@ -11,6 +12,11 @@ class CookieSessionStore(BaseSessionStore):
     
     
     _session=None
+    _request=None
+    
+    def __init__(self, request=None):
+        self._request=request
+    
     
     def _get_cookie_name(self):
         app_name = Config.get("app","app_key")
@@ -23,7 +29,10 @@ class CookieSessionStore(BaseSessionStore):
         return app_name + "_s_t"   
     
     def _get_cookie_domain(self):
-        server_name = Config.get("app",["hosts", "main", "server_name"])
+        if self._request:
+            server_name=AppUrl.get_current_cookie_domain(self._request)
+        else:
+            server_name = Config.get("app",["hosts", "main", "server_name"])
         return "." + server_name
     
     def set_session(self, response, session):
