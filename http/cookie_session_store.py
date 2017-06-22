@@ -32,8 +32,8 @@ class CookieSessionStore(BaseSessionStore):
         if self._request:
             server_name=AppUrl.get_current_cookie_domain(self._request)
         else:
-            server_name = Config.get("app",["hosts", "main", "server_name"])
-        return "." + server_name
+            server_name="."+Config.get("app",["hosts", "main", "server_name"])
+        return server_name
     
     def set_session(self, response, session):
         
