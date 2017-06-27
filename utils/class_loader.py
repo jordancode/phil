@@ -26,20 +26,37 @@ class ClassLoader:
         return class_
     
     
-    def get_type_id(self, class_):
+    def get_type_id(self, class_, check_subclass=True):
+        #do exact match first
+        type_id=self._search_for_class_match_type_id(class_, False)
         
+        if type_id is None and check_subclass:
+            type_id=self._search_for_class_match_type_id(class_, True)
+        
+        if type_id is not None:
+            return type_id
+           
+        raise InvalidTypeError(type_id, self._config_name)
+    
+    
+    def _search_for_class_match_type_id(self, class_, check_subclass=True):
+        #first check if class exists
         for type_id, dict in self._map.items():
             module = importlib.import_module(dict["module"])
             try:    
                 class_to_check = getattr(module, dict["class"])
                 
-                if class_to_check == class_ or issubclass(class_, class_to_check):    
+                if class_to_check == class_:    
                     return int(type_id)
+                
+                if check_subclass and issubclass(class_, class_to_check):
+                    return int(type_id)
+                
             except AttributeError:
                 pass
-           
-        raise InvalidTypeError(type_id, self._config_name)
-    
+        
+        return None
+        
     
     def get_type_id_from_name(self, name):
         for type_id, dict in self._map.items():
