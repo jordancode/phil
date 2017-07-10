@@ -24,7 +24,7 @@ class TemplateResponse(BaseResponse,ETagResponseMixin,
     _user = None
     
     
-    
+     
     def __init__(self, template_name=None, template_data=None, user=None, headers=None,host_type=None):
         
         self.set_template(template_name)
@@ -82,8 +82,10 @@ class TemplateResponse(BaseResponse,ETagResponseMixin,
         return ret
     
     def _render_template(self, template_name, template_data = None, partials = None):
+        
+        
             
-        r = Renderer(search_dirs=[ROOT_PATH+"/static/template/"],partials=partials)
+        r = Renderer(search_dirs=[self._get_template_directory()],partials=partials)
         
         template_data = self._add_in_default_data(template_data)
         
@@ -91,9 +93,17 @@ class TemplateResponse(BaseResponse,ETagResponseMixin,
         return r.render_name(template_name, template_data)
 
     def _fetch_template(self, template_name):
-        loader = Loader(search_dirs=[ROOT_PATH+"/static/template/"])
+        loader = Loader(search_dirs=[self._get_template_directory()])
         
         return loader.load_name(template_name)
+    
+    def _get_template_directory(self):
+        path=ROOT_PATH+"/static"
+        if self._host_type and self._host_type != "main":
+            path += "/"+self._host_type
+        path+="/template/"
+        
+        return path
     
     def _update_response(self):
         self.set_data(self._render_template(self._template_name, self._template_data))
