@@ -3,14 +3,17 @@ from framework.config.environment import Environment
 
 class AppUrl:
     
-    @staticmethod
-    def get( subdomain_type = "web", host_type = "main", include_protocol = True):
+    @classmethod
+    def get(cls, subdomain_type = "web", host_type = "main", include_protocol = True):
         
         config = Config.get("app", ["hosts", host_type]) 
-        
-        proto = config.get("default_protocol")
-        subdomain = config.get("subdomains").get(subdomain_type)
         host = config.get("server_name")
+        
+        alias_config=cls._get_alias_config(config)
+        
+        proto = alias_config.get("default_protocol")
+        subdomain = alias_config.get("subdomains").get(subdomain_type)
+        
         
         if subdomain is not None:
             if subdomain: 
@@ -49,4 +52,11 @@ class AppUrl:
     @classmethod
     def get_current_cookie_domain(cls, request):
         return "." + cls.get_current(request,subdomain_type="",include_protocol=False)
-        
+    
+    
+    @classmethod
+    def _get_alias_config(cls, config):
+        if config.get("host_alias"):
+            return Config.get("app", ["hosts", config['host_alias']])
+        else:
+            return config
