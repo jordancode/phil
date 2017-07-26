@@ -161,5 +161,5 @@ class DocRule(Rule):
         if self.not_implemented:
             ret["not_implemented"] = True
         
-        
         return ret
+    
