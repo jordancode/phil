@@ -31,8 +31,8 @@ class UserAgent(Entity):
     def is_native(self):
         
         native_user_agent_strings=[
-            "PhotoKeeper"
-            "Photo Keeper"
+            "PhotoKeeper",
+            "Photo Keeper",
             "Photo Backup",
             "Dalvik"
         ]
