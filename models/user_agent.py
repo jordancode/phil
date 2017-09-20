@@ -34,7 +34,7 @@ class UserAgent(Entity):
             "PhotoKeeper"
             "Photo Keeper"
             "Photo Backup",
-            "Delvik"
+            "Dalvik"
         ]
         for ua_str in native_user_agent_strings:
             if self.string.find(ua_str) == 0:
