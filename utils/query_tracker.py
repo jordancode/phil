@@ -4,6 +4,12 @@ import pprint
 
 class QueryTracker():
     
+    """
+        Debug utility for keeping track of MySQL queries made over the course of a
+        web request and how long they took. 
+    """
+    
+    
     _stack = []
     _on = False
     

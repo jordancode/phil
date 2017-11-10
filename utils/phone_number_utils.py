@@ -4,6 +4,9 @@ class PhoneNumberUtils:
     
     @staticmethod
     def is_valid_phone_number(input_str):
+        """
+            Returns true if a string could represent a phone number 
+        """
         input_str=input_str.replace(" ", "")
         input_str=input_str.lower()
         
@@ -29,5 +32,8 @@ class PhoneNumberUtils:
     
     @staticmethod
     def get_digits_only(phone_number_string):
+        """
+            Returns only numerical characters in a phone number string 
+        """
         return  "".join([c for c in phone_number_string if c.isdigit()])
         

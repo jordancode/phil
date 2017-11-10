@@ -6,7 +6,10 @@ class MediaResponse(BaseResponse,ETagResponseMixin,
                CommonResponseDescriptorsMixin,
                WWWAuthenticateMixin):
     
-    
+    """
+        Generic response for non-text content
+        
+    """
     
     
     

@@ -7,6 +7,21 @@ from framework.models.permissions import PermissionsMask,\
 
 class PermissionManager:
     
+    """
+        This will verify a that the logged in user has access to a list of ids.
+        It's useful for things where a list of objects are all modified or selected
+        
+        If you use the "verify" methods, and the logged in user doesn't have
+        the required permission, it'll return a PermissionsError.
+        
+        If you use the "filter" method, it will return all user_has_* objects
+        that satisfy the permissions requirements
+        
+        cls_ needs to be a subclass of Interactable this is because Interactables 
+        have corresponding UserHas* which contain the permissions object 
+        
+    """
+    
     _logged_in_user = None
     
     def __init__(self, logged_in_user):
@@ -32,7 +47,9 @@ class PermissionManager:
         try:
             dao = cls_.getUserHasDAO()
             uhx_objs = dao.get_list(self._logged_in_user.id, id_list)
-        except (framework.models.data_access_object.RowDeletedException, framework.models.data_access_object.RowNotFoundException):
+        except( framework.models.data_access_object.RowDeletedException, 
+            framework.models.data_access_object.RowNotFoundException ):
+            
             #verify ownership rows exist
             raise PermissionsError()
         
@@ -49,19 +66,16 @@ class PermissionManager:
     
     def filter_permissions(self, cls_, id_list, permissions_mask = PermissionsMask(read=True)):
 
-            
         #make sure we have an iteractable type
         assert issubclass(cls_,Interactable)
         
         #filter unique ids
         id_list=list(set(id_list))
         
-    
         dao = cls_.getUserHasDAO()
         dao.return_deleted=True
         uhx_objs = dao.get_list(self._logged_in_user.id, id_list)
 
-        
         if len(uhx_objs) < len(id_list):
             raise PermissionsError()
         

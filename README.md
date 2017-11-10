@@ -1,8 +1,5 @@
 # phil
-## Opinionated Web Phramework for Python
-
-
-### [Project is still under construction]
+## Web Phramework for Python
 
 
 This project contains bolierplate, structure, and integrations for python web projects that use the following stack:
@@ -17,7 +14,7 @@ This project contains bolierplate, structure, and integrations for python web pr
 *The goal of this project is not to make a flexible web framework that works for most people, but rather, to create a framework that saves a lot of time for people who agree that this exact technology stack is reasonable for their needs.*
 
 ### Features:
-- Encourages use of DAOs instead of an ORM (I like to write my own queries thank you)
+- Encourages use of DAOs instead of an ORM
 - Borrows concepts from DDD and splits the model layer into 3 sub-layers: Domain, Data Access, and Services
 - Uses logic-less Mustache templates. This provides 2 advantages: 
   1. All data must be computed before reaching the view (ensures sanity)

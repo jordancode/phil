@@ -12,6 +12,21 @@ from mysql.connector.pooling import CONNECTION_POOL_LOCK
 
 
 class MySQL:
+    """
+        This defines a multi-sharded framework for MySQL.
+        Sharding rules are defined in the Id class.
+        
+        mysql.config defines the mapping between virtual and physical shards
+        and pool groupings.
+        
+        A pool is a vertical partition
+        A shard is a horizontal partition
+        
+        pools have shards
+        
+        shard_id is an int between 0 and num_shards
+        pool_id is an int betweeen 0 and num_pools
+    """
     
     _pools = None
     _conn_mgr = None

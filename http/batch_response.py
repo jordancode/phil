@@ -6,6 +6,11 @@ import json
 
 class BatchResponse(JSONResponse):
     
+    """
+        A response object that works with BatchRequest 
+        It returns JSON with one key "batch" which contains a list of JSON response objects
+    """
+    
     _sub_responses = None
     
     def __init__(self, sub_responses):
@@ -35,7 +40,6 @@ class BatchResponse(JSONResponse):
             # use the response version
             if isinstance(resp, HTTPException):
                 resp = resp.get_response()
-            
             
             
             if isinstance(resp, JSONResponse):

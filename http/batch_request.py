@@ -7,6 +7,12 @@ import pprint
 from framework.config.config import Config
 
 class BatchRequest(MethodOverrideRequest):
+    """
+        This will handle an array of requests in one API call
+        The requests get exectued in the order that they are received.
+        An array of response is returned to the user 
+        
+    """
     
     def __init__(self, environ, routes):
         super().__init__(environ)

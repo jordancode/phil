@@ -8,6 +8,15 @@ from framework.config.app_url import AppUrl
 
 class CookieSessionStore(BaseSessionStore):
     
+    """
+        Manages the storing and retrieval of user sessions to a cookie
+        If you'd rather save the session in an auth token ( for native fore example)
+        can extend BaseSessionStore with a class that handles sessions that way
+        
+        request is a Werkzeug request object
+    """
+    
+    
     COOKIE_MAX_AGE=630720000
     
     

@@ -16,6 +16,17 @@ class JSONResponse(BaseResponse,ETagResponseMixin,
                CommonResponseDescriptorsMixin,
                WWWAuthenticateMixin):
     
+    """
+        HTML response for the JSON api.
+        
+        Every response has a few standard keys in it
+        "success" : True or False, did it work?
+        "now_ts" : server time,
+        "v" : current server version,
+        "min_v" : required client version
+        
+    
+    """
     
     _success = True
     _user = None

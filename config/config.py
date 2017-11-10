@@ -8,6 +8,21 @@ from app.utils.constants import ROOT_PATH
 class Config:
     """
         Used for reading json config files
+        
+        usage:
+        
+        Config.get(file name, key path)
+        
+        assume we have a file named "test_config.json" with values
+        {
+            "key1" : {
+                "key2" : "value"
+            }
+        }
+        
+        to retrieve value you would call:
+        Config.get("test_config",["key1","key2"])
+        
     """
     
     _config_cache = {}

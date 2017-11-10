@@ -17,6 +17,15 @@ class HTMLResponse(BaseResponse,ETagResponseMixin,
                CommonResponseDescriptorsMixin,
                WWWAuthenticateMixin):
     
+    """
+        Pulls a static html page and returns it. If you want to render
+        a mustache template with dynamic content, use TemplateResponse.
+        
+        This is really just used for things like the contact and about pages,
+        or 404, 503 error pages.
+    """
+    
+    
     _template_name = None
     _template_data = None
     

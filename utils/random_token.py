@@ -6,6 +6,13 @@ from framework.utils.id import Id
 
 
 class RandomToken:
+    """
+        The guessability of Id's can be an issue for security in some cases. However,
+        since we use id's to point to the shard that the data lives on, using
+        a hash can be an issue if we needd that data. This class solves that 
+        problem by generating a random string that also has shard data encoded.  
+    """
+    
     
     MIN_LENGTH = 8
     
@@ -39,7 +46,7 @@ class RandomToken:
         
         return cls.build(
                 length, 
-                id.get_shard_id(), 
+                id.get_shard_id(),
                 id.get_pool_id())
     
     

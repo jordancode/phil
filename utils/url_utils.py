@@ -5,7 +5,7 @@ class URLUtils:
     
     
     @staticmethod
-    def get_query_string(query_params):
+    def get_query_string(query_params, include_question_mark=True):
         param_arr=[]
         for k,v in query_params.items():
             if v is not None:
@@ -20,6 +20,11 @@ class URLUtils:
         if not len(param_arr):
             return ""
         
-        return "?" + "&".join(param_arr)
+        ret = "&".join(param_arr)
+        
+        if include_question_mark:
+            ret = "?" + ret
+        
+        return ret
         
         

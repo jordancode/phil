@@ -10,6 +10,21 @@ DIRECTION_DESC = "DESC"
 LOCK_FOR_UPDATE = "FOR UPDATE"
 LOCK_FOR_SHARED_STATE = "FOR SHARED_STATE"
 
+
+"""
+    These are factory classes for MySQL stataements. It's useful if you want to 
+    pass around queries that may be modified before submitting.
+    
+    usage:
+    sql_string = SQLQueryBuilder.select("users")
+                    .where( And([ ("id", "=", 999), ("name", "LIKE", "Bob%") ]))
+                    .build()
+    
+
+"""
+
+
+
 class WhereClause(metaclass=ABCMeta):
     
     OPERATORS = [

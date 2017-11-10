@@ -14,7 +14,12 @@ from framework.http.batch_request import BatchRequest
 from framework.config.routes import BATCH_REQUEST_KEY
 
 class BaseApplication():
-    ##
+    """
+     - receives a WSGI request
+     - looks up a Controller from Routes
+     - Calls the right method in Controller
+     - Formats and returns Response from Controller 
+    """ 
     
     _rule=None
     
@@ -49,15 +54,25 @@ class BaseApplication():
             )
     
     def get_http_host_for_routing(self,environ=None):
+        #can override if you need to logic to support multiple hosts,
+        #subdomain aliases, etc.
+        
+         
+        if environ:
+            return environ.get("HTTP_HOST")
+        
         return None
     
     def pre_hook(self,request):
+        # called before controller
         pass
     
     def post_hook(self,request,response):
+        # called after controller
         pass
     
     def clean_up(self):
+        #called after final response is generated
         pass
     
     def get_session_store(self,request):

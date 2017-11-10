@@ -9,6 +9,10 @@ from framework.utils.date_utils import DateUtils
 
 class Type:
     
+    """
+        
+    """
+    
     #types
     INT = "int"
     FLOAT = "float"
