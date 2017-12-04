@@ -9,7 +9,7 @@ import copy
 
 class S3(tinys3.Connection):
     
-    def __init__(self, temp_bucket=False):
+    def __init__(self, temp_bucket=False, zip_bucket=True):
         key_whitelist=["access_key", "secret_key", "default_bucket", "tls", "endpoint"]
         
         config = Config.get("s3")
@@ -18,6 +18,8 @@ class S3(tinys3.Connection):
         
         if temp_bucket:
             temp_config["default_bucket"] = config["temp_bucket"]
+        elif zip_bucket:
+            temp_config["default_bucket"] = config["zip_bucket"]
         else:
             temp_config["default_bucket"] = config["default_bucket"]
         
