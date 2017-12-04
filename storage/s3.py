@@ -9,7 +9,7 @@ import copy
 
 class S3(tinys3.Connection):
     
-    def __init__(self, temp_bucket=False, zip_bucket=True):
+    def __init__(self, temp_bucket=False, zip_bucket=False):
         key_whitelist=["access_key", "secret_key", "default_bucket", "tls", "endpoint"]
         
         config = Config.get("s3")
