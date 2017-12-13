@@ -316,6 +316,9 @@ class AuthService:
     
     def sign_up(self, user_data, require_email = False, user_agent_string = None, referrer=None):
         
+        #turn off new sign ups
+        raise AuthException()
+        
         #no user with this auth yet, let's create one
         has_email = ("email" in user_data)
         
