@@ -8,8 +8,8 @@ class PageResponse(TemplateResponse):
     
     _page_template = None
     
-    def __init__(self, template_name=None, template_data=None, user=None, headers=None, page_template_name=None,host_type=None):
-        super().__init__(template_name=template_name,template_data=template_data,user=user,headers=headers,host_type=host_type)
+    def __init__(self, template_name=None, template_data=None, user=None, headers=None, page_template_name=None,host_type=None,template_dir=None):
+        super().__init__(template_name=template_name,template_data=template_data,user=user,headers=headers,host_type=host_type,template_dir=template_dir)
         
         self.set_page_template(page_template_name)
     

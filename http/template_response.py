@@ -20,16 +20,18 @@ class TemplateResponse(BaseResponse,ETagResponseMixin,
     _template_name = None
     _template_data = None
     _host_type=None
+    _template_dir=None
     
     _user = None
     
     
      
-    def __init__(self, template_name=None, template_data=None, user=None, headers=None,host_type=None):
+    def __init__(self, template_name=None, template_data=None, user=None, headers=None,host_type=None,template_dir=None):
         
         self.set_template(template_name)
         self._user = user
         self._host_type=host_type
+        self._template_dir=template_dir
         self.set_template_data(template_data)
         
         
@@ -99,8 +101,8 @@ class TemplateResponse(BaseResponse,ETagResponseMixin,
     
     def _get_template_directory(self):
         path=ROOT_PATH+"/static"
-        if self._host_type and self._host_type != "main":
-            path += "/"+self._host_type
+        if self._template_dir:
+            path += "/"+self._template_dir
         path+="/template/"
         
         return path
