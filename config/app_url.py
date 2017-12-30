@@ -43,7 +43,7 @@ class AppUrl:
     
     @classmethod
     def get_current_host_type(cls, request):
-        domain=cls.get_current(request, None, True)
+        domain=cls.get_current(request, "", True)
         host_list = Config.get("app", ["hosts"])
         for host_type, host in host_list.items():
             
