@@ -60,7 +60,6 @@ class TemplateResponse(BaseResponse,ETagResponseMixin,
         
         if not "config_" in ret:
             app_config = Config.get("app")
-            host_type=self._host_type or "main"
             host_list=app_config['hosts']
             
             #populate alias keys
@@ -71,6 +70,8 @@ class TemplateResponse(BaseResponse,ETagResponseMixin,
                         if k not in host_config:
                             host_config[k]=v
             
+            
+            host_type=self._host_type or "main"
             app_config["host_type"] = host_type
             app_config["www_url"] = AppUrl.get("web", host_type)
             app_config["api_url"] = AppUrl.get("api", host_type)
