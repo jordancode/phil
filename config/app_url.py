@@ -42,6 +42,17 @@ class AppUrl:
         return cls.get(subdomain_type, request.get_host(), include_protocol)
     
     @classmethod
+    def get_current_host_type(cls, request):
+        domain=cls.get_current(request, None, True)
+        host_list = Config.get("app", ["hosts"])
+        for host_type, host in host_list.items():
+            
+            if host['server_name'] == domain:
+                return host_type
+        
+        return None
+    
+    @classmethod
     def get_email(cls, include_protocol=True):
         if Environment.get() == "PROD":
             return cls.get( "email", "email", include_protocol)
